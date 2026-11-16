@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<base href="https://cdn.jsdelivr.net/gh/rhubix74-tech/highwayrun@main/cgt/">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap">
@@ -340,6 +341,8 @@
   <div style="border-top:1px solid rgba(255,255,255,.14);padding-top:12px;margin-top:8px">
     <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-bottom:8px">Challenges</div>
     <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:12px"><button class="admb" id="admListB" type="button">Unlock Challenge List B</button><button class="admb" id="admAllCh" type="button">Unlock All Challenges</button></div>
+    <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-bottom:8px">Road events</div>
+    <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:12px"><button class="admb" data-ev="police" type="button">Police Chase</button><button class="admb" data-ev="convoy" type="button">Convoy</button><button class="admb" data-ev="plane" type="button">Race: Cargo Plane</button><button class="admb" data-ev="train" type="button">Race: Train</button><button class="admb" data-ev="end" type="button">End Event</button></div>
     <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-bottom:8px">World controls</div>
     <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap">
       <button class="admb" id="admDay" type="button">Force Day</button>
@@ -504,10 +507,10 @@ const $=id=>document.getElementById(id);
 var qualityReady=false; // GLTF callbacks can finish before the graphics settings block initializes.
 const GLB_URL = 'POR_CarreraGT_03_lite.glb';
 // Keep the title screen covered until the player car and all traffic models have settled.
-const MODEL_LOAD_TOTAL=2; let modelLoadDone=0, modelLoadFailed=[]; const modelLoadSeen=new Set();
+const MODEL_LOAD_TOTAL=1; let modelLoadDone=0, modelLoadFailed=[]; const modelLoadSeen=new Set();
 const loadOverlay=document.getElementById('assetLoad'), loadFill=document.getElementById('loadFill'), loadStatus=document.getElementById('loadStatus');
 function modelLoadSettled(name,error){
-  if(modelLoadSeen.has(name)) return; modelLoadSeen.add(name);
+  if(modelLoadSeen.has(name)||name!==GLB_URL) return; modelLoadSeen.add(name);   // only the Carrera GT blocks startup; other cars load on demand
   modelLoadDone++;
   if(error) modelLoadFailed.push(name);
   const pct=Math.min(100,modelLoadDone/MODEL_LOAD_TOTAL*100);
@@ -517,13 +520,13 @@ function modelLoadSettled(name,error){
     loadOverlay.classList.add('done');
     document.getElementById('loadHeading').textContent=modelLoadFailed.length?'Ready with missing models':'Ready to drive';
     document.getElementById('loadExplain').textContent=modelLoadFailed.length ? 'Some optional models could not be loaded. You can still enter, but missing vehicles may not appear.' : 'All vehicle models are loaded. Click below to enter and enable menu audio.';
-    loadStatus.textContent=modelLoadFailed.length ? `Ready · ${modelLoadFailed.length} required model${modelLoadFailed.length===1?'':'s'} missing` : 'Both player cars loaded';
+    loadStatus.textContent=modelLoadFailed.length ? `Ready · ${modelLoadFailed.length} required model${modelLoadFailed.length===1?'':'s'} missing` : 'Player car loaded';
     const enter=document.getElementById('loadEnter'); enter.disabled=false;
   }
 }
 // A stalled network request must never trap the player on the loading screen.
 // Successful/error callbacks win; this fallback only settles assets that never answer.
-[GLB_URL,'2002_ferrari_enzo.glb'].forEach(name=>{
+[GLB_URL].forEach(name=>{
   setTimeout(()=>{ if(!modelLoadSeen.has(name)){ console.warn('Required model load timed out:',name); modelLoadSettled(name,true); } },12000);
 });
 document.getElementById('loadEnter').addEventListener('click',()=>{
@@ -1452,12 +1455,15 @@ function nextGap(g){ if(Math.random()<.25) return g; const o=g===1?[0,2]:[1]; re
 /* wall rows (occasional): all three lanes blocked. Each car has its own speed (+-2.5 m/s) and they only start to
    spread out once the row is near you, so braking behind a wall makes the cars string out and open a lane. */
 var TOK=null, TOK_READY=false;   // road token (see TRAFFIC-CAR TOKENS)
+var evQuiet=false;   // random road events (convoy) lay out empty rows while this is on
 function layoutRow(r,chain,wall){
+  if(evQuiet) wall=false;
   r.chain=chain; r.wall=!!wall; r.gap=wall?-1:chain; r.hit=false; r.done=false;
   let lanes=wall?[0,1,2]:[0,1,2].filter(l=>l!==chain);
   if(!wall){
     if(Math.random()>.45+.55*DIFF-aeroDens*.22) lanes=[];                                    // quiet stretch: nobody in this row
     else if(Math.random()<.7*(1-DIFF)+aeroDens*.3) lanes=[lanes[(Math.random()*lanes.length)|0]];   // a lone car
+    if(evQuiet) lanes=[];
     if(lanes.length<2) r.done=true;                                              // only a real two-car row with a gap scores
   }
   const sp=wall?[-3.5,0,3.5].sort(()=>Math.random()-.5):[0,0,0];
@@ -1730,9 +1736,29 @@ function renderCarShop(){
 $('carShopRows').addEventListener('click',e=>{const b=e.target.closest('[data-buy-car]');if(!b)return;const id=b.dataset.buyCar,c=FUTURE_CAR_SPECS[id];if(!c||!c.available||CS.owned.includes(id))return;if(!spend(c.price)){popup('NOT ENOUGH CASH','bad');return;}CS.owned.push(id);saveCars();renderCarShop();renderWallet();popup(c.name+' added to your garage','good');});
 
 function saveCars(){ try{store.set('cgt_cars',JSON.stringify(CS))}catch(e){} }
-function applyCar(){ CARS.forEach(c=>{ c.root.visible=c.id===CS.sel; }); setExitMi(); try{ if(window.__paintReady){ applyPaint(paintDef(PS.sel)); $('paintSub').textContent=paintDef(PS.sel).name; if(typeof renderPaint==='function') renderPaint(true); } }catch(e){} }
+var LAZY={}, _lzEvT=null;   // declared before applyCar: it runs once right below, before the lazy loaders are registered
+function applyCar(){ CARS.forEach(c=>{ c.root.visible=c.id===CS.sel; }); if(typeof lazyEnsure==='function'){ lazyEnsure(CS.sel); clearTimeout(_lzEvT); _lzEvT=setTimeout(()=>{ if(typeof lazyEvict==='function') lazyEvict(); },20000); } setExitMi(); try{ if(window.__paintReady){ applyPaint(paintDef(PS.sel)); $('paintSub').textContent=paintDef(PS.sel).name; if(typeof renderPaint==='function') renderPaint(true); } }catch(e){} }
 applyCar();
 
+/* ---------------- lazy car models: only the car you drive is fetched/parsed/uploaded. The rest load on demand, a moment before they're needed
+   (hovering a car in the garage/shop/challenge list, selecting it, or starting a run), and GPU copies of cars you've switched away from are freed after a while. */
+function lazyCar(id,url,ok,prog,err){ LAZY[id]={id,url,ok,prog,err,st:0,cbs:[]}; }
+const lazyReady=id=>!LAZY[id]||LAZY[id].st>=2;
+function lazyEnsure(id,cb){
+  const L=LAZY[id]; if(!L||L.st>=2){ if(cb) cb(); return; }
+  if(cb) L.cbs.push(cb); if(L.st===1) return; L.st=1;
+  const el=document.getElementById('msg'); if(id===CS.sel&&el){ const c=CARS.find(q=>q.id===id); el.style.transition='none'; el.style.opacity=1; el.textContent='Loading '+(c?c.name:id)+'…'; }
+  const done=ok=>{ L.st=ok?2:3; const q=L.cbs.splice(0); q.forEach(f=>{ try{f()}catch(e){ console.error(e); } }); if(id===CS.sel){ if(el) el.style.opacity=0; try{ applyCar(); }catch(e){} } };
+  new THREE.GLTFLoader().load(L.url,g=>{ try{ L.ok(g); done(true); }catch(e){ console.error('Car model setup failed:',id,e); done(false); } },L.prog,e=>{ try{ if(L.err) L.err(e); }catch(x){} done(false); });
+}
+const lazyPrefetch=id=>{ const L=LAZY[id]; if(L&&L.st===0) lazyEnsure(id); };
+function lazyEvict(){      // free the GPU copies (geometry + textures) of loaded cars that aren't selected; three re-uploads them automatically if one is shown again
+  const keep=new Set(), grab=m=>{ if(!m) return; for(const k in m){ const t=m[k]; if(t&&t.isTexture) keep.add(t); } };
+  const sel=CARS.find(c=>c.id===CS.sel); if(sel) sel.root.traverse(o=>{ if(o.isMesh) for(const m of (Array.isArray(o.material)?o.material:[o.material])) grab(m); });
+  try{ for(const k in M) grab(M[k]); }catch(e){}
+  for(const c of CARS){ if(c.id===CS.sel||!LAZY[c.id]||LAZY[c.id].st!==2) continue;
+    c.root.traverse(o=>{ if(!o.isMesh) return; if(o.geometry) o.geometry.dispose(); for(const m of (Array.isArray(o.material)?o.material:[o.material])){ if(!m) continue; for(const k in m){ const t=m[k]; if(t&&t.isTexture&&!keep.has(t)) t.dispose(); } } }); }
+}
 const loadMsg=document.getElementById('msg');
 new THREE.GLTFLoader().load(GLB_URL, gltf => {
   gltf.scene.traverse(m => { if (m.isMesh){ m.material = pick(m.name); m.frustumCulled = false; if (m.material===M.lampglass) m.renderOrder = 2; } });
@@ -1930,7 +1956,7 @@ function syncEnzoPaint(){
   if(!enzoPaintMaterials.length) return;
   for(const m of enzoPaintMaterials){ const keepMap=m.map; m.copy(M.paint); m.map=keepMap; m.normalMap=null; m.clearcoatNormalMap=null; m.needsUpdate=true; }   // rain droplets come from the car-space layer instead
 }
-new THREE.GLTFLoader().load('2002_ferrari_enzo.glb',gltf=>{
+lazyCar('enzo','2002_ferrari_enzo.glb',gltf=>{
   const model=gltf.scene;
   /* Real-size fit: the Enzo is 4.702 m long (the Carrera GT is 4.613 m, and its model is already true size). Measure the body mesh and
      scale the whole Enzo group (body, rebuilt wheels, lights) uniformly so the two cars keep their real proportions. */
@@ -2003,7 +2029,7 @@ new THREE.GLTFLoader().load('2002_ferrari_enzo.glb',gltf=>{
 /* ---------------- 2013 SRT Viper GTS (real size: 4.46 m x 1.94 m x 1.23 m, the Carrera GT is 4.61 m long) ----------------
    The GLB is already 1 unit = 1 m with its nose at -Z, so it is only turned around (no scaling). The exterior uses the shared
    paint material (paint shop works), glass is opaque, and each wheel gets a steer + spin group at its own axle. */
-new THREE.GLTFLoader().load('dodge_srt_viper_gts.glb',gltf=>{
+lazyCar('viper','dodge_srt_viper_gts.glb',gltf=>{
   const model=gltf.scene; model.rotation.y=Math.PI; viperRoot.add(model);
   model.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false;
     const src=o.material, nm=(src&&src.name)||'';
@@ -2041,7 +2067,7 @@ new THREE.GLTFLoader().load('dodge_srt_viper_gts.glb',gltf=>{
 /* ---------------- 2013 Dodge Charger SRT8 (real size 5.02 m long; Carrera GT is 4.61 m) ----------------
    The GLB is tiny (1 unit = ~100 m) and has all four wheels merged per part (rim/tyre/disc/caliper), so it is scaled to real length,
    grounded on its tyres, and each merged part is split into four wheels that spin/steer around their own axle. */
-new THREE.GLTFLoader().load('dodge_charger_srt8.glb',gltf=>{
+lazyCar('charger','dodge_charger_srt8.glb',gltf=>{
   const model=gltf.scene; chargerRoot.add(model); model.traverse(o=>{ if(o.isMesh) o.frustumCulled=false; });
   const glassM=new THREE.MeshStandardMaterial({color:0x05070a,metalness:.6,roughness:.12}), mname=o=>((o.material&&o.material.name)||'');
   model.traverse(o=>{ if(!o.isMesh) return; const n=mname(o), m=o.material;
@@ -2115,7 +2141,7 @@ function syncZondaPaint(){
   zU.scoutOn.value=(M.paint.map&&zU.carbon.value<.5)?1:0; zU.scoutTex.value=M.paint.map||null;
   for(const m of zondaPaintMats){ const keep=m.map; m.copy(M.paint); m.map=keep; m.normalMap=null; m.clearcoatNormalMap=null;   /* the body atlas UVs stretch the flake map into blotches, so metallic sparkle comes from the shader finish only */ m.needsUpdate=true; }
 }
-new THREE.GLTFLoader().load('2009_pagani_zonda_r.glb',gltf=>{
+lazyCar('zonda','2009_pagani_zonda_r.glb',gltf=>{
   const model=gltf.scene; zondaRoot.add(model);
   for(const n of ['BONNETCAM','DAMAGE']){ const g=model.getObjectByName(n); if(g) g.visible=false; }
   const lod=model.getObjectByName('LOD00')||model;
@@ -2195,7 +2221,7 @@ function syncCobraPaint(){
   kU.scoutOn.value=(M.paint.map&&kU.stock.value<.5)?1:0; kU.scoutTex.value=M.paint.map||null;
   for(const m of cobraPaintMats){ const keep=m.map; m.copy(M.paint); m.map=keep; m.normalMap=null; m.clearcoatNormalMap=null; m.needsUpdate=true; }
 }
-new THREE.GLTFLoader().load('1965_Shelby_Cobra_Daytona_Coupe_60k.glb',gltf=>{
+lazyCar('daytona','1965_Shelby_Cobra_Daytona_Coupe_60k.glb',gltf=>{
   const model=gltf.scene; daytonaRoot.add(model);
   const bx=o=>new THREE.Box3().setFromObject(o), ctr=a=>{ const b=new THREE.Box3(); a.forEach(o=>b.expandByObject(o)); return b.getCenter(new THREE.Vector3()); };
   const rims=[], tyres=[], hl=[], tl=[]; const hasMat=(o,re)=>{ let f=false; o.traverse(q=>{ if(q.isMesh&&q.material&&re.test(q.material.name||'')) f=true; }); return f; };
@@ -2262,7 +2288,7 @@ function makeAeroTire(Ro,hw,Rr){
 }
 const aeroPatch=makePaintPatch(AERO_LAMP), aeroPaintMats=[], aeroTailMats=[], aeroGlowMats=[];
 function syncAeroPaint(){ for(const m of aeroPaintMats){ m.copy(M.paint); m.normalMap=null; m.clearcoatNormalMap=null; m.needsUpdate=true; } }
-new THREE.GLTFLoader().load('ssc_ultimate_aero.glb',gltf=>{
+lazyCar('aero','ssc_ultimate_aero.glb',gltf=>{
   const model=gltf.scene; aeroRoot.add(model);
   const glassM=new THREE.MeshStandardMaterial({color:0x05070a,metalness:.6,roughness:.12});
   model.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; o.receiveShadow=true;
@@ -2306,7 +2332,7 @@ new THREE.GLTFLoader().load('ssc_ultimate_aero.glb',gltf=>{
 const CHIRON_LAMP=mkLamp(0,[0,0,0],[1,1,1],[0,0,0],[1,1,1]); CHIRON_LAMP.tri.value=1;
 const chironPatch=makePaintPatch(CHIRON_LAMP), chironPaintMats=[];
 function syncChironPaint(){ for(const m of chironPaintMats){ m.copy(M.paint); m.map=null; m.normalMap=null; m.clearcoatNormalMap=null; m.needsUpdate=true; } }
-new THREE.GLTFLoader().load('bugatti_chiron.glb',gltf=>{
+lazyCar('chiron','bugatti_chiron.glb',gltf=>{
   const model=gltf.scene; chironRoot.add(model);
   const cache=new Map(); let paintM=null;
   model.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; o.receiveShadow=true;
@@ -2356,7 +2382,7 @@ new THREE.GLTFLoader().load('bugatti_chiron.glb',gltf=>{
 const M3_LAMP=mkLamp(0,[0,0,0],[1,1,1],[0,0,0],[1,1,1]); M3_LAMP.tri.value=1;
 const m3Patch=makePaintPatch(M3_LAMP), m3PaintMats=[], m3HeadMats=[], m3TailMats=[];
 function syncM3Paint(){ for(const m of m3PaintMats){ m.copy(M.paint); m.map=null; m.normalMap=null; m.clearcoatNormalMap=null; m.needsUpdate=true; } }
-new THREE.GLTFLoader().load('1988_bmw_m3_evolution_ii_e30.glb',gltf=>{
+lazyCar('m3','1988_bmw_m3_evolution_ii_e30.glb',gltf=>{
   const model=gltf.scene; m3Root.add(model);
   const cache=new Map(), glassM=new THREE.MeshStandardMaterial({color:0x05070a,metalness:.6,roughness:.12}); let paintM=null;
   model.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; o.receiveShadow=true;
@@ -2412,7 +2438,7 @@ new THREE.GLTFLoader().load('1988_bmw_m3_evolution_ii_e30.glb',gltf=>{
 /* ---------------- Red Fighter Jet (sci_fi_jet.glb; nose +X, 23.6 m long, 20.4 m span in the file) -> turned to +Z and scaled to a 5.4 m road vehicle that hovers just over the asphalt.
    Keeps its own red/black/blue palette (not the paint shop); the 'glow' material stays emissive for the engines. */
 const JET_H=3.4;   // hover height above the road: clear of the tallest traffic
-new THREE.GLTFLoader().load('sci_fi_jet.glb',gltf=>{
+lazyCar('jet','sci_fi_jet.glb',gltf=>{
   const inner=gltf.scene; inner.rotation.y=-Math.PI/2; const holder=new THREE.Group(); holder.add(inner); jetRoot.add(holder);
   inner.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; o.receiveShadow=true;
     const mm=(Array.isArray(o.material)?o.material:[o.material]).map(sm=>{ const m=sm.clone(); if(m.metalness!==undefined){ m.metalness=Math.min(.45,m.metalness); m.roughness=Math.max(.35,m.roughness); } m.envMapIntensity=.7; m.userData.e0=.7; envMats.push(m); return m; });
@@ -2427,7 +2453,7 @@ new THREE.GLTFLoader().load('sci_fi_jet.glb',gltf=>{
 /* ---------------- 2012 Toyota Prius (real size 4.46 m long; 134 hp hybrid, 112 mph, 0-60 in ~10 s) ----------------
    The GLB has arbitrary units (19 units long) and its nose toward -Z once loaded, so it is turned around, scaled to real length and grounded on its
    tyres. Body paint ("Color.002") takes the shared paint material; the four wheels are merged per part, so they are split out and spin/steer. */
-new THREE.GLTFLoader().load('toyota_prius_2012.glb',gltf=>{
+lazyCar('prius','toyota_prius_2012.glb',gltf=>{
   const model=gltf.scene, flip=model; flip.rotation.y=Math.PI;   // GLTFLoader already applies the file's Sketchfab Z-up->Y-up root matrix, so only a half turn is needed (nose is -Z in the file)
   priusRoot.add(model);
   const glassM=new THREE.MeshStandardMaterial({color:0x05070a,metalness:.6,roughness:.12}), seen=new Set(), mname=o=>((o.material&&o.material.name)||'');
@@ -2474,7 +2500,7 @@ new THREE.GLTFLoader().load('toyota_prius_2012.glb',gltf=>{
 /* ---------------- 2016 Rolls-Royce Dawn (real size 5.285 m long; 563 hp 6.6L twin-turbo V12, 155 mph, 0-60 in ~4.9 s) ----------------
    The GLB is tiny (0.01 node scale) with its nose toward +Z. It's scaled to real length and grounded on its tyres. "CarPaint_Color" takes the shared
    paint; tyres/rims/discs/calipers are merged for all four wheels, so they're split out (discs spin, calipers only steer). */
-new THREE.GLTFLoader().load('rolls_royce_dawn.glb',gltf=>{
+lazyCar('dawn','rolls_royce_dawn.glb',gltf=>{
   const model=gltf.scene; dawnRoot.add(model);
   const mname=o=>((o.material&&o.material.name)||''), seen=new Set();
   const clearGl=new THREE.MeshPhysicalMaterial({color:0x000000,metalness:0,roughness:.05,transparent:true,opacity:.07,depthWrite:false,side:THREE.DoubleSide});
@@ -2517,7 +2543,7 @@ new THREE.GLTFLoader().load('rolls_royce_dawn.glb',gltf=>{
 },undefined,err=>console.error('Could not load Rolls-Royce Dawn model',err));
 
 /* 2017 Acura NSX (5d3ebcc3-2017_acura_nsx.glb): real size (4.47 m), nose at -Z in the file so it is turned round; body paint = M.paint, each wheel = rim + tyre meshes pivoted on the axle */
-new THREE.GLTFLoader().load('2017_acura_nsx.glb',gltf=>{
+lazyCar('nsx','2017_acura_nsx.glb',gltf=>{
   const model=gltf.scene, holder=new THREE.Group(); model.rotation.y=Math.PI; holder.add(model); nsxRoot.add(holder);
   const mname=o=>((o.material&&o.material.name)||'');
   model.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; const n=mname(o);
@@ -2957,12 +2983,13 @@ applyPaint(paintDef(PS.sel)); $('paintSub').textContent=paintDef(PS.sel).name;
 function popup(txt,cls){ const d=document.createElement('div'); d.className='pop '+cls; d.textContent=txt; $('pops').appendChild(d); setTimeout(()=>d.remove(),1500); }
 function fixGear(){ eng.gear=0; while(eng.gear<5&&ECFG.ratio[eng.gear]*speed>ECFG.redline*.55) eng.gear++; eng.rpm=Math.max(ECFG.idle,ECFG.ratio[eng.gear]*speed); eng.sT=-1; }
 function startRun(){
+  if(!lazyReady(CS.sel)){ lazyEnsure(CS.sel,()=>{ if(state!=='run') startRun(); }); return; }   // the car is still loading: start as soon as it's in
   setExitMi();
   ghostLeft=0;ghostUsed=0;ghostVisual(false);runPU={insurance:false,nitrous:false,double:false,ghost:false,rocket:false};rocketCooldown=0;clearRocket();const freePU=CS.sel==='prius'?priusFree:null; for(const p of POWERUPS){if(p.id==='rocket'){if(PU.rocketUnlocked&&PU.equipped.rocket)runPU.rocket=true;}else if(PU.equipped[p.id]&&(PU.stock[p.id]||0)>0){runPU[p.id]=true;if(p.id!==freePU)PU.stock[p.id]--;}PU.equipped[p.id]=false;}if(runPU.rocket){runPU={insurance:false,nitrous:false,double:false,ghost:false,rocket:true};}else if(freePU&&!(freePU==='nitrous'&&runPU.ghost)){runPU[freePU]=true;}savePU();insuranceSpent=0;nitrousLeft=0;nitrousUsed=0;$('powerHud').classList.remove('show');
   biomeBase=dist; biomeSeed=Math.random(); _bc=[0]; _lastBi=-1;      // biomes restart: open highway first, then a fresh random order
   leaveTitle(); goView('chase'); if(window.__rainLock===undefined) rainPlan(); state='run'; score=0; miles=0; mult=1; clean=0; timeLeft=Math.min(RUN_T,TIME_CAP)+startBonus(); speed=20; yaw=0; px=0; vl=0; steer=0; inv=2.5;
   runDist=0; exitT=0; $('cine').classList.remove('on'); $('cineCap').classList.remove('in'); firstCam=true;
-  trafficCars.forEach(t=>{ if(t.oncoming){ respawn(t,true); t.g.visible=true; } }); resetRows(); weave=0; tStreak=0; lastGap=-1; nextBonus=100000; runT=0; bHeat=0; lastBT=-999; fixGear(); $('ov').classList.add('hide');
+  trafficCars.forEach(t=>{ if(t.oncoming){ respawn(t,true); t.g.visible=true; } }); resetRows(); weave=0; tStreak=0; lastGap=-1; nextBonus=100000; runT=0; bHeat=0; lastBT=-999; evReset(); fixGear(); $('ov').classList.add('hide');
   if(!eng.on&&!eng.manualOff) setSound(true);
   if(!radio.manualOff){ if(!radio.on) setRadio(true); else if(radio.a.paused) radio.a.play().catch(()=>{}); }
 }
@@ -3485,6 +3512,7 @@ $('admTokFiesta').addEventListener('click',()=>{ if(ADMIN) forceToken('fiesta');
 $('admTokAccord').addEventListener('click',()=>{ if(ADMIN) forceToken('accord'); });
 $('admTokJet').addEventListener('click',()=>{ if(ADMIN) forceToken('jet'); });
 $('admCoin').addEventListener('click',()=>{ if(ADMIN) forceCoin(); });
+document.querySelectorAll('[data-ev]').forEach(b=>b.addEventListener('click',()=>{ if(!ADMIN||state!=='run') return; const k=b.dataset.ev; if(k==='end'){ evEnd(true); return; } evEnd(true); evStart(k); }));
 $('admAllCh').addEventListener('click',()=>{ if(!ADMIN) return; admAllCh=!admAllCh; $('admAllCh').textContent=admAllCh?'All challenges unlocked (click to relock)':'Unlock All Challenges'; updateChBadge(); if(chMenuOpen) renderChMenu(); });
 $('admListB').addEventListener('click',()=>{ if(!ADMIN) return; admListB=!admListB; $('admListB').textContent=admListB?'List B unlocked (click to relock)':'Unlock Challenge List B'; updateChBadge(); if(chMenuOpen) renderChMenu(); });
 TOK_READY=true;
@@ -3818,7 +3846,7 @@ const RADIO=[
  {f:'audio1.mp3',t:'Everyday (Netsky VIP Remix)',a:'Rusko',d:249,g:-2.0}];
 const radio={a:new Audio(),on:false,cur:null,hist:[]}, npEl=$('np'), radBtn=$('rad');
 const RADIO_VOL=.7, REF_RMS_DB=-9.35;   // REF_RMS_DB: Liberate measured with measureDb() below (used for songs you add)
-radio.a.preload='auto'; radio.a.volume=RADIO_VOL;
+radio.a.crossOrigin='anonymous'; radio.a.preload='auto'; radio.a.volume=RADIO_VOL;
 /* the radio goes through WebAudio (gain per song + a limiter) so quiet songs can be boosted past element.volume=1.
    From file:// the browser would mute a MediaElementSource, so there it falls back to plain element volume. */
 const RG={ctx:null,gain:null,failed:false};
@@ -3954,6 +3982,194 @@ function cineCam(){
   if(camFrom&&b<1){ camera.position.copy(camFrom.p).lerp(_cc,b); _lk.copy(camFrom.l).lerp(_cq,b); } else{ camera.position.copy(_cc); _lk.copy(_cq); }
   cineFov=(camFrom?camFrom.fov:38)*(1-b)+(36-9*a)*b;
 }
+/* ============================================================ RANDOM ROAD EVENTS (rare: every tunnel you drive into has a 1-in-30 chance of starting ONE event, picked from whichever are possible right now)
+   POLICE CHASE (a Charger cruiser; only above the speed threshold): it rubber-bands behind you (never farther than ~110 m, so it always stays on the loaded road); cover 5 miles without letting it catch you. Caught = -40 s and -6% score,
+     escaping pays +8% of your score (min 4,000) and +4 s.
+   CONVOY: the road clears and three AI drivers cruise with you for ~30 s. Driving alongside them pays bonus points every second; touching one costs a small penalty (far less than a traffic crash).
+   SHOWCASE RACE: a cargo plane (air) or a freight train (landscape) races you over 5 miles: it runs ~10% above its base pace for 4 miles, then fades to ~70% on the last mile. Beat it to the end for 25% of your current score (min 10,000) and +10 s.
+   None of it happens in challenges, with the Beta Car / Scout's Ship, in admin-disabled traffic, or when an exit is too close to finish the event. */
+const EVC={tunnelOdds:30,afterEvent:20,hiMphCap:125,policeMi:5,policeMaxGap:110,convoySecs:30,raceMi:5};
+const EV={cool:0,wasT:false,cur:null,pool:[],pol:null,polReq:false,plane:null,train:null,hud:null,flash:null,fl:0,siren:null};
+function evReset(){ evEnd(true); EV.cool=0; EV.wasT=!!tunnelActive; }
+const evThrMs=()=>{ const top=(CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].topSpeedMph)||150; return Math.min(EVC.hiMphCap,top*.82)/MPH; };
+const evExitLeft=()=>(Math.floor(runDist/EX)+1)*EX-runDist;
+function evDom(){
+  if(EV.hud) return;
+  const h=document.createElement('div'); h.style.cssText='position:fixed;left:50%;top:86px;transform:translateX(-50%);z-index:30;padding:7px 16px;border-radius:12px;background:rgba(8,10,16,.62);border:1px solid rgba(255,255,255,.18);color:#fff;font:600 13px/1.35 system-ui,sans-serif;text-align:center;pointer-events:none;display:none;max-width:90vw';
+  const f=document.createElement('div'); f.style.cssText='position:fixed;inset:0;z-index:24;pointer-events:none;opacity:0';
+  document.body.appendChild(f); document.body.appendChild(h); EV.hud=h; EV.flash=f;
+}
+function evSiren(on,lvl){
+  try{ if(!A.ctx) return;
+    if(on&&!EV.siren){ const o=A.ctx.createOscillator(), g=A.ctx.createGain(), lp=A.ctx.createBiquadFilter(); o.type='sawtooth'; lp.type='lowpass'; lp.frequency.value=1800; g.gain.value=0; o.connect(lp); lp.connect(g); g.connect(A.master); o.start(); EV.siren={o,g}; }
+    if(EV.siren){ if(!on){ const s=EV.siren; EV.siren=null; s.g.gain.setTargetAtTime(0,A.ctx.currentTime,.1); setTimeout(()=>{ try{s.o.stop()}catch(e){} },500); }
+      else { const t=A.ctx.currentTime, ph=(performance.now()/1000*.85)%1, f=720+380*Math.sin(ph*6.2832); EV.siren.o.frequency.setTargetAtTime(f,t,.03); EV.siren.g.gain.setTargetAtTime(.012+.04*lvl,t,.08); } }
+  }catch(e){}
+}
+/* ---- the cruiser: a second copy of the Charger GLB in black-and-white with a flashing light bar ---- */
+function evBuildPolice(){
+  if(EV.pol||EV.polReq) return; EV.polReq=true;
+  new THREE.GLTFLoader().load('dodge_charger_srt8.glb',gltf=>{
+    const g=new THREE.Group(), model=gltf.scene, mname=o=>((o.material&&o.material.name)||''); g.add(model); scene.add(g);
+    const black=new THREE.MeshStandardMaterial({color:0x0c0d10,metalness:.55,roughness:.32}), white=new THREE.MeshStandardMaterial({color:0xe9ecef,metalness:.35,roughness:.4}), glass=new THREE.MeshStandardMaterial({color:0x05070a,metalness:.6,roughness:.12});
+    model.updateMatrixWorld(true); const body=new THREE.Box3(), tmp=new THREE.Box3();
+    model.traverse(o=>{ if(!o.isMesh||!o.geometry) return; if(!o.geometry.boundingBox) o.geometry.computeBoundingBox(); tmp.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld); body.union(tmp); });
+    const S=5.02/(body.max.z-body.min.z); model.scale.multiplyScalar(S);
+    model.position.set(-(body.min.x+body.max.x)/2*S,-body.min.y*S,-(body.min.z+body.max.z)/2*S); g.updateMatrixWorld(true);
+    const top=(body.max.y-body.min.y)*S, v=new THREE.Vector3();
+    const paintNames=new Set(['body_chargerphong1SG1','body_chargerinitialShadingGroup1','body_chargerphong12SG1']);
+    model.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; const n=mname(o), m=o.material;
+      if(paintNames.has(n)&&o.geometry.index){
+        const idx=o.geometry.index.array, pos=o.geometry.attributes.position, bl=[], wh=[];
+        for(let i=0;i<idx.length;i+=3){ let x=0,y=0,z=0; for(let k=0;k<3;k++){ v.fromBufferAttribute(pos,idx[i+k]).applyMatrix4(o.matrixWorld); x+=v.x/3; y+=v.y/3; z+=v.z/3; }
+          (Math.abs(x)>.5&&y>.38&&y<1.1&&Math.abs(z)<1.45?wh:bl).push(idx[i],idx[i+1],idx[i+2]); }
+        const ng=new THREE.BufferGeometry(); for(const a in o.geometry.attributes) ng.setAttribute(a,o.geometry.attributes[a]);
+        ng.setIndex(new THREE.BufferAttribute(new Uint32Array(bl.concat(wh)),1)); ng.addGroup(0,bl.length,0); ng.addGroup(bl.length,wh.length,1); o.geometry=ng; o.material=[black,white];
+      } else if(paintNames.has(n)) o.material=black;
+      else if(n==='body_chargerphong2SG1') o.material=glass;
+      else if(m){ if(m.transmission) m.transmission=0; if(n!=='badges'&&n!=='body_chargerphong10SG1'&&n!=='body_chargerphong11SG1'){ m.transparent=false; m.opacity=1; m.depthWrite=true; } m.envMapIntensity=.6; }
+    });
+    // wheels: the GLB merges all four per part, so split by triangle quadrant (same method as the player's Charger)
+    const parts={tire:[],rim:[],disk:[],calipers:[]}; model.traverse(o=>{ if(o.isMesh){ const n=mname(o); if(parts[n]) parts[n].push(o); else if(n==='material') parts.rim.push(o); } });
+    const tb=new THREE.Box3(); parts.tire.forEach(o=>{ o.updateWorldMatrix(true,false); tb.union(new THREE.Box3().setFromObject(o)); });
+    const cx=(tb.min.x+tb.max.x)/2, cz=(tb.min.z+tb.max.z)/2, quad={tire:{},rim:{},disk:{},calipers:{}};
+    for(const kind in parts) for(const o of parts[kind]){
+      const ge=o.geometry, pos=ge.attributes.position, idx=ge.index?ge.index.array:null; if(!idx) continue; o.updateWorldMatrix(true,false);
+      const lists={FL:[],FR:[],RL:[],RR:[]}, bbs={FL:new THREE.Box3(),FR:new THREE.Box3(),RL:new THREE.Box3(),RR:new THREE.Box3()};
+      for(let i=0;i<idx.length;i+=3){ let x=0,z=0; const vs=[]; for(let k=0;k<3;k++){ v.fromBufferAttribute(pos,idx[i+k]).applyMatrix4(o.matrixWorld); x+=v.x/3; z+=v.z/3; vs.push(v.clone()); }
+        const key=(z>cz?'F':'R')+(x>cx?'L':'R'); lists[key].push(idx[i],idx[i+1],idx[i+2]); vs.forEach(p=>bbs[key].expandByPoint(p)); }
+      for(const q in lists){ if(!lists[q].length) continue; const ng=new THREE.BufferGeometry(); for(const a in ge.attributes) ng.setAttribute(a,ge.attributes[a]); ng.setIndex(new THREE.BufferAttribute(new Uint32Array(lists[q]),1));
+        const m=new THREE.Mesh(ng,o.material); m.position.copy(o.position); m.quaternion.copy(o.quaternion); m.scale.copy(o.scale); m.frustumCulled=false; m.userData.bb=bbs[q]; o.parent.add(m); (quad[kind][q]=quad[kind][q]||[]).push(m); }
+      o.parent.remove(o);
+    }
+    g.updateMatrixWorld(true); const wheels=[];
+    for(const q of ['FL','FR','RL','RR']){ const tires=quad.tire[q]; if(!tires) continue;
+      const box=new THREE.Box3(); tires.forEach(o=>box.union(o.userData.bb)); const c=box.getCenter(new THREE.Vector3()), R=(box.max.y-box.min.y)/2, spin=new THREE.Group(); spin.position.copy(c); g.add(spin); g.updateMatrixWorld(true);
+      for(const k of ['tire','rim','disk']) (quad[k][q]||[]).forEach(o=>spin.attach(o)); (quad.calipers[q]||[]).forEach(o=>g.attach(o)); wheels.push({spin,r:R,angle:0}); }
+    // light bar
+    const redM=new THREE.MeshBasicMaterial({color:0xff2020}), blueM=new THREE.MeshBasicMaterial({color:0x2a6bff}), barM=new THREE.MeshStandardMaterial({color:0x15171b,roughness:.5});
+    const bar=new THREE.Mesh(new THREE.BoxGeometry(.9,.08,.26),barM), rl=new THREE.Mesh(new THREE.BoxGeometry(.4,.1,.22),redM), bl=new THREE.Mesh(new THREE.BoxGeometry(.4,.1,.22),blueM);
+    bar.position.set(0,top+.01,-.1); rl.position.set(-.22,top+.07,-.1); bl.position.set(.22,top+.07,-.1); g.add(bar,rl,bl);
+    const gr=makeGlow(0xff2020), gb=makeGlow(0x2a6bff); gr.scale.set(3.4,3.4,1); gb.scale.set(3.4,3.4,1); gr.position.set(-.3,top+.25,-.1); gb.position.set(.3,top+.25,-.1); g.add(gr,gb);
+    const seen=new Set(); g.traverse(o=>{ if(!o.isMesh) return; for(const m of (Array.isArray(o.material)?o.material:[o.material])) if(m&&!seen.has(m)){ seen.add(m); bendMat(m); } });
+    g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; EV.pol={g,wheels,redM,blueM,gr,gb};
+  },undefined,e=>console.warn('Police cruiser model unavailable',e));
+}
+/* ---- showcase racers: a cargo plane and a freight train, built from primitives ---- */
+function evMat(c,r,m){ const x=new THREE.MeshStandardMaterial({color:c,roughness:r===undefined?.55:r,metalness:m===undefined?.2:m}); bendMat(x); return x; }
+function evMakePlane(){
+  const g=new THREE.Group(), wh=evMat(0xf1f3f5), gy=evMat(0x8b939b), bl=evMat(0x1c3f7a), dk=evMat(0x2a2e33);
+  const fus=new THREE.Mesh(new THREE.CylinderGeometry(3.4,3.4,46,18),wh); fus.rotation.x=Math.PI/2;
+  const nose=new THREE.Mesh(new THREE.SphereGeometry(3.4,18,12),wh); nose.scale.set(1,1,1.5); nose.position.z=23;
+  const tail=new THREE.Mesh(new THREE.ConeGeometry(3.4,16,18),wh); tail.rotation.x=-Math.PI/2; tail.position.z=-31;
+  const stripe=new THREE.Mesh(new THREE.CylinderGeometry(3.45,3.45,5,18),bl); stripe.rotation.x=Math.PI/2; stripe.position.set(0,0,-6);
+  g.add(fus,nose,tail,stripe);
+  for(const s of [-1,1]){ const w=new THREE.Mesh(new THREE.BoxGeometry(26,.6,8),gy); w.position.set(s*15,-.6,2); w.rotation.y=-s*.3; g.add(w);
+    const ts=new THREE.Mesh(new THREE.BoxGeometry(9,.4,4),gy); ts.position.set(s*6,9,-33); ts.rotation.y=-s*.25; g.add(ts);
+    for(const ex of [9,19]){ const e=new THREE.Mesh(new THREE.CylinderGeometry(1.15,1.15,5,12),dk); e.rotation.x=Math.PI/2; e.position.set(s*ex,-2.3,4-ex*.25); g.add(e); } }
+  const fin=new THREE.Mesh(new THREE.BoxGeometry(.6,10,7),bl); fin.position.set(0,6,-31); fin.rotation.x=.25; g.add(fin);
+  g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; scene.add(g); return g;
+}
+function evMakeTrain(){
+  const g=new THREE.Group(), loco=new THREE.Mesh(new THREE.BoxGeometry(3.4,3.8,20),evMat(0xc2371b,.5,.3)), cab=new THREE.Mesh(new THREE.BoxGeometry(3.4,1.2,6),evMat(0x1a1c20)); loco.position.set(0,2.6,0); cab.position.set(0,4.9,-6); g.add(loco,cab);
+  const cols=[0x3b6ea5,0xb5b8bd,0x9a6b2f,0x2e7d4f,0xd6a227,0x6b4a8a,0x3b6ea5];
+  cols.forEach((c,i)=>{ const w=new THREE.Mesh(new THREE.BoxGeometry(3.3,3.6,14),evMat(c,.6,.1)); w.position.set(0,2.5,-18-i*15.5); g.add(w); });
+  g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; scene.add(g);
+  const tr=new THREE.Group(), rm=evMat(0x6d6f72,.4,.8), bed=evMat(0x4a4540,.9,0), tie=evMat(0x3b2f26,.9,0);
+  const ballast=new THREE.Mesh(new THREE.BoxGeometry(4.6,.35,520),bed); ballast.position.set(0,.18,200); tr.add(ballast);
+  for(const sx of [-.72,.72]){ const r=new THREE.Mesh(new THREE.BoxGeometry(.12,.2,520),rm); r.position.set(sx,.45,200); tr.add(r); }
+  for(let z=-55;z<=455;z+=3){ const t=new THREE.Mesh(new THREE.BoxGeometry(2.3,.14,.35),tie); t.position.set(0,.4,z); tr.add(t); }
+  tr.traverse(o=>{ o.frustumCulled=false; }); tr.visible=false; scene.add(tr); g.userData.track=tr; return g;
+}
+/* ---- state machine ---- */
+function evEnd(silent){
+  const c=EV.cur; EV.cur=null; evQuiet=false; evSiren(false);
+  if(EV.pol) EV.pol.g.visible=false; if(EV.plane) EV.plane.visible=false; if(EV.train){ EV.train.visible=false; EV.train.userData.track.visible=false; }
+  EV.pool.forEach(t=>{ t.g.visible=false; }); if(EV.hud) EV.hud.style.display='none'; if(EV.flash) EV.flash.style.opacity=0;
+  if(c&&!silent) EV.cool=EVC.afterEvent;
+}
+function evStart(kind){
+  evDom();
+  if(kind==='police'){ evBuildPolice(); if(!EV.pol) return false; const thr=evThrMs();
+    EV.cur={k:'police',t:0,gap:60,pv:Math.max(thr*.97,speed*.93),x:px,thr,P0:runDist,R:EVC.policeMi*1609.34}; EV.pol.g.visible=true; EV.pol.g.position.set(px,0,-75);
+    popup('POLICE CHASE · STAY ABOVE '+Math.round(thr*MPH)+' MPH · OUTRUN THEM FOR '+EVC.policeMi+' MILES','bad'); return true; }
+  if(kind==='convoy'){ while(EV.pool.length<3){ const t=makeTraffic(false); t.g.visible=false; t.alpha=1; EV.pool.push(t); }
+    EV.cur={k:'convoy',ph:'form',t:0,bonus:0,cars:[]}; evQuiet=true; popup('CONVOY AHEAD · ROAD CLEARING','good'); return true; }
+  if(kind==='plane'||kind==='train'){ const air=kind==='plane';
+    if(air&&!EV.plane) EV.plane=evMakePlane(); if(!air&&!EV.train) EV.train=evMakeTrain();
+    const o=air?EV.plane:EV.train, top=((CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].topSpeedMph)||150)/MPH;
+    EV.cur={k:kind,t:0,P0:runDist,Q:0,v0:speed,vt:Math.max(34,top*(air?.84:.80)),o,R:EVC.raceMi*1609.34}; o.visible=true; if(!air) o.userData.track.visible=true;
+    popup('SHOWCASE RACE · '+(air?'CARGO PLANE':'FREIGHT TRAIN')+' · '+EVC.raceMi+' MILES','good'); return true; }
+  return false;
+}
+function evPick(){
+  const mph=speed*MPH, thr=evThrMs()*MPH, left=evExitLeft(), opts=[];
+  if(mph>=thr&&left>EVC.policeMi*1609.34+400) opts.push('police');          // the police only come for you above the speed threshold
+  if(left>2600) opts.push('convoy');
+  if(left>EVC.raceMi*1609.34+700) opts.push('plane','train');
+  return opts.length?opts[(Math.random()*opts.length)|0]:null;
+}
+function evTick(dt){
+  const on=state==='run'&&!CH.active&&!isBetaCar()&&!adminTrafficDisabled&&!paintView;
+  if(!on){ if(EV.cur) evEnd(true); return; }
+  const mph=speed*MPH, c=EV.cur;
+  if(!c){
+    if(tunnelGroup.visible&&!EV.pol) evBuildPolice();                 // a tunnel is coming up: get the cruiser model ready a little early
+    EV.cool-=dt; const inT=!!tunnelActive;
+    if(inT&&!EV.wasT&&EV.cool<=0&&Math.random()<1/EVC.tunnelOdds){ const k=evPick(); if(k) evStart(k); }   // 1-in-30 as you enter a tunnel
+    EV.wasT=inT; return;
+  }
+  c.t+=dt; const H=[];
+  if(c.k==='police') evPolice(c,dt,H); else if(c.k==='convoy') evConvoy(c,dt,H); else evRace(c,dt,H);
+  if(EV.cur&&EV.hud){ EV.hud.style.display=H.length?'block':'none'; EV.hud.innerHTML=H.join('<br>'); }
+}
+function evPolice(c,dt,H){
+  const pol=EV.pol; c.pv=Math.min(c.pv+.32*dt,c.thr*.97+9); c.gap=Math.min(EVC.policeMaxGap,c.gap+(speed-c.pv)*dt);   // rubber band: the cruiser never drops out of the loaded road
+  const done=Math.min(c.R,runDist-c.P0), left=Math.max(0,c.R-done);
+  if(c.gap<=5){ timeLeft=Math.max(0,timeLeft-40); const pen=Math.floor(score*.06); score-=pen; shake=1; popup('BUSTED  −40s  '+(pen?'−'+pen.toLocaleString():''),'bad'); $('flash').style.opacity=.5; setTimeout(()=>{$('flash').style.opacity=0},120); evEnd(); return; }
+  if(done>=c.R){ const b=Math.max(4000,Math.round(score*.08)); score+=b; timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+4); popup('ESCAPED THE POLICE  +'+b.toLocaleString()+'  ·  +4s','good'); evEnd(); return; }
+  c.x+=(px-c.x)*Math.min(1,dt*1.4); const z=-Math.min(c.gap,300);
+  if(pol){ pol.g.position.set(c.x,0,z); pol.g.rotation.set(-Math.atan(roadSlopeAt(z)),0,0); for(const w of pol.wheels){ w.angle+=c.pv/w.r*dt; w.spin.rotation.x=w.angle; }
+    const ph=Math.floor(performance.now()/130)&1; pol.redM.color.setHex(ph?0xff2020:0x300606); pol.blueM.color.setHex(ph?0x08122a:0x2a6bff); pol.gr.material.opacity=ph?.9:.1; pol.gb.material.opacity=ph?.1:.9; }
+  evSiren(true,Math.max(0,1-c.gap/EVC.policeMaxGap));
+  if(EV.flash){ const ph=Math.floor(performance.now()/160)&1; EV.flash.style.opacity=(.2+.55*(1-c.gap/EVC.policeMaxGap)).toFixed(2); EV.flash.style.background=ph?'radial-gradient(ellipse at 15% 100%,rgba(255,30,30,.75),transparent 55%)':'radial-gradient(ellipse at 85% 100%,rgba(40,100,255,.75),transparent 55%)'; }
+  H.push('<b style="color:#ff7b7b">POLICE CHASE</b> · keep above '+Math.round(c.thr*MPH)+' mph','Gap '+Math.round(c.gap)+' m · '+(done/1609.34).toFixed(2)+' / '+EVC.policeMi+' mi to escape'+(speed<c.pv?' <b style="color:#ff9b8f">· THEY ARE CLOSING</b>':''));
+}
+function evConvoy(c,dt,H){
+  if(c.ph==='form'){
+    const clear=!rows.some(r=>r.z>-12&&r.cars.some(q=>!q.gone&&q.g.visible));
+    H.push('<b style="color:#8fe3a2">CONVOY</b> · road clearing…');
+    if((clear&&c.t>3)||c.t>14){ c.ph='run'; c.t=0; c.vc=Math.max(30,Math.min(speed,((CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].topSpeedMph)||150)*.8/MPH));
+      const ln=[0,1,2].sort(()=>Math.random()-.5), slots=[22,-14,48]; c.cars=EV.pool.slice(0,3).map((t,i)=>{ t.g.visible=true; t.alpha=1; t.x=LANES[ln[i]]; t.z=slots[i]; t.g.rotation.y=0; return {t,lt:3+Math.random()*5,bf:0,bt:t.x,bl:1,hit:0}; });
+      popup('CONVOY JOINED · DRIVE WITH THEM','good'); }
+    return; }
+  let near=0; c.vc+=(Math.max(30,Math.min(c.vc,evThrMs()*1.05))-c.vc)*.02;
+  for(const q of c.cars){ const t=q.t; t.z+=(c.vc-speed)*dt; t.g.position.set(t.x,0,t.z); t.g.rotation.x=-Math.atan(roadSlopeAt(t.z)); if(t.fWheels) for(const w of t.fWheels) w.rotation.x+=c.vc/(t.rollR||.3)*dt;
+    q.lt-=dt; if(q.lt<=0){ const free=[0,1,2].filter(l=>Math.abs(LANES[l]-t.x)>.5&&!c.cars.some(o=>o!==q&&Math.abs(o.t.z-t.z)<16&&Math.abs((o.bl<1?o.bt:o.t.x)-LANES[l])<1)); if(free.length){ q.bf=t.x; q.bt=LANES[free[(Math.random()*free.length)|0]]; q.bl=0; } q.lt=5+Math.random()*6; }
+    if(q.bl<1){ q.bl=Math.min(1,q.bl+dt/1.2); const u=q.bl*q.bl*(3-2*q.bl); t.x=q.bf+(q.bt-q.bf)*u; }
+    q.hit-=dt; if(Math.abs(px-t.x)<1.9&&Math.abs(t.z)<4.4){ if(q.hit<=0&&inv<=0&&ghostLeft<=0){ q.hit=1.6; const pen=Math.min(Math.floor(score),Math.round(800+score*.025)); score-=pen; px+=(px>=t.x?1:-1)*.5; shake=.5; popup('CONVOY CONTACT −'+pen.toLocaleString(),'bad'); } }
+    if(Math.abs(t.z)<28&&Math.abs(px-t.x)<7.6) near++; }
+  const rate=near>=2?Math.round(360*speedK()*Math.max(1,mult)):0; if(rate) { score+=rate*dt; c.bonus+=rate*dt; }
+  H.push('<b style="color:#8fe3a2">CONVOY</b> · '+(near>=2?'in formation  +'+rate.toLocaleString()+'/s':'<span style="opacity:.8">get alongside the convoy</span>'),'Bonus '+Math.floor(c.bonus).toLocaleString()+' · '+Math.ceil(Math.max(0,EVC.convoySecs-c.t))+' s left · don\'t touch them');
+  if(c.t>=EVC.convoySecs){ popup('CONVOY COMPLETE  +'+Math.floor(c.bonus).toLocaleString(),'good'); evEnd(); }
+}
+function evRace(c,dt,H){
+  const air=c.k==='plane', P=runDist-c.P0, ramp=Math.min(1,c.t/10);
+  // theatrics: the opponent is ~10% faster than its base pace for the first 4 miles (it pulls ahead), then fades hard over the last mile so a late charge can catch it
+  const fade=c.Q<=4*1609.34?0:Math.min(1,(c.Q-4*1609.34)/350), f=1.10-.40*fade*fade*(3-2*fade);
+  if(fade>0&&!c.faded){ c.faded=true; popup((air?'THE CARGO PLANE':'THE FREIGHT TRAIN')+' IS FADING · FINAL MILE!','good'); }
+  const v=(c.v0+(c.vt*f-c.v0)*ramp)*(1+.035*Math.sin(c.t*.45));
+  c.Q+=v*dt; const rel=c.Q-P-6, o=c.o;
+  // shown in front of the camera so you can always watch it: true lead/deficit is on the HUD, the picture is compressed (it hangs 30-230 m ahead and drifts back/forward with the race)
+  const dz=Math.max(30,Math.min(230,rel*.6+70));
+  if(air){ o.position.set(36,24+Math.sin(c.t*.7)*1.2,dz); o.rotation.set(0,0,Math.sin(c.t*.4)*.04); }
+  else { o.position.set(-24,0,dz); o.rotation.set(-Math.atan(roadSlopeAt(dz)),0,0); o.userData.track.position.set(-24,0,0); }
+  if(P>=c.R){ const b=Math.max(10000,Math.round(score*.25)); score+=b; timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+10); popup('YOU WON THE RACE  +'+b.toLocaleString()+'  ·  +10s','good'); evEnd(); return; }
+  if(c.Q>=c.R){ popup((air?'THE CARGO PLANE':'THE FREIGHT TRAIN')+' BEAT YOU TO THE FINISH','bad'); evEnd(); return; }
+  const lead=P-c.Q, mi=Math.min(EVC.raceMi,P/1609.34);
+  H.push('<b style="color:#ffd76a">RACE · '+(air?'CARGO PLANE':'FREIGHT TRAIN')+'</b>',mi.toFixed(2)+' / '+EVC.raceMi+' mi · '+(lead>=0?'<span style="color:#8fe3a2">you lead by '+Math.round(lead)+' m</span>':'<span style="color:#ff9b8f">'+(air?'plane':'train')+' leads by '+Math.round(-lead)+' m</span>'));
+}
+
 function frame(){
   requestAnimationFrame(frame);
   const dt=Math.min(clock.getDelta(),.05); time+=dt;
@@ -4062,6 +4278,7 @@ function frame(){
     }
   }
 
+  evTick(dt);
   brkAssist+=(.4*threat-brkAssist)*(1-Math.exp(-14*dt));      // up to +40% braking as a collision gets close
   // wheels (fronts steer), body, shadow
   const w0=speed/.345, sa=steer*.5/(1+speed/20);
@@ -4390,6 +4607,13 @@ document.querySelector('.lbtabs').addEventListener('click',e=>{ const x=e.target
 if(prof) $('tLbV').textContent=prof.name; else if(!ADMIN) lbShowName(true);
 if(prof&&prof.pending) lbSubmit();
 
+// prefetch: hovering/touching a car (garage, shop, challenge list) starts loading its model; the selected car loads at startup
+{ const pf=e=>{ const el=e.target.closest&&e.target.closest('[data-id],.chc'); if(!el) return; let id=el.dataset.id; if(el.classList.contains('chc')){ const d=chArr(chMenuL)[+el.dataset.i]; id=d&&d.car; } if(id) lazyPrefetch(id); };
+  document.addEventListener('pointerover',pf,true); document.addEventListener('pointerdown',pf,true); document.addEventListener('focusin',pf,true);
+  const _tl=(typeof applyCar==='function')&&applyCar; lazyEnsure(CS.sel);
+  // music: the shop / black-market tracks load when a shop is about to open instead of at startup
+  for(const a of [shopA,blackMarketA]) a.preload='none'; const warm=a=>{ if(a.preload!=='auto'){ a.preload='auto'; try{ a.load(); }catch(e){} } };
+  setTimeout(()=>warm(shopA),20000); const _ss=setShop; setShop=function(on){ if(on){ warm(shopA); warm(blackMarketA); } return _ss.apply(this,arguments); }; }
 window.__t={setNight:v=>{window.__nightLock=v},setTime:h=>{window.__todLock=h},setRain:v=>{window.__rainLock=v},get tod(){return tod},get rain(){return rainK},setSpeed:k=>{speedTarget=speed=k/3.6},cam:camera,ctl:controls,view:goView,get dist(){return dist},set dist(v){dist=v},wheels,eng,sound:setSound,rg:RG,radio,RADIO,get diff(){return DIFF},get assist(){return brkAssist},get state(){return state},get runDist(){return runDist},set runDist(v){runDist=v},get score(){return score},set score(v){score=v},get px(){return px},set px(v){px=v},get wallet(){return wallet},get biome(){return BW.dom},get inTunnel(){return tunnelActive},goBiome:b=>{ for(let k=1;k<40;k++) if(biomeOf(k)===b){ dist=biomeBase+k*BZ+BP*1.7; return k; } }};
 </script>
 </body>
