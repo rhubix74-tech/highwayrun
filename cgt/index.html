@@ -3075,7 +3075,7 @@ function startRun(){
   setExitMi();
   ghostLeft=0;ghostUsed=0;ghostVisual(false);runPU={insurance:false,nitrous:false,double:false,ghost:false,rocket:false};rocketCooldown=0;clearRocket();const freePU=CS.sel==='prius'?priusFree:null; for(const p of POWERUPS){if(p.id==='rocket'){if(PU.rocketUnlocked&&PU.equipped.rocket)runPU.rocket=true;}else if(PU.equipped[p.id]&&(PU.stock[p.id]||0)>0){runPU[p.id]=true;if(p.id!==freePU)PU.stock[p.id]--;}PU.equipped[p.id]=false;}if(runPU.rocket){runPU={insurance:false,nitrous:false,double:false,ghost:false,rocket:true};}else if(freePU&&!(freePU==='nitrous'&&runPU.ghost)){runPU[freePU]=true;}savePU();insuranceSpent=0;nitrousLeft=0;nitrousUsed=0;$('powerHud').classList.remove('show');
   biomeBase=dist; biomeSeed=Math.random(); _bc=[0]; _lastBi=-1;      // biomes restart: open highway first, then a fresh random order
-  leaveTitle(); goView('chase'); if(window.__rainLock===undefined) rainPlan(); state='run'; score=0; miles=0; mult=1; clean=0; timeLeft=Math.min(RUN_T,TIME_CAP)+startBonus(); speed=20; yaw=0; px=0; vl=0; steer=0; inv=2.5;
+  leaveTitle(); goView('chase'); if(window.__rainLock===undefined) rainPlan(); state='run'; syncMenuMusic(); score=0; miles=0; mult=1; clean=0; timeLeft=Math.min(RUN_T,TIME_CAP)+startBonus(); speed=20; yaw=0; px=0; vl=0; steer=0; inv=2.5;
   runDist=0; exitT=0; $('cine').classList.remove('on'); $('cineCap').classList.remove('in'); firstCam=true;
   trafficCars.forEach(t=>{ if(t.oncoming){ respawn(t,true); t.g.visible=true; } }); resetRows(); weave=0; tStreak=0; lastGap=-1; nextBonus=100000; runT=0; bHeat=0; lastBT=-999; evReset(); fixGear(); $('ov').classList.add('hide');
   if(!eng.on&&!eng.manualOff) setSound(true);
@@ -4020,7 +4020,9 @@ const blackMarketA=new Audio('bshop.mp3'); blackMarketA.loop=true; blackMarketA.
 [titleA,shopA,blackMarketA].forEach(a=>__retryMedia(a,{onRetry:()=>{ try{ syncMenuMusic(); }catch(e){} }}));
 function syncMenuMusic(){
   const inShop=!!document.getElementById('shop')?.classList.contains('show');
-  const active=document.hidden?null:bmOpen?blackMarketA:inShop?shopA:titleOn?titleA:null;
+  // Menu tracks are never eligible while a run is active, even if a delayed media retry fires.
+  const gameplay=state==='run'||state==='exit';
+  const active=document.hidden||gameplay?null:bmOpen?blackMarketA:inShop?shopA:titleOn?titleA:null;
   [titleA,shopA,blackMarketA].forEach(a=>{if(a!==active){a.pause();try{a.currentTime=0}catch(e){}}});
   if(active) active.play().catch(()=>{});
 }
@@ -4040,7 +4042,7 @@ playTitle();
 document.addEventListener('visibilitychange',syncMenuMusic);
 function unlockAudio(e){
   if(e.code==='KeyM'||e.code==='KeyR'||e.code==='KeyN'||(e.target.closest&&e.target.closest('#ui'))) return;
-  if(titleOn){ if(titleA.paused) playTitle(); if(!titleA.paused){ removeEventListener('keydown',unlockAudio); removeEventListener('pointerdown',unlockAudio); } return; }
+  if(titleOn&&state!=='run'&&state!=='exit'){ if(titleA.paused) playTitle(); if(!titleA.paused){ removeEventListener('keydown',unlockAudio); removeEventListener('pointerdown',unlockAudio); } return; }
   if(!radio.manualOff){ if(!radio.on) setRadio(true); else if(radio.a.paused) radio.a.play().catch(()=>{}); }
   if(!eng.on&&!eng.manualOff) setSound(true);
   if(!radio.a.paused||radio.manualOff){ removeEventListener('keydown',unlockAudio); removeEventListener('pointerdown',unlockAudio); }
@@ -4104,7 +4106,7 @@ function cvMake(id){
   return {g,x:0,z:0,alpha:1,fWheels:null,cw,rollR:.33,id};
 }
 const _evH=[];   // [alloc] shared HUD line buffer (was a new array every frame during an event)
-const EV={cool:0,wasT:false,cur:null,pending:null,pool:[],pol:null,polReq:false,plane:null,train:null,balloons:[],balloonPool:[],balloonAssets:null,_balloonVisible:[],hud:null,flash:null,fl:0,siren:null};
+const EV={cool:0,wasT:false,cur:null,pending:null,pool:[],pol:null,polReq:false,plane:null,train:null,balloons:[],balloonPool:[],balloonAssets:null,_balloonVisible:[],hud:null,flash:null,fl:0,siren:null,theme:null};
 function evReset(){ evEnd(true); EV.pending=null; EV.cool=0; EV.wasT=!!tunnelActive; }
 const evThrMs=()=>{ const top=(CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].topSpeedMph)||150; return Math.min(EVC.hiMphCap,top*.82)/MPH; };
 const evExitLeft=()=>(Math.floor(runDist/EX)+1)*EX-runDist;
@@ -4286,8 +4288,27 @@ function evBalloon(c,dt,H){
   if(H) H.push('<b style="color:#ffd76a">RACE: BALLOONS</b> · '+c.passed+' / 50 overtaken','5-mile stretch · '+remain+' remaining · '+(left/1609.34).toFixed(2)+' mi to finish');
 }
 /* ---- state machine ---- */
+function evPlayTheme(track){
+  if(!track||track.bad||radio.manualOff) return;
+  // Showcase music temporarily borrows the radio element; remember exactly what was playing.
+  if(!EV.theme) EV.theme={on:radio.on,track:radio.cur,time:radio.a.currentTime||0,loop:radio.a.loop,src:radio.a.currentSrc||radio.a.src,manualOff:!!radio.manualOff};
+  if(!radio.on) setRadio(true);
+  radio.a.loop=false; playTrack(track);
+}
+function evRestoreTheme(){
+  const snap=EV.theme; EV.theme=null; if(!snap) return;
+  radio.a.pause(); radio.a.loop=!!snap.loop; radio.manualOff=snap.manualOff;
+  // Restore the previous selection even when it was paused; otherwise a later Radio On
+  // could resume the just-finished showcase theme from radio.cur.
+  radio.cur=snap.track||null;
+  if(snap.track){
+    radio.a.src=snap.src||snap.track.u||encodeURI(snap.track.f); radio.a.load();
+    if(snap.time>0){ const seek=()=>{ try{ radio.a.currentTime=Math.min(snap.time,Math.max(0,(radio.a.duration||snap.time)-.1)); }catch(e){} }; if(radio.a.readyState>=1) seek(); else radio.a.addEventListener('loadedmetadata',seek,{once:true}); }
+  } else { radio.a.removeAttribute('src'); radio.a.load(); }
+  setRadio(!!snap.on);
+}
 function evEnd(silent){
-  cinEnd(); const c=EV.cur; EV.cur=null; EV.pending=null; evQuiet=false; evSiren(false);
+  cinEnd(); evRestoreTheme(); const c=EV.cur; EV.cur=null; EV.pending=null; evQuiet=false; evSiren(false);
   if(EV.pol) EV.pol.g.visible=false; if(EV.plane) EV.plane.visible=false; if(EV.train){ EV.train.visible=false; EV.train.userData.track.visible=false; } EV.balloonPool.forEach(g=>{g.visible=false;g.userData.balloonIndex=-1;}); EV.balloons.length=0;
   EV.pool.forEach(t=>{ t.g.visible=false; if(!t.isTraf&&t.g.parent) t.g.parent.remove(t.g); }); EV.pool=[]; if(EV.hud) EV.hud.style.display='none'; if(EV.flash) EV.flash.style.opacity=0; EV._hs=EV._fo=EV._fp=null; EV._ht=0;
   if(c&&c.k==='convoy'){ clearTimeout(_lzEvT); _lzEvT=setTimeout(lazyEvict,3000); }   // [leak] lazyEvict() only ran from applyCar()'s one-shot timer and skips while a convoy is active, so the GPU geometry/textures the convoy members drew (shared with the garage cars) were never released afterwards; the members are off the scene now, so free them (three re-uploads on demand)
@@ -4309,7 +4330,7 @@ function evStart(kind){
     const vMin=top*(air?.64:.60), vTarget=Math.max(vMin,reach*(air?.90:.86));
     EV.cur={k:kind,t:0,wx:air?'rain':'clear',P0:runDist,Q:0,v0:speed,vt:vTarget,vMin,aiV:speed,o,R:EVC.raceMi*1609.34}; o.visible=true; if(!air) o.userData.track.visible=true;
     popup('SHOWCASE RACE · '+(air?'CARGO PLANE':'FREIGHT TRAIN')+' · '+EVC.raceMi+' MILES','good'); cinBegin(kind);
-    { const sg=RADIO.find(t=>t.t===(air?'Hydra':'Train in Vain')); if(sg&&!sg.bad&&(radio.on||!radio.manualOff)){ if(!radio.on) setRadio(true); playTrack(sg); } }   // each race has its own theme (only when the radio is on)
+    { const sg=RADIO.find(t=>t.t===(air?'Hydra':'Train in Vain')); evPlayTheme(sg); }   // temporary showcase theme; restore the previous radio state at event end
     return true; }
   if(kind==='balloon'){
     evMakeBalloonPool();
@@ -4328,7 +4349,7 @@ function evStart(kind){
     evBalloonUpdate(EV.cur,0);
     popup('RACE: BALLOONS · OVERTAKE ALL 50 · 5 MILES','good');
     cinBegin('balloon');
-    { const sg=RADIO.find(t=>t.t==='Paddling Out'); if(sg&&!sg.bad){ if(!radio.on) setRadio(true); playTrack(sg); } }
+    { const sg=RADIO.find(t=>t.t==='Paddling Out'); evPlayTheme(sg); }
     return true;
   }
   return false;
