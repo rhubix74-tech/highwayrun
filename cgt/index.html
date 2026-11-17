@@ -343,7 +343,7 @@
     <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-bottom:8px">Challenges</div>
     <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:12px"><button class="admb" id="admListB" type="button">Unlock Challenge List B</button><button class="admb" id="admAllCh" type="button">Unlock All Challenges</button></div>
     <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-bottom:8px">Road events</div>
-    <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:12px"><button class="admb" data-ev="police" type="button">Police Chase</button><button class="admb" data-ev="convoy" type="button">Convoy</button><button class="admb" data-ev="plane" type="button">Race: Cargo Plane</button><button class="admb" data-ev="train" type="button">Race: Train</button><button class="admb" data-ev="balloon" type="button">Showcase: Hot Air Balloons</button><button class="admb" data-ev="end" type="button">End Event</button></div>
+    <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:12px"><button class="admb" data-ev="police" type="button">Police Chase</button><button class="admb" data-ev="convoy" type="button">Convoy</button><button class="admb" data-ev="plane" type="button">Race: Cargo Plane</button><button class="admb" data-ev="train" type="button">Race: Train</button><button class="admb" data-ev="balloon" type="button">Race: Balloons</button><button class="admb" data-ev="end" type="button">End Event</button></div>
     <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-bottom:8px">World controls</div>
     <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap">
       <button class="admb" id="admDay" type="button">Force Day</button>
@@ -4251,7 +4251,7 @@ function evBalloonUpdate(c,dt){
   for(let i=0;i<c.balloons.length;i++){
     const b=c.balloons[i]; if(b.passed){ passed++; continue; }
     b.q+=b.v*dt;
-    if(b.q>=c.R){ popup('A HOT AIR BALLOON REACHED THE FINISH · SHOWCASE LOST','bad'); evEnd(); return; }
+    if(b.q>=c.R){ popup('BALLOON FLEET REACHED THE FINISH · RACE LOST','bad'); evEnd(); return; }
     if(P>=b.q){ b.passed=true; passed++; continue; }
     const rel=b.q-P;
     if(rel>0&&rel<520){
@@ -4276,8 +4276,8 @@ function evBalloonUpdate(c,dt){
 function evBalloon(c,dt,H){
   evBalloonUpdate(c,dt); if(EV.cur!==c) return;
   const P=runDist-c.P0, left=Math.max(0,c.R-P), remain=50-c.passed;
-  if(P>=c.R&&remain===0){ const reward=Math.max(10000,Math.round(score*.25)); popup('SHOWCASE COMPLETE · ALL 50 BALLOONS OVERTAKEN  +'+reward.toLocaleString(),'good'); score+=reward; timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+10); evEnd(); return; }
-  if(H) H.push('<b style="color:#ffd76a">HOT AIR BALLOON SHOWCASE</b> · '+c.passed+' / 50 overtaken','5-mile stretch · '+remain+' remaining · '+(left/1609.34).toFixed(2)+' mi to finish');
+  if(P>=c.R&&remain===0){ const reward=Math.max(10000,Math.round(score*.25)); popup('RACE: BALLOONS COMPLETE · ALL 50 OVERTAKEN  +'+reward.toLocaleString(),'good'); score+=reward; timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+10); evEnd(); return; }
+  if(H) H.push('<b style="color:#ffd76a">RACE: BALLOONS</b> · '+c.passed+' / 50 overtaken','5-mile stretch · '+remain+' remaining · '+(left/1609.34).toFixed(2)+' mi to finish');
 }
 /* ---- state machine ---- */
 function evEnd(silent){
@@ -4299,18 +4299,27 @@ function evStart(kind){
     if(air&&!EV.plane) EV.plane=evMakePlane(); if(!air&&!EV.train) EV.train=evMakeTrain();
     const o=air?EV.plane:EV.train, top=((CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].topSpeedMph)||150)/MPH;
     const reach=Math.min(top,evThrMs()*1.15);   // pace is set from what THIS car can sustain on a busy road (not its theoretical top speed), so a Prius and a Chiron both get an even race
-    EV.cur={k:kind,t:0,wx:air?'rain':'clear',P0:runDist,Q:0,v0:speed,vt:Math.max(30,reach*(air?.80:.74)),o,R:EVC.raceMi*1609.34}; o.visible=true; if(!air) o.userData.track.visible=true;
+    EV.cur={k:kind,t:0,wx:air?'rain':'clear',P0:runDist,Q:0,v0:speed,vt:Math.max(30,reach*(air?.90:.86)),aiV:speed,o,R:EVC.raceMi*1609.34}; o.visible=true; if(!air) o.userData.track.visible=true;
     popup('SHOWCASE RACE · '+(air?'CARGO PLANE':'FREIGHT TRAIN')+' · '+EVC.raceMi+' MILES','good'); cinBegin(kind);
     { const sg=RADIO.find(t=>t.t===(air?'Hydra':'Train in Vain')); if(sg&&!sg.bad&&(radio.on||!radio.manualOff)){ if(!radio.on) setRadio(true); playTrack(sg); } }   // each race has its own theme (only when the radio is on)
     return true; }
   if(kind==='balloon'){
     evMakeBalloonPool();
     const R=EVC.raceMi*1609.34, balloons=[];
-    for(let i=0;i<50;i++) balloons.push({q:105+i*(R*.83-105)/49,v:.88+((i*37)%17)/100,lane:i%3,phase:i*1.71,passed:false});
+    const carTop=((CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].topSpeedMph)||150)/MPH;
+    // Pace scales with the selected car, but is based on a sustainable race speed rather than the player's momentary speed.
+    // The front balloon is deliberately close to the catch/finish boundary: skilled driving should reach it just before it finishes.
+    const pace=Math.max(carTop*.70,Math.min(carTop*.86,speed||carTop*.70));
+    for(let i=0;i<50;i++){
+      const q=105+i*(R*.83-105)/49, progress=q/R;
+      const ratio=.055+.105*Math.pow(progress/.83,1.25);
+      const stagger=1+((((i*37)%9)-4)*.008);
+      balloons.push({q,v:pace*ratio*stagger,lane:i%3,phase:i*1.71,passed:false});
+    }
     EV.balloons=balloons;
     EV.cur={k:'balloon',t:0,wx:'clear',sunny:true,P0:runDist,R,balloons,passed:0};
     evBalloonUpdate(EV.cur,0);
-    popup('HOT AIR BALLOON SHOWCASE · OVERTAKE ALL 50 · 5 MILES','good');
+    popup('RACE: BALLOONS · OVERTAKE ALL 50 · 5 MILES','good');
     cinBegin('balloon');
     { const sg=RADIO.find(t=>t.t==='Paddling Out'); if(sg&&!sg.bad){ if(!radio.on) setRadio(true); playTrack(sg); } }
     return true;
@@ -4394,7 +4403,7 @@ function cinPortal(){
   add(5,10,9,-9.5,5,3); add(5,10,9,9.5,5,3); add(26,3.4,9,0,8.3,3); add(1.4,.5,9,-6.7,6.7,3); add(1.4,.5,9,6.7,6.7,3);
   g.add(hole); g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; scene.add(g); return CIN.portal=g;
 }
-const _cinTitles={train:['Freight Train','Race it '+'5 miles · beat it to the finish'],plane:['Cargo Plane','Race it 5 miles · beat it to the finish'],balloon:['Hot Air Balloon Showcase','Overtake all 50 · 5 miles · don’t let one finish'],police:['Police Pursuit','Stay above the speed limit to escape'],convoy:['Convoy','Drive with them · stay in formation']};
+const _cinTitles={train:['Freight Train','Race it '+'5 miles · beat it to the finish'],plane:['Cargo Plane','Race it 5 miles · beat it to the finish'],balloon:['Balloon Fleet','Overtake all 50 · 5 miles · beat the fleet to the finish'],police:['Police Pursuit','Stay above the speed limit to escape'],convoy:['Convoy','Drive with them · stay in formation']};
 const CIN_PZ=88;   // distance of the convoy tunnel portal
 function cinBegin(kind){
   const d=cinDom(), c=EV.cur; if(!c||state!=='run') return;
@@ -4520,25 +4529,42 @@ function evConvoy(c,dt,H){
 }
 function evRace(c,dt,H){
   const air=c.k==='plane', P=runDist-c.P0, ramp=Math.min(1,c.t/10);
-  // theatrics: the opponent is ~10% faster than its base pace for the first 4 miles (it pulls ahead), then fades hard over the last mile so a late charge can catch it
-  const fade=c.Q<=3.5*1609.34?0:Math.min(1,(c.Q-3.5*1609.34)/500), f=1.04-.24*fade*fade*(3-2*fade);
+  // Keep a modest late-race fade so the finish remains contestable without giving away the race.
+  const fade=c.Q<=3.5*1609.34?0:Math.min(1,(c.Q-3.5*1609.34)/500), f=1.02-.10*fade*fade*(3-2*fade);
   if(fade>0&&!c.faded){ c.faded=true; popup((air?'THE CARGO PLANE':'THE FREIGHT TRAIN')+' IS FADING · FINAL MILE!','good'); }
-  // fair play: the opponent starts at your speed, eases into its pace, and rubber-bands gently so it is never hopelessly ahead or behind (traffic and crashes slow you; it can't pull away for free)
-  const gapQ=c.Q-P, rb=gapQ>65?1-Math.min(.55,(gapQ-65)/150):gapQ<-65?1+Math.min(.65,(-gapQ-65)/120):1;   // rubber band only engages once the gap is 65 m or more either way   // tight band: it eases off when it gets away and hunts you down when you pull ahead, so the gap stays small both ways
-  let sf=1; if(c.slowT>0){ c.slowT-=dt; sf=1-.45*Math.min(1,c.slowT/.8); }   // you crashed: the opponent eases off for a few seconds, then recovers smoothly
-  const v=(c.v0+(c.vt*f-c.v0)*ramp)*rb*sf*(1+.03*Math.sin(c.t*.45));
-  let vv=v; if(gapQ<-65) vv=Math.max(v,speed*(1.02+Math.min(.25,(-gapQ-65)/240)));   // if you pull away it actively chases: it runs faster than you until the gap is back under 65 m
-  c.Q+=vv*dt; c.Q=Math.min(P+140,Math.max(P-110,c.Q)); const rel=c.Q-P-6, o=c.o;   // hard limits: never more than ~140 m ahead or ~110 m behind
-  // drawn at its real distance from you (rel = metres ahead of your front bumper, negative when you lead)
-  const dz=Math.max(-420,Math.min(430,rel));   // true position: the loco/plane sits exactly as far ahead of (or behind) you as the HUD gap says
+
+  // Gap assistance is deliberately restrained and smoothed through AI acceleration.
+  // If the opponent is ahead, it eases off slightly; if the player is ahead, it can
+  // build a modest chase pace, but cannot instantly match a sudden player acceleration.
+  const gapQ=c.Q-P;
+  const paceFactor=gapQ>80
+    ? 1-Math.min(.18,(gapQ-80)/900)
+    : gapQ<-80 ? 1+Math.min(.12,(-gapQ-80)/900) : 1;
+  let sf=1;
+  if(c.slowT>0){ c.slowT-=dt; sf=1-.30*Math.min(1,c.slowT/.8); }
+
+  const targetV=Math.max(0,(c.v0+(c.vt*f-c.v0)*ramp)*paceFactor*sf*(1+.02*Math.sin(c.t*.45)));
+  if(!Number.isFinite(c.aiV)) c.aiV=Math.max(0,c.v0);
+  const accel=air?1.65:1.45, decel=air?2.25:2.0; // m/s²: gradual pickup, slightly quicker lift-off
+  const dv=targetV-c.aiV;
+  c.aiV+=Math.max(-decel*dt,Math.min(accel*dt,dv));
+  const v=Math.max(0,c.aiV);
+  c.Q+=v*dt;
+
+  const rel=c.Q-P-6, o=c.o;
+  // Draw the opponent at its true relative distance; do not clamp its race progress to the player.
+  const dz=Math.max(-420,Math.min(430,rel));
   if(air){
-    // The plane is drawn close to the car so it is easy to see, and it flies straight above the road: every piece of terrain, cliff and building lies
-    // at least 24 m off the road centre, and at this scale its wings (+-17 m) never reach them. It also stays above gantry signs and tunnel roofs.
+    // Keep the plane visible above the road while its apparent depth follows the actual race gap.
     if(o.scale.x!==.62) o.scale.setScalar(.62);
-    const pz=Math.max(24,Math.min(95,rel*.45+40));               // 24 m ahead when you are well in front, 95 m when it is well ahead
+    const pz=Math.max(24,Math.min(95,rel*.45+40));
     o.position.set(4+Math.sin(c.t*.3)*1.5,Math.max(14,Math.min(19,11+pz*.06))+Math.sin(c.t*.7)*.8,pz);
-    o.rotation.set(0,0,Math.sin(c.t*.4)*.04); }
-  else { o.position.set(-24,0,dz); o.rotation.set(-Math.atan(roadSlopeAt(dz)),0,0); o.userData.track.position.set(-24,0,0); }
+    o.rotation.set(0,0,Math.sin(c.t*.4)*.04);
+  } else {
+    o.position.set(-24,0,dz);
+    o.rotation.set(-Math.atan(roadSlopeAt(dz)),0,0);
+    o.userData.track.position.set(-24,0,0);
+  }
   if(P>=c.R){ const b=Math.max(10000,Math.round(score*.25)); score+=b; timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+10); popup('YOU WON THE RACE  +'+b.toLocaleString()+'  ·  +10s','good'); evEnd(); return; }
   if(c.Q>=c.R){ popup((air?'THE CARGO PLANE':'THE FREIGHT TRAIN')+' BEAT YOU TO THE FINISH','bad'); evEnd(); return; }
   const lead=P-c.Q, mi=Math.min(EVC.raceMi,P/1609.34);
