@@ -4087,9 +4087,15 @@ const EVC={tunnelOdds:6,ambientSecs:150,afterEvent:20,hiMphCap:125,policeMi:5,po
 const CV_IDS=['gt','enzo','viper','nsx','charger','zonda','daytona','m3','chiron','aero','prius','dawn'];
 function cvMake(id){
   const c=CARS.find(q=>q.id===id); if(!c||!c.root||(LAZY[id]&&LAZY[id].st!==2)) return null;
-  const m=c.root.clone(true), rm=[]; m.visible=true; m.traverse(o=>{ if(o.isLight||o.isSprite) rm.push(o); }); rm.forEach(o=>{ if(o.parent) o.parent.remove(o); });
+  const m=c.root.clone(true), rm=[]; m.visible=true;
+  /* wheels: the car's spin/steer objects are tracked by reference in its wheel array, so find their counterparts in the clone (clone(true) copies the tree 1:1, same order) and drive those */
+  const src=[], dst=[]; c.root.traverse(o=>src.push(o)); m.traverse(o=>dst.push(o));
+  const WL={gt:wheels,enzo:enzoWheels,viper:viperWheels,nsx:nsxWheels,charger:chargerWheels,zonda:zondaWheels,daytona:daytonaWheels,m3:m3Wheels,chiron:chironWheels,aero:aeroWheels,prius:priusWheels,dawn:dawnWheels}[id]||[], cw=[];
+  const at=o=>{ const i=o&&src.length===dst.length?src.indexOf(o):-1; return i>=0?dst[i]:null; };
+  for(const w of WL){ const sp=at(w.spin||w.pivot), st=at(w.steer||w.tp); if(!sp) continue; if(st) st.rotation.y=0; if(!w.spin) sp.rotation.y=0; cw.push({sp,r:w.r||.33,angle:0}); }   // convoy cars drive straight: drop the steering the original had when it was cloned
+  m.traverse(o=>{ if(o.isLight||o.isSprite) rm.push(o); }); rm.forEach(o=>{ if(o.parent) o.parent.remove(o); });
   const g=new THREE.Group(); g.add(m); g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; scene.add(g);
-  return {g,x:0,z:0,alpha:1,fWheels:null,rollR:.33,id};
+  return {g,x:0,z:0,alpha:1,fWheels:null,cw,rollR:.33,id};
 }
 const _evH=[];   // [alloc] shared HUD line buffer (was a new array every frame during an event)
 const EV={cool:0,wasT:false,cur:null,pending:null,pool:[],pol:null,polReq:false,plane:null,train:null,hud:null,flash:null,fl:0,siren:null};
@@ -4294,7 +4300,11 @@ function evConvoy(c,dt,H){
     return; }
   let near=0; c.vc+=(Math.max(30,Math.min(c.vc,evThrMs()*1.05))-c.vc)*.02;
   for(let _qi=0;_qi<c.cars.length;_qi++){ const q=c.cars[_qi], t=q.t;   // [alloc] was a for-of iterator per frame
-    t.z+=(c.vc-speed)*dt; t.g.position.set(t.x,0,t.z); t.g.rotation.x=-Math.atan(roadSlopeAt(t.z)); if(t.fWheels) for(let _wi=0,_ws=t.fWheels;_wi<_ws.length;_wi++) _ws[_wi].rotation.x+=c.vc/(t.rollR||.3)*dt;
+    t.z+=(c.vc-speed)*dt;
+    /* convoy members share the garage cars' materials, which the road-bend shader skips (the player car must stay rigid), so they are placed on the road like the player car: height, sideways bend and heading from the same tables the shader uses */
+    t.g.position.set(t.x+bendXAt(t.z),yAt(t.z),t.z); t.g.rotation.set(-Math.atan(roadSlopeAt(t.z)),Math.atan((bendXAt(t.z+2)-bendXAt(t.z-2))*.25),0,'YXZ');
+    if(t.cw) for(let _wi=0,_ws=t.cw;_wi<_ws.length;_wi++){ const w=_ws[_wi]; w.angle+=c.vc/w.r*dt; w.sp.rotation.x=w.angle; }   // wheels spin at the convoy's ground speed
+    if(t.fWheels) for(let _wi=0,_ws=t.fWheels;_wi<_ws.length;_wi++) _ws[_wi].rotation.x+=c.vc/(t.rollR||.3)*dt;
     q.lt-=dt; if(q.lt<=0){ const nf=_cvFree(c,q,t); if(nf){ q.bf=t.x; q.bt=LANES[_cvF[(Math.random()*nf)|0]]; q.bl=0; } q.lt=5+Math.random()*6; }
     if(q.bl<1){ q.bl=Math.min(1,q.bl+dt/1.2); const u=q.bl*q.bl*(3-2*q.bl); t.x=q.bf+(q.bt-q.bf)*u; }
     q.hit-=dt; if(Math.abs(px-t.x)<1.9&&Math.abs(t.z)<4.4){ if(q.hit<=0&&inv<=0&&ghostLeft<=0){ q.hit=1.6; const pen=Math.min(Math.floor(score),Math.round(800+score*.025)); score-=pen; px+=(px>=t.x?1:-1)*.5; shake=.5; popup('CONVOY CONTACT −'+pen.toLocaleString(),'bad'); } }
