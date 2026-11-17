@@ -2706,11 +2706,11 @@ function rainPlan(){
 }
 function rainTick(dt){
   let _fw=null; try{ _fw=EV.cur&&EV.cur.wx; }catch(e){}   // showcase races set the weather: train = clear, plane = rain
-  if(window.__rainLock!==undefined) rainT=window.__rainLock;
-  else if(_fw){ rainOn=_fw==='rain'; rainT=rainOn?.85:0; rainNext=Math.max(rainNext,30+Math.random()*60); }
+  if(_fw){ rainOn=_fw==='rain'; rainT=rainOn?.9:0; rainNext=Math.max(rainNext,30+Math.random()*60); }   // forced weather beats the random cycle (and the admin lock)
+  else if(window.__rainLock!==undefined) rainT=window.__rainLock;
   else{ rainNext-=dt; if(rainNext<=0){ rainOn=!rainOn; rainT=rainOn?.3+Math.random()*.7:0; rainNext=rainOn?20+Math.random()*110:(50+Math.random()*250)*(CS.sel==='dawn'?.5:1); } }
-  const dry=1-BW.w[2]; rainK+=(rainT*dry-rainK)*(1-Math.exp(-dt/4)); rainK=Math.min(rainK,dry);      // never rains in the snowy forest (it snows instead)
-  dropK+=(rainK-dropK)*(1-Math.exp(-dt/(rainK>dropK?3:25))); dropK=Math.min(dropK,dry);   // drops on the car arrive quickly and linger after the rain stops
+  const dry=1-BW.w[2]; rainK+=(rainT*dry-rainK)*(1-Math.exp(-dt/(_fw?1.4:4))); rainK=Math.min(rainK,dry);      // never rains in the snowy forest (it snows instead)
+  dropK+=(rainK-dropK)*(1-Math.exp(-dt/(rainK>dropK?(_fw?1.5:3):(_fw?4:25)))); dropK=Math.min(dropK,dry);   // drops on the car arrive quickly and linger after the rain stops
 }
 const raining=()=>rainK>.45&&BW.w[2]<.05;                                  // rain that counts for the x1.5 points bonus
 
@@ -4239,7 +4239,7 @@ function evStart(kind){
     const reach=Math.min(top,evThrMs()*1.15);   // pace is set from what THIS car can sustain on a busy road (not its theoretical top speed), so a Prius and a Chiron both get an even race
     EV.cur={k:kind,t:0,wx:air?'rain':'clear',P0:runDist,Q:0,v0:speed,vt:Math.max(30,reach*(air?.80:.74)),o,R:EVC.raceMi*1609.34}; o.visible=true; if(!air) o.userData.track.visible=true;
     popup('SHOWCASE RACE · '+(air?'CARGO PLANE':'FREIGHT TRAIN')+' · '+EVC.raceMi+' MILES','good'); cinBegin(kind);
-    { const sg=RADIO.find(t=>t.t===(air?'Hydra':'Train in Vain')); if(sg&&radio.on&&!sg.bad) playTrack(sg); }   // each race has its own theme (only when the radio is on)
+    { const sg=RADIO.find(t=>t.t===(air?'Hydra':'Train in Vain')); if(sg&&!sg.bad&&(radio.on||!radio.manualOff)){ if(!radio.on) setRadio(true); playTrack(sg); } }   // each race has its own theme (only when the radio is on)
     return true; }
   return false;
 }
@@ -4477,7 +4477,7 @@ function frame(){
   if(state==='exit'){ exitT+=dt; if(exitT>=CINE_T) endRun('exit'); }
   // 24 h clock + weather -> lighting (re-applied whenever the minute or the rain level changes)
   { tod=window.__todLock!==undefined?window.__todLock:(window.__nightLock!==undefined?(window.__nightLock>.5?1:12.5):(TOD_START+time/DAY_LEN*24)%24);
-    rainTick(dt);
+    rainTick(CIN.on?rdt:dt);   // weather keeps moving during an event cinematic
     const kq=Math.round(tod*60)*1000+Math.round(rainK*100)+'|'+Math.round(BW.w[1]*24)+'|'+Math.round(BW.w[2]*24); if(kq!==_lastN||nightDirty){ _lastN=kq; nightDirty=false; applyNight(); } }
   rainFxTick(); dropsTick();
   if(Q.shadow){ sun.target.position.set(px,0,8); sun.position.set(px+sunO.x*3,sunO.y*3,8+sunO.z*3); }   // shadow box follows the car
