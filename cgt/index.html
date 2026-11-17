@@ -4460,7 +4460,7 @@ function evRace(c,dt,H){
     // at least 24 m off the road centre, and at this scale its wings (+-17 m) never reach them. It also stays above gantry signs and tunnel roofs.
     if(o.scale.x!==.62) o.scale.setScalar(.62);
     const pz=Math.max(24,Math.min(95,rel*.45+40));               // 24 m ahead when you are well in front, 95 m when it is well ahead
-    o.position.set(-2+Math.sin(c.t*.3)*3,Math.max(14,Math.min(19,11+pz*.06))+Math.sin(c.t*.7)*.8,pz);
+    o.position.set(4+Math.sin(c.t*.3)*1.5,Math.max(14,Math.min(19,11+pz*.06))+Math.sin(c.t*.7)*.8,pz);
     o.rotation.set(0,0,Math.sin(c.t*.4)*.04); }
   else { o.position.set(-24,0,dz); o.rotation.set(-Math.atan(roadSlopeAt(dz)),0,0); o.userData.track.position.set(-24,0,0); }
   if(P>=c.R){ const b=Math.max(10000,Math.round(score*.25)); score+=b; timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+10); popup('YOU WON THE RACE  +'+b.toLocaleString()+'  ·  +10s','good'); evEnd(); return; }
