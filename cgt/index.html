@@ -2705,7 +2705,9 @@ function rainPlan(){
   rainK=dropK=rainT;
 }
 function rainTick(dt){
+  let _fw=null; try{ _fw=EV.cur&&EV.cur.wx; }catch(e){}   // showcase races set the weather: train = clear, plane = rain
   if(window.__rainLock!==undefined) rainT=window.__rainLock;
+  else if(_fw){ rainOn=_fw==='rain'; rainT=rainOn?.85:0; rainNext=Math.max(rainNext,30+Math.random()*60); }
   else{ rainNext-=dt; if(rainNext<=0){ rainOn=!rainOn; rainT=rainOn?.3+Math.random()*.7:0; rainNext=rainOn?20+Math.random()*110:(50+Math.random()*250)*(CS.sel==='dawn'?.5:1); } }
   const dry=1-BW.w[2]; rainK+=(rainT*dry-rainK)*(1-Math.exp(-dt/4)); rainK=Math.min(rainK,dry);      // never rains in the snowy forest (it snows instead)
   dropK+=(rainK-dropK)*(1-Math.exp(-dt/(rainK>dropK?3:25))); dropK=Math.min(dropK,dry);   // drops on the car arrive quickly and linger after the rain stops
@@ -4235,8 +4237,10 @@ function evStart(kind){
     if(air&&!EV.plane) EV.plane=evMakePlane(); if(!air&&!EV.train) EV.train=evMakeTrain();
     const o=air?EV.plane:EV.train, top=((CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].topSpeedMph)||150)/MPH;
     const reach=Math.min(top,evThrMs()*1.15);   // pace is set from what THIS car can sustain on a busy road (not its theoretical top speed), so a Prius and a Chiron both get an even race
-    EV.cur={k:kind,t:0,P0:runDist,Q:0,v0:speed,vt:Math.max(30,reach*(air?.80:.74)),o,R:EVC.raceMi*1609.34}; o.visible=true; if(!air) o.userData.track.visible=true;
-    popup('SHOWCASE RACE · '+(air?'CARGO PLANE':'FREIGHT TRAIN')+' · '+EVC.raceMi+' MILES','good'); cinBegin(kind); return true; }
+    EV.cur={k:kind,t:0,wx:air?'rain':'clear',P0:runDist,Q:0,v0:speed,vt:Math.max(30,reach*(air?.80:.74)),o,R:EVC.raceMi*1609.34}; o.visible=true; if(!air) o.userData.track.visible=true;
+    popup('SHOWCASE RACE · '+(air?'CARGO PLANE':'FREIGHT TRAIN')+' · '+EVC.raceMi+' MILES','good'); cinBegin(kind);
+    { const sg=RADIO.find(t=>t.t===(air?'Hydra':'Train in Vain')); if(sg&&radio.on&&!sg.bad) playTrack(sg); }   // each race has its own theme (only when the radio is on)
+    return true; }
   return false;
 }
 function evPick(){
@@ -4443,9 +4447,9 @@ function evRace(c,dt,H){
   const fade=c.Q<=3.5*1609.34?0:Math.min(1,(c.Q-3.5*1609.34)/500), f=1.04-.24*fade*fade*(3-2*fade);
   if(fade>0&&!c.faded){ c.faded=true; popup((air?'THE CARGO PLANE':'THE FREIGHT TRAIN')+' IS FADING · FINAL MILE!','good'); }
   // fair play: the opponent starts at your speed, eases into its pace, and rubber-bands gently so it is never hopelessly ahead or behind (traffic and crashes slow you; it can't pull away for free)
-  const gapQ=c.Q-P, rb=gapQ>25?1-Math.min(.5,(gapQ-25)/190):gapQ<-25?1+Math.min(.55,(-gapQ-25)/160):1;   // tight band: it eases off when it gets away and hunts you down when you pull ahead, so the gap stays small both ways
+  const gapQ=c.Q-P, rb=gapQ>15?1-Math.min(.55,(gapQ-15)/150):gapQ<-15?1+Math.min(.65,(-gapQ-15)/120):1;   // tight band: it eases off when it gets away and hunts you down when you pull ahead, so the gap stays small both ways
   const v=(c.v0+(c.vt*f-c.v0)*ramp)*rb*(1+.03*Math.sin(c.t*.45));
-  c.Q+=v*dt; c.Q=Math.min(P+170,Math.max(P-130,c.Q)); const rel=c.Q-P-6, o=c.o;   // hard limits: never more than ~170 m ahead or ~130 m behind
+  c.Q+=v*dt; c.Q=Math.min(P+140,Math.max(P-110,c.Q)); const rel=c.Q-P-6, o=c.o;   // hard limits: never more than ~140 m ahead or ~110 m behind
   // drawn at its real distance from you (rel = metres ahead of your front bumper, negative when you lead)
   const dz=Math.max(-420,Math.min(430,rel));   // true position: the loco/plane sits exactly as far ahead of (or behind) you as the HUD gap says
   if(air){ o.position.set(36,24+Math.sin(c.t*.7)*1.2,dz); o.rotation.set(0,0,Math.sin(c.t*.4)*.04); }
