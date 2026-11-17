@@ -4573,14 +4573,17 @@ function evStreetRace(c,dt,H){
     if(H) H.push('<b style="color:#ffd76a">STREET RACE</b> · lining up four rivals…','5-mile sprint · adaptive AI');
     if(c.t>=5&&(c.t>=12||c.ids.every(id=>lazyReady(id)))){
       rows.forEach(r=>{ if(r.z>-12) r.cars.forEach(q=>{ q.g.visible=false; q.gone=true; }); });
-      const lanes=[-3.6,0,3.6], starts=[34,48,62,76];
-      c.cars=c.ids.map((id,i)=>{ const t=cvMake(id); if(!t) return null; const lane=lanes[i%3]; t.g.visible=true; t.x=lane; t.z=starts[i]; t.g.rotation.y=0;
-        // Rivals stay close to the player's observed average pace; skill only adds a
-        // small competitive edge, and the per-rival spread is deliberately subtle.
-        const spread=(i-1.5)*.004, factor=.965+(c.skill-.5)*.02+spread;
-        return {t,id,q:0,v:Math.max(0,c.avgV*factor),factor,lt:2.5+i*.7,bf:lane,bt:lane,bl:1,finished:false,finishT:0,place:0};
+      // Start as a compact rolling pack around the player, like the Convoy event,
+      // rather than spawning every rival far ahead in a long line.
+      const lanes=[-3.6,0,3.6,0], starts=[-15, -5, 5, 15];
+      c.cars=c.ids.map((id,i)=>{ const t=cvMake(id); if(!t) return null; const lane=lanes[i%4], offset=starts[i]; t.g.visible=true; t.x=lane; t.z=offset; t.g.rotation.y=0;
+        // Skill changes the challenge only slightly. Rivals target the player's measured
+        // pace after the green flag, not the distance accumulated during the lineup.
+        const spread=(i-1.5)*.003, factor=.985+(c.skill-.5)*.03+spread;
+        return {t,id,q:offset,v:Math.max(0,speed*factor),factor,lt:2.5+i*.7,bf:lane,bt:lane,bl:1,finished:false,finishT:0,place:0};
       }).filter(Boolean);
       if(c.cars.length<2){ popup('STREET RACE UNAVAILABLE · RIVALS STILL LOADING','bad'); evEnd(); return; }
+      c.P0=runDist; c.avgV=Math.max(0,speed);
       c.ph='race'; c.t=0; c.count=c.cars.length; popup('3 · 2 · 1 · STREET RACE!','good');
     }
     return;
