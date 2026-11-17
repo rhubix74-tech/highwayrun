@@ -4210,9 +4210,9 @@ function evMakeTrain(){
   cols.forEach((c,i)=>{ const w=new THREE.Mesh(new THREE.BoxGeometry(3.3,3.6,14,1,1,5),evMat(c,.6,.1)); w.position.set(0,2.5,-18-i*15.5); g.add(w); });
   g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; scene.add(g);
   const tr=new THREE.Group(), rm=evMat(0x6d6f72,.4,.8), bed=evMat(0x4a4540,.9,0), tie=evMat(0x3b2f26,.9,0);
-  const ballast=new THREE.Mesh(new THREE.BoxGeometry(4.6,.35,520,1,1,130),bed); ballast.position.set(0,.18,200); tr.add(ballast);
-  for(const sx of [-.72,.72]){ const r=new THREE.Mesh(new THREE.BoxGeometry(.12,.2,520,1,1,130),rm); r.position.set(sx,.45,200); tr.add(r); }
-  for(let z=-55;z<=455;z+=3){ const t=new THREE.Mesh(new THREE.BoxGeometry(2.3,.14,.35),tie); t.position.set(0,.4,z); tr.add(t); }
+  const ballast=new THREE.Mesh(new THREE.BoxGeometry(4.6,.35,900,1,1,225),bed); ballast.position.set(0,.18,20); tr.add(ballast);
+  for(const sx of [-.72,.72]){ const r=new THREE.Mesh(new THREE.BoxGeometry(.12,.2,900,1,1,225),rm); r.position.set(sx,.45,20); tr.add(r); }
+  for(let z=-430;z<=455;z+=3){ const t=new THREE.Mesh(new THREE.BoxGeometry(2.3,.14,.35),tie); t.position.set(0,.4,z); tr.add(t); }
   tr.traverse(o=>{ o.frustumCulled=false; }); tr.visible=false; scene.add(tr); g.userData.track=tr; return g;
 }
 /* ---- state machine ---- */
@@ -4343,13 +4343,13 @@ function cinTick(dt){
   if(state!=='run'||CH.active||paintView||!c){ cinEnd(); if(EV.cur||EV.pending) evEnd(true); return; }
   C.t+=dt; const t=C.t, u=Math.min(1,t/C.dur), k=C.k;
   if(k==='train'){
-    const o=EV.train, zl=-70+136*(1-Math.pow(1-u,2.2));
+    const o=EV.train, zl=-96+90*(1-Math.pow(1-u,2.2));   // arrives alongside you (where the race starts: nose level with your bumper)
     o.position.set(-24,0,zl); o.rotation.set(-Math.atan(roadSlopeAt(zl)),0,0); o.userData.track.position.set(-24,0,0);
-    _rw(-12.5+Math.sin(t*1.3)*.06,1.7,-10+t*1.1,_cP); _rw(-24,2.9,zl-3,_cL); C.fov=46-6*_sm(0,3.6,t); C.roll=0;
-    if(shake<.15&&zl>-40&&zl<30) shake=.15;
+    _rw(-12.5+Math.sin(t*1.3)*.06,1.7,18-t*.6,_cP); _rw(-24,2.9,zl+6,_cL); C.fov=46-6*_sm(0,3.6,t); C.roll=0;
+    if(shake<.15&&zl>-40&&zl<10) shake=.15;
   } else if(k==='plane'){
     const o=EV.plane, bz=(a,b,c2)=>(1-u)*(1-u)*a+2*(1-u)*u*b+u*u*c2, dz=(a,b,c2)=>2*(1-u)*(b-a)+2*u*(c2-b);
-    const x=bz(14,-2,36), y=bz(15,5,24), z=bz(-150,30,66), tx=dz(14,-2,36), ty=dz(15,5,24), tz=dz(-150,30,66);
+    const x=bz(14,-2,36), y=bz(15,5,24), z=bz(-150,50,-6), tx=dz(14,-2,36), ty=dz(15,5,24), tz=dz(-150,50,-6);
     o.position.set(x,y,z); o.rotation.set(-Math.atan2(ty,Math.hypot(tx,tz)),Math.atan2(tx,tz),-tx*.012,'YXZ');
     _rw(px+3,.9,-22,_cP); _cL.set(x+bendXAt(z),y+yAt(z),z); C.fov=62-14*_sm(0,5,t); C.roll=.05;
   } else if(k==='police'){
@@ -4443,11 +4443,11 @@ function evRace(c,dt,H){
   const fade=c.Q<=3.5*1609.34?0:Math.min(1,(c.Q-3.5*1609.34)/500), f=1.04-.24*fade*fade*(3-2*fade);
   if(fade>0&&!c.faded){ c.faded=true; popup((air?'THE CARGO PLANE':'THE FREIGHT TRAIN')+' IS FADING · FINAL MILE!','good'); }
   // fair play: the opponent starts at your speed, eases into its pace, and rubber-bands gently so it is never hopelessly ahead or behind (traffic and crashes slow you; it can't pull away for free)
-  const gapQ=c.Q-P, rb=gapQ>120?1-Math.min(.3,(gapQ-120)/1200):gapQ<-120?1+Math.min(.18,(-gapQ-120)/1200):1;
+  const gapQ=c.Q-P, rb=gapQ>25?1-Math.min(.5,(gapQ-25)/190):gapQ<-25?1+Math.min(.55,(-gapQ-25)/160):1;   // tight band: it eases off when it gets away and hunts you down when you pull ahead, so the gap stays small both ways
   const v=(c.v0+(c.vt*f-c.v0)*ramp)*rb*(1+.03*Math.sin(c.t*.45));
-  c.Q+=v*dt; const rel=c.Q-P-6, o=c.o;
-  // shown in front of the camera so you can always watch it: true lead/deficit is on the HUD, the picture is compressed (it hangs 30-230 m ahead and drifts back/forward with the race)
-  const dz=Math.max(30,Math.min(230,rel*.6+70));
+  c.Q+=v*dt; c.Q=Math.min(P+170,Math.max(P-130,c.Q)); const rel=c.Q-P-6, o=c.o;   // hard limits: never more than ~170 m ahead or ~130 m behind
+  // drawn at its real distance from you (rel = metres ahead of your front bumper, negative when you lead)
+  const dz=Math.max(-420,Math.min(430,rel));   // true position: the loco/plane sits exactly as far ahead of (or behind) you as the HUD gap says
   if(air){ o.position.set(36,24+Math.sin(c.t*.7)*1.2,dz); o.rotation.set(0,0,Math.sin(c.t*.4)*.04); }
   else { o.position.set(-24,0,dz); o.rotation.set(-Math.atan(roadSlopeAt(dz)),0,0); o.userData.track.position.set(-24,0,0); }
   if(P>=c.R){ const b=Math.max(10000,Math.round(score*.25)); score+=b; timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+10); popup('YOU WON THE RACE  +'+b.toLocaleString()+'  ·  +10s','good'); evEnd(); return; }
