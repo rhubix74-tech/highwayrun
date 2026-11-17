@@ -251,6 +251,7 @@
   .gopt.on{border-color:#7dffb0;background:rgba(125,255,176,.1)}
   .gchk{display:block;font-size:13px;margin:6px 0}#gNote{font-size:12px;color:#ffd76a;min-height:16px;margin-bottom:6px}
   #fps{position:fixed;top:6px;right:10px;white-space:pre;text-align:right;font:11px/1.2 ui-monospace,monospace;color:#9f9;background:rgba(0,0,0,.55);padding:3px 6px;border-radius:6px;pointer-events:none;display:none;z-index:6}
+  body.cin #game,body.cin #hud,body.cin #gauge,body.cin #ui,body.cin #powerHud,body.cin #chHud,body.cin #pops{opacity:0!important;transition:opacity .3s}
   #gfxBtn{background:none;border:0;color:#fff;font:inherit;cursor:pointer;padding:0}
   #adm{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(6,9,15,.75);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);z-index:10}
   #adm.show{display:flex}#adm .card{max-width:380px}
@@ -395,6 +396,7 @@
   <label class="gchk"><input type="checkbox" id="sRad"> Radio during runs</label>
   <div class="sec">Traffic</div>
   <label class="gchk"><input type="checkbox" id="sNoOnc"> Hide oncoming traffic (left side)</label>
+  <label class="gchk"><input type="checkbox" id="sCvTraf"> Convoy uses simple traffic cars (better performance)</label>
   <button type="button" class="sbtn" id="sAdd">+ Add your own songs</button>
   <div class="sec">Save data</div>
   <button type="button" class="sbtn danger" id="rstOpen">Reset save data…</button>
@@ -3127,6 +3129,7 @@ function crash(label,rel){
   score-=pen; mult=1; clean=0; tStreak=0; timeLeft=Math.max(0,timeLeft-crashTime()); inv=1.6; shake=1; weave=0; lastGap=-1;
   popup((pen?'−'+pen.toLocaleString()+'  ':'')+'−'+crashTime()+'s  '+label,'bad');
   $('flash').style.opacity=.55; setTimeout(()=>{$('flash').style.opacity=0},120); pop(.9,3);
+  try{ const pc=EV.cur; if(pc&&pc.k==='police'){ pc.gr=12; pc.gap=Math.max(pc.gap,45); popup('THE POLICE HANG BACK · GET YOUR SPEED UP','good'); } }catch(e){}   // a crash gives you time to rebuild a gap
 }
 /* TIME is earned by clean driving: every thread / wall cleared adds seconds, and the reward grows with an unbroken streak (up to 3.7 s per row).
    A crash or a missed gap breaks the streak, and a crash also costs 4 s. At full difficulty a row passes every 90/(speed - traffic) s, so a long
@@ -4160,7 +4163,7 @@ function evBuildPolice(){
     const bar=new THREE.Mesh(new THREE.BoxGeometry(.9,.08,.26),barM), rl=new THREE.Mesh(new THREE.BoxGeometry(.4,.1,.22),redM), bl=new THREE.Mesh(new THREE.BoxGeometry(.4,.1,.22),blueM);
     bar.position.set(0,top+.01,-.1); rl.position.set(-.22,top+.07,-.1); bl.position.set(.22,top+.07,-.1); g.add(bar,rl,bl);
     const gr=makeGlow(0xff2020), gb=makeGlow(0x2a6bff); gr.scale.set(3.4,3.4,1); gb.scale.set(3.4,3.4,1); gr.position.set(-.3,top+.25,-.1); gb.position.set(.3,top+.25,-.1); g.add(gr,gb);
-    const seen=new Set(); g.traverse(o=>{ if(!o.isMesh) return; for(const m of (Array.isArray(o.material)?o.material:[o.material])) if(m&&!seen.has(m)){ seen.add(m); bendMat(m); } });
+    const seen=new Set(); g.traverse(o=>{ if(!o.isMesh) return; for(const m of (Array.isArray(o.material)?o.material:[o.material])) if(m&&!seen.has(m)){ seen.add(m); if(!m.userData.glow) bendMat(m); } });   // the light-bar glow already bends in its own shader: bending it twice broke its compile
     g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; EV.pol={g,wheels,redM,blueM,gr,gb};
   },undefined,e=>{
     console.warn('Police cruiser model unavailable; using built-in fallback',e);
@@ -4202,21 +4205,21 @@ function evMakePlane(){
   g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; scene.add(g); return g;
 }
 function evMakeTrain(){
-  const g=new THREE.Group(), loco=new THREE.Mesh(new THREE.BoxGeometry(3.4,3.8,20),evMat(0xc2371b,.5,.3)), cab=new THREE.Mesh(new THREE.BoxGeometry(3.4,1.2,6),evMat(0x1a1c20)); loco.position.set(0,2.6,0); cab.position.set(0,4.9,-6); g.add(loco,cab);
+  const g=new THREE.Group(), loco=new THREE.Mesh(new THREE.BoxGeometry(3.4,3.8,20,1,1,6),evMat(0xc2371b,.5,.3)), cab=new THREE.Mesh(new THREE.BoxGeometry(3.4,1.2,6,1,1,2),evMat(0x1a1c20)); loco.position.set(0,2.6,0); cab.position.set(0,4.9,-6); g.add(loco,cab);
   const cols=[0x3b6ea5,0xb5b8bd,0x9a6b2f,0x2e7d4f,0xd6a227,0x6b4a8a,0x3b6ea5];
-  cols.forEach((c,i)=>{ const w=new THREE.Mesh(new THREE.BoxGeometry(3.3,3.6,14),evMat(c,.6,.1)); w.position.set(0,2.5,-18-i*15.5); g.add(w); });
+  cols.forEach((c,i)=>{ const w=new THREE.Mesh(new THREE.BoxGeometry(3.3,3.6,14,1,1,5),evMat(c,.6,.1)); w.position.set(0,2.5,-18-i*15.5); g.add(w); });
   g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; scene.add(g);
   const tr=new THREE.Group(), rm=evMat(0x6d6f72,.4,.8), bed=evMat(0x4a4540,.9,0), tie=evMat(0x3b2f26,.9,0);
-  const ballast=new THREE.Mesh(new THREE.BoxGeometry(4.6,.35,520),bed); ballast.position.set(0,.18,200); tr.add(ballast);
-  for(const sx of [-.72,.72]){ const r=new THREE.Mesh(new THREE.BoxGeometry(.12,.2,520),rm); r.position.set(sx,.45,200); tr.add(r); }
+  const ballast=new THREE.Mesh(new THREE.BoxGeometry(4.6,.35,520,1,1,130),bed); ballast.position.set(0,.18,200); tr.add(ballast);
+  for(const sx of [-.72,.72]){ const r=new THREE.Mesh(new THREE.BoxGeometry(.12,.2,520,1,1,130),rm); r.position.set(sx,.45,200); tr.add(r); }
   for(let z=-55;z<=455;z+=3){ const t=new THREE.Mesh(new THREE.BoxGeometry(2.3,.14,.35),tie); t.position.set(0,.4,z); tr.add(t); }
   tr.traverse(o=>{ o.frustumCulled=false; }); tr.visible=false; scene.add(tr); g.userData.track=tr; return g;
 }
 /* ---- state machine ---- */
 function evEnd(silent){
-  const c=EV.cur; EV.cur=null; EV.pending=null; evQuiet=false; evSiren(false);
+  cinEnd(); const c=EV.cur; EV.cur=null; EV.pending=null; evQuiet=false; evSiren(false);
   if(EV.pol) EV.pol.g.visible=false; if(EV.plane) EV.plane.visible=false; if(EV.train){ EV.train.visible=false; EV.train.userData.track.visible=false; }
-  EV.pool.forEach(t=>{ t.g.visible=false; if(t.g.parent) t.g.parent.remove(t.g); }); EV.pool=[]; if(EV.hud) EV.hud.style.display='none'; if(EV.flash) EV.flash.style.opacity=0; EV._hs=EV._fo=EV._fp=null; EV._ht=0;
+  EV.pool.forEach(t=>{ t.g.visible=false; if(!t.isTraf&&t.g.parent) t.g.parent.remove(t.g); }); EV.pool=[]; if(EV.hud) EV.hud.style.display='none'; if(EV.flash) EV.flash.style.opacity=0; EV._hs=EV._fo=EV._fp=null; EV._ht=0;
   if(c&&c.k==='convoy'){ clearTimeout(_lzEvT); _lzEvT=setTimeout(lazyEvict,3000); }   // [leak] lazyEvict() only ran from applyCar()'s one-shot timer and skips while a convoy is active, so the GPU geometry/textures the convoy members drew (shared with the garage cars) were never released afterwards; the members are off the scene now, so free them (three re-uploads on demand)
   if(c&&!silent) EV.cool=EVC.afterEvent;
 }
@@ -4225,15 +4228,15 @@ function evStart(kind){
   if(kind==='police'){
     if(!EV.pol){ evBuildPolice(); EV.pending='police'; popup('POLICE DISPATCHED · CHASE STARTING','bad'); return true; }
     const thr=evThrMs(); EV.cur={k:'police',t:0,gap:60,pv:Math.max(thr*.97,speed*.93),x:px,thr,P0:runDist,R:EVC.policeMi*1609.34}; EV.pol.g.visible=true; EV.pol.g.position.set(px,0,-75);
-    popup('POLICE CHASE · STAY ABOVE '+Math.round(thr*MPH)+' MPH · OUTRUN THEM FOR '+EVC.policeMi+' MILES','bad'); return true; }
-  if(kind==='convoy'){ const ids=CV_IDS.slice().sort(()=>Math.random()-.5).slice(0,3); ids.forEach(id=>lazyEnsure(id));   // start fetching the three shop cars now; they join after the road clears
+    popup('POLICE CHASE · STAY ABOVE '+Math.round(thr*MPH)+' MPH · OUTRUN THEM FOR '+EVC.policeMi+' MILES','bad'); cinBegin('police'); return true; }
+  if(kind==='convoy'){ const ids=SET.cvTraf?[]:CV_IDS.slice().sort(()=>Math.random()-.5).slice(0,3); ids.forEach(id=>lazyEnsure(id));   // start fetching the three shop cars now; they join after the road clears
     EV.cur={k:'convoy',ph:'form',t:0,bonus:0,cars:[],ids}; evQuiet=true; popup('CONVOY AHEAD · ROAD CLEARING','good'); return true; }
   if(kind==='plane'||kind==='train'){ const air=kind==='plane';
     if(air&&!EV.plane) EV.plane=evMakePlane(); if(!air&&!EV.train) EV.train=evMakeTrain();
     const o=air?EV.plane:EV.train, top=((CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].topSpeedMph)||150)/MPH;
     const reach=Math.min(top,evThrMs()*1.15);   // pace is set from what THIS car can sustain on a busy road (not its theoretical top speed), so a Prius and a Chiron both get an even race
     EV.cur={k:kind,t:0,P0:runDist,Q:0,v0:speed,vt:Math.max(30,reach*(air?.80:.74)),o,R:EVC.raceMi*1609.34}; o.visible=true; if(!air) o.userData.track.visible=true;
-    popup('SHOWCASE RACE · '+(air?'CARGO PLANE':'FREIGHT TRAIN')+' · '+EVC.raceMi+' MILES','good'); return true; }
+    popup('SHOWCASE RACE · '+(air?'CARGO PLANE':'FREIGHT TRAIN')+' · '+EVC.raceMi+' MILES','good'); cinBegin(kind); return true; }
   return false;
 }
 function evPick(){
@@ -4251,6 +4254,7 @@ function evTick(dt){
     if(EV.pol){ const k=EV.pending; EV.pending=null; evStart(k); }
     else if(!EV.polReq){ EV.pending=null; popup('POLICE VEHICLE UNAVAILABLE','bad'); }
     if(!EV.cur){ EV.wasT=!!tunnelActive; return; }
+    if(CIN.on) return;   // the event just opened with its cinematic
   }
   const c=EV.cur;
   if(!c){
@@ -4264,15 +4268,133 @@ function evTick(dt){
   // [alloc] was building a new H array + HTML strings + innerHTML every frame: now ~11 Hz, reusing one array, DOM written only when the text changes
   const doH=((EV._ht=(EV._ht||0)-dt)<=0); let H=null; if(doH){ EV._ht=.09; H=_evH; H.length=0; }
   if(c.k==='police') evPolice(c,dt,H); else if(c.k==='convoy') evConvoy(c,dt,H); else evRace(c,dt,H);
+  if(CIN.on) return;   // an event that just began opened with its cinematic: keep the HUD hidden
   if(H&&EV.cur&&EV.hud){ const hs=H.length?H.join('<br>'):''; if(hs!==EV._hs){ EV._hs=hs; EV.hud.style.display=H.length?'block':'none'; EV.hud.innerHTML=hs; } }
 }
+
+/* ================= event cinematics =================
+   Every event opens with a short scripted camera sequence. The whole world is frozen for it (the frame's dt is replaced by a tiny epsilon,
+   so the timer, traffic, scoring and movement all stand still) while the cinematic runs on real time. Click "Skip" to jump to the event. */
+var CIN={on:false,k:'',t:0,dur:0,bs:0,roll:0,fov:0,cars:null,portal:null,dom:null};
+const _cP=new THREE.Vector3(), _cL=new THREE.Vector3(), _cU=new THREE.Vector3();
+const _rw=(x,y,z,o)=>o.set(x+bendXAt(z),y+yAt(z),z);
+const _sm=(a,b,x)=>{ const u=Math.min(1,Math.max(0,(x-a)/(b-a))); return u*u*(3-2*u); };
+function cinDom(){
+  if(CIN.dom) return CIN.dom;
+  const mk=(css)=>{ const d=document.createElement('div'); d.style.cssText=css; document.body.appendChild(d); return d; };
+  const top=mk('position:fixed;left:0;right:0;top:0;height:0;background:#000;z-index:60;pointer-events:none;transition:height .55s cubic-bezier(.2,.8,.2,1)');
+  const bot=mk('position:fixed;left:0;right:0;bottom:0;height:0;background:#000;z-index:60;pointer-events:none;transition:height .55s cubic-bezier(.2,.8,.2,1)');
+  const ttl=mk('position:fixed;left:7vw;bottom:13vh;z-index:61;pointer-events:none;color:#fff;font:800 clamp(22px,4.2vw,46px)/1.05 system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;text-shadow:0 2px 16px rgba(0,0,0,.7);opacity:0;transform:translateX(-18px);transition:opacity .5s,transform .6s');
+  const sub=mk('position:fixed;left:7vw;bottom:9.5vh;z-index:61;pointer-events:none;color:#ffd76a;font:600 clamp(11px,1.5vw,16px)/1.2 system-ui,sans-serif;letter-spacing:.2em;text-transform:uppercase;opacity:0;transition:opacity .6s .25s');
+  const skip=mk('position:fixed;right:18px;bottom:calc(5.5vh - 12px);z-index:62;pointer-events:auto;cursor:pointer;color:#fff;font:600 12px system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;opacity:0;padding:6px 12px;border:1px solid rgba(255,255,255,.4);border-radius:99px;background:rgba(0,0,0,.35);transition:opacity .4s');
+  skip.textContent='Skip ▸'; skip.addEventListener('click',()=>{ if(CIN.on) cinEnd(); });
+  return CIN.dom={top,bot,ttl,sub,skip};
+}
+function cinSfx(kind){
+  try{ if(!A.ctx) return; const c=A.ctx, t0=c.currentTime;
+    const noise=(dur)=>{ const b=c.createBuffer(1,Math.ceil(c.sampleRate*dur),c.sampleRate), d=b.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; const s=c.createBufferSource(); s.buffer=b; return s; };
+    if(kind==='train'){
+      [311,370,466].forEach(f=>{ const o=c.createOscillator(), g=c.createGain(), lp=c.createBiquadFilter(); o.type='sawtooth'; lp.type='lowpass'; lp.frequency.value=1400;
+        o.frequency.setValueAtTime(f*.93,t0+.5); o.frequency.linearRampToValueAtTime(f,t0+.75); o.frequency.setValueAtTime(f,t0+2.1); o.frequency.linearRampToValueAtTime(f*.98,t0+3.1);
+        g.gain.setValueAtTime(0,t0+.5); g.gain.linearRampToValueAtTime(.045,t0+.65); g.gain.setValueAtTime(.045,t0+2.0); g.gain.linearRampToValueAtTime(0,t0+3.1);
+        o.connect(lp); lp.connect(g); g.connect(A.master); o.start(t0+.5); o.stop(t0+3.2); });
+      const n=noise(5), lp=c.createBiquadFilter(), g=c.createGain(); lp.type='lowpass'; lp.frequency.value=140; g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(.5,t0+1.6); g.gain.linearRampToValueAtTime(0,t0+5); n.connect(lp); lp.connect(g); g.connect(A.master); n.start(t0);
+    } else if(kind==='plane'){
+      const n=noise(6), bp=c.createBiquadFilter(), g=c.createGain(); bp.type='bandpass'; bp.Q.value=.8; bp.frequency.setValueAtTime(900,t0); bp.frequency.exponentialRampToValueAtTime(380,t0+3.6); bp.frequency.exponentialRampToValueAtTime(220,t0+6);
+      g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(.55,t0+1.7); g.gain.linearRampToValueAtTime(.05,t0+6); n.connect(bp); bp.connect(g); g.connect(A.master); n.start(t0);
+    } else if(kind==='convoy'){
+      const n=noise(4.5), lp=c.createBiquadFilter(), g=c.createGain(); lp.type='lowpass'; lp.frequency.value=220; g.gain.setValueAtTime(0,t0+.3); g.gain.linearRampToValueAtTime(.4,t0+1.8); g.gain.linearRampToValueAtTime(0,t0+4.5); n.connect(lp); lp.connect(g); g.connect(A.master); n.start(t0);
+      [0,.9,1.8].forEach(d=>{ const o=c.createOscillator(), g2=c.createGain(); o.type='square'; o.frequency.value=392; g2.gain.setValueAtTime(0,t0+1.2+d); g2.gain.linearRampToValueAtTime(.012,t0+1.25+d); g2.gain.linearRampToValueAtTime(0,t0+1.5+d); o.connect(g2); g2.connect(A.master); o.start(t0+1.2+d); o.stop(t0+1.6+d); });
+    }
+  }catch(e){}
+}
+function cinPortal(){
+  if(CIN.portal) return CIN.portal;
+  const g=new THREE.Group(), conc=evMat(0x8a8c8f,.95,0), dark=new THREE.MeshBasicMaterial({color:0x020203,fog:false,side:THREE.DoubleSide}); bendMat(dark);
+  const hole=new THREE.Mesh(new THREE.PlaneGeometry(13,6.6,1,6),dark); hole.position.set(0,3.3,0);
+  const add=(w,h,d,x,y,z)=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d,1,3,1),conc); m.position.set(x,y,z); g.add(m); };
+  add(5,10,9,-9.5,5,3); add(5,10,9,9.5,5,3); add(26,3.4,9,0,8.3,3); add(1.4,.5,9,-6.7,6.7,3); add(1.4,.5,9,6.7,6.7,3);
+  g.add(hole); g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; scene.add(g); return CIN.portal=g;
+}
+const _cinTitles={train:['Freight Train','Race it '+'5 miles · beat it to the finish'],plane:['Cargo Plane','Race it 5 miles · beat it to the finish'],police:['Police Pursuit','Stay above the speed limit to escape'],convoy:['Convoy','Drive with them · stay in formation']};
+const CIN_PZ=88;   // distance of the convoy tunnel portal
+function cinBegin(kind){
+  const d=cinDom(), c=EV.cur; if(!c||state!=='run') return;
+  document.body.classList.add('cin'); CIN.on=true; CIN.k=kind; CIN.t=0; CIN.roll=0; CIN.fov=0; CIN.cars=null;
+  CIN.dur={train:6.4,plane:6.6,police:5.6,convoy:6.8}[kind]; CIN.bs=CIN.dur-2.1;
+  if(EV.hud){ EV.hud.style.display='none'; EV._hs=null; } evSiren(false);
+  d.top.style.height=d.bot.style.height='11vh'; d.skip.style.opacity=.85;
+  const tt=_cinTitles[kind]; d.ttl.textContent=tt[0]; d.sub.textContent=tt[1];
+  setTimeout(()=>{ if(CIN.on){ d.ttl.style.opacity=1; d.ttl.style.transform='none'; d.sub.style.opacity=1; } },350);
+  if(kind==='convoy'){ cinPortal().visible=true; CIN.portal.position.set(0,0,CIN_PZ); CIN.cars=c.cars.map(q=>({q,t:q.t,x:q.t.x,z:q.t.z,side:q.t.x>=px?1:-1})); CIN.cars.forEach(o=>{ o.t.g.visible=false; }); }
+  cinSfx(kind); cinTick(0);   // place the shot before the first frame is drawn
+}
+function cinEnd(){
+  if(!CIN.on&&!(CIN.dom&&CIN.dom.top.style.height!=='0px')) return;
+  const was=CIN.on; CIN.on=false; document.body.classList.remove('cin');
+  if(CIN.dom){ const d=CIN.dom; d.top.style.height=d.bot.style.height='0'; d.ttl.style.opacity=0; d.ttl.style.transform='translateX(-18px)'; d.sub.style.opacity=0; d.skip.style.opacity=0; }
+  camera.up.set(0,1,0); if(CIN.portal) CIN.portal.visible=false;
+  if(was&&EV.cur&&CIN.k==='convoy'&&CIN.cars){ CIN.cars.forEach(o=>{ o.t.x=o.x; o.t.z=o.z; o.t.g.visible=true; }); EV.cur.t=0; }
+  evSiren(false); if(EV.flash) EV.flash.style.opacity=0;
+  CIN.cars=null;
+}
+function cinTick(dt){
+  const C=CIN, c=EV.cur;
+  if(state!=='run'||CH.active||paintView||!c){ cinEnd(); if(EV.cur||EV.pending) evEnd(true); return; }
+  C.t+=dt; const t=C.t, u=Math.min(1,t/C.dur), k=C.k;
+  if(k==='train'){
+    const o=EV.train, zl=-70+136*(1-Math.pow(1-u,2.2));
+    o.position.set(-24,0,zl); o.rotation.set(-Math.atan(roadSlopeAt(zl)),0,0); o.userData.track.position.set(-24,0,0);
+    _rw(-12.5+Math.sin(t*1.3)*.06,1.7,-10+t*1.1,_cP); _rw(-24,2.9,zl-3,_cL); C.fov=46-6*_sm(0,3.6,t); C.roll=0;
+    if(shake<.15&&zl>-40&&zl<30) shake=.15;
+  } else if(k==='plane'){
+    const o=EV.plane, bz=(a,b,c2)=>(1-u)*(1-u)*a+2*(1-u)*u*b+u*u*c2, dz=(a,b,c2)=>2*(1-u)*(b-a)+2*u*(c2-b);
+    const x=bz(14,-2,36), y=bz(15,5,24), z=bz(-150,30,66), tx=dz(14,-2,36), ty=dz(15,5,24), tz=dz(-150,30,66);
+    o.position.set(x,y,z); o.rotation.set(-Math.atan2(ty,Math.hypot(tx,tz)),Math.atan2(tx,tz),-tx*.012,'YXZ');
+    _rw(px+3,.9,-22,_cP); _cL.set(x+bendXAt(z),y+yAt(z),z); C.fov=62-14*_sm(0,5,t); C.roll=.05;
+  } else if(k==='police'){
+    const pol=EV.pol; let z,x;
+    if(t<1.9) z=-95+91*(1-Math.pow(1-t/1.9,2)); else if(t<3.0) z=-4; else z=-4-56*_sm(3,5.4,t);
+    x=px-3.9*(_sm(.9,1.9,t)-_sm(3,5.4,t));
+    if(pol){ pol.g.visible=true; pol.g.position.set(x,0,z); pol.g.rotation.set(-Math.atan(roadSlopeAt(z)),0,0);
+      for(let i=0;i<pol.wheels.length;i++){ const w=pol.wheels[i]; w.angle+=42/w.r*dt; w.spin.rotation.x=w.angle; }
+      const ph=Math.floor(performance.now()/130)&1; pol.redM.color.setHex(ph?0xff2020:0x300606); pol.blueM.color.setHex(ph?0x08122a:0x2a6bff); pol.gr.material.opacity=ph?.9:.1; pol.gb.material.opacity=ph?.1:.9; }
+    evSiren(true,.7); if(EV.flash){ const ph=Math.floor(performance.now()/160)&1; EV.flash.style.opacity=.38; EV.flash.style.background=ph?_FL1:_FL2; }
+    if(t<1.8){ _rw(px+3.4,.5,7.5-t*.8,_cP); _rw(x,.7,z,_cL); C.roll=.17; C.fov=52; }
+    else { const v=t-1.8; _rw(px+7.5-v*.6,.9,-16+v*3,_cP); _rw(x,.75,z,_cL); C.roll=-.14; C.fov=44; }
+  } else if(k==='convoy'){
+    let ax=0,az=0;
+    for(let i=0;i<C.cars.length;i++){ const o=C.cars[i], tt=o.t, v=Math.min(1,Math.max(0,(t-(.5+i*.95))/2.4)), e=1-Math.pow(1-v,2.4);
+      const z=CIN_PZ+14+(o.z-(CIN_PZ+14))*e;
+      let x=o.x; if(o.z<12&&Math.abs(o.x-px)<2.8) x+=o.side*3.7*Math.exp(-((z/10)*(z/10)))*(1-_sm(.7,1,v));
+      tt.x=x; tt.z=z; tt.g.visible=z<CIN_PZ+4;
+      tt.g.position.set(x+bendXAt(z),yAt(z),z); tt.g.rotation.set(-Math.atan(roadSlopeAt(z)),Math.atan((bendXAt(z+2)-bendXAt(z-2))*.25),0,'YXZ');
+      const sp=28*(1-e)+12;
+      if(tt.cw) for(let j=0;j<tt.cw.length;j++){ const w=tt.cw[j]; w.angle+=sp/w.r*dt; w.sp.rotation.x=w.angle; }
+      if(tt.fWheels) for(let j=0;j<tt.fWheels.length;j++) tt.fWheels[j].rotation.x+=sp/(tt.rollR||.3)*dt;
+      ax+=x; az+=z; }
+    ax/=C.cars.length; az/=C.cars.length;
+    if(t<2.7){ _rw(px,1.25,-8+t*.9,_cP); _rw(px,2.4,CIN_PZ,_cL); C.fov=42-5*_sm(0,2.7,t); C.roll=0; }
+    else { _rw(px+5.4,.95,32,_cP); _rw(ax,.9,Math.min(az,60),_cL); C.fov=50; C.roll=.05; }
+  }
+  if(t>=C.dur) cinEnd();
+}
+/* applied at the end of the frame's camera block: shot camera, blended back into the normal chase camera for the last two seconds */
+function cinCam(){
+  const C=CIN, b=_sm(C.bs,C.dur,C.t);
+  camera.position.copy(_cP).lerp(_cp,b); _lk.copy(_cL).lerp(_cl,b);
+  const roll=C.roll*(1-b); camera.up.set(Math.sin(roll),Math.cos(roll),0);
+  C.fovNow=C.fov+((38+14*gauss(speed,0,90))-C.fov)*b;
+}
+
 const _FL1='radial-gradient(ellipse at 15% 100%,rgba(255,30,30,.75),transparent 55%)', _FL2='radial-gradient(ellipse at 85% 100%,rgba(40,100,255,.75),transparent 55%)';
 const _cvF=[0,0,0];
 function _cvFree(c,q,t){ let n=0; for(let l=0;l<3;l++){ if(Math.abs(LANES[l]-t.x)>.5){ let bad=false; for(let k=0;k<c.cars.length;k++){ const o=c.cars[k]; if(o!==q&&Math.abs(o.t.z-t.z)<16&&Math.abs((o.bl<1?o.bt:o.t.x)-LANES[l])<1){ bad=true; break; } } if(!bad) _cvF[n++]=l; } } return n; }   // [alloc] replaces [0,1,2].filter(...some closure...) per convoy lane change
 function evPolice(c,dt,H){
   const pol=EV.pol; c.pv=Math.min(c.pv+.32*dt,c.thr*.97+9);
   /* the closer the cruiser gets, the slower it drives (down to 78% at point-blank), so a chase is a squeeze you can escape, not an unwinnable lock-on */
-  const pe=c.pv*(.78+.22*Math.min(1,Math.max(0,(c.gap-5)/70))); c.pe=pe; c.gap=Math.min(EVC.policeMaxGap,c.gap+(speed-pe)*dt);   // rubber band: the cruiser never drops out of the loaded road
+  const pe=c.pv*(.78+.22*Math.min(1,Math.max(0,(c.gap-5)/70))); if(c.gr>0){ c.gr-=dt; if(speed>=c.thr*.9&&c.gr<8) c.gr=0; }   // crash grace: the cruiser trails you at 75% of your speed (at least 4 s, until you're back up to pace, 12 s max)
+  const pe2=c.gr>0?Math.min(pe,speed*.75):pe; c.pe=pe2; c.gap=Math.min(EVC.policeMaxGap,c.gap+(speed-pe2)*dt);   // rubber band: the cruiser never drops out of the loaded road
   const done=Math.min(c.R,runDist-c.P0), left=Math.max(0,c.R-done);
   if(c.gap<=5){ timeLeft=Math.max(0,timeLeft-40); const pen=Math.floor(score*.06); score-=pen; shake=1; popup('BUSTED  −40s  '+(pen?'−'+pen.toLocaleString():''),'bad'); $('flash').style.opacity=.5; setTimeout(()=>{$('flash').style.opacity=0},120); evEnd(); return; }
   if(done>=c.R){ const b=Math.max(4000,Math.round(score*.08)); score+=b; timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+4); popup('ESCAPED THE POLICE  +'+b.toLocaleString()+'  ·  +4s','good'); evEnd(); return; }
@@ -4294,9 +4416,11 @@ function evConvoy(c,dt,H){
     if(c.t>=5&&(c.t>=12||c.ids.every(id=>lazyReady(id)))){
       rows.forEach(r=>{ if(r.z>-12) r.cars.forEach(q=>{ q.g.visible=false; q.gone=true; }); });
       c.ph='run'; c.t=0; c.vc=Math.max(30,Math.min(speed,((CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].topSpeedMph)||150)*.8/MPH));
-      const ln=[0,1,2].sort(()=>Math.random()-.5), slots=[22,-14,48]; let mk=c.ids.map(cvMake).filter(Boolean); while(mk.length<3){ const t=cvMake(mk.length&&Math.random()<.5?'gt':CV_IDS.find(id=>id!==CS.sel&&lazyReady(id)&&!mk.some(q=>q.id===id))||'gt'); if(!t) break; mk.push(t); }
+      const ln=[0,1,2].sort(()=>Math.random()-.5), slots=[22,-14,48]; let mk=SET.cvTraf?[]:c.ids.map(cvMake).filter(Boolean);
+      if(SET.cvTraf){ EV.tpool=EV.tpool||[]; while(EV.tpool.length<3){ const t=makeTraffic(false); t.isTraf=true; t.alpha=1; EV.tpool.push(t); } mk=EV.tpool.slice(0,3); }   // low-cost mode: plain traffic cars, kept and reused
+      while(mk.length<3){ const t=cvMake(mk.length&&Math.random()<.5?'gt':CV_IDS.find(id=>id!==CS.sel&&lazyReady(id)&&!mk.some(q=>q.id===id))||'gt'); if(!t) break; mk.push(t); }
       EV.pool=mk; c.cars=mk.map((t,i)=>{ t.g.visible=true; t.x=LANES[ln[i]]; t.z=slots[i]; t.g.rotation.y=0; return {t,lt:3+Math.random()*5,bf:0,bt:t.x,bl:1,hit:0}; });
-      popup('CONVOY JOINED · DRIVE WITH THEM','good'); }
+      popup('CONVOY JOINED · DRIVE WITH THEM','good'); cinBegin('convoy'); }
     return; }
   let near=0; c.vc+=(Math.max(30,Math.min(c.vc,evThrMs()*1.05))-c.vc)*.02;
   for(let _qi=0;_qi<c.cars.length;_qi++){ const q=c.cars[_qi], t=q.t;   // [alloc] was a for-of iterator per frame
@@ -4338,10 +4462,12 @@ function frame(){
   /* frame-rate lock: skip callbacks until the next slot is due (drift-corrected so 30/45/60 stay even). Skipped callbacks don't touch the clock,
      so the next frame's dt covers the whole gap and the game speed stays correct. */
   const _now=performance.now();
-  if(FPS_CAP>0){ const iv=1000/FPS_CAP; if(_now-_lastSlot<iv-1.5) return; _lastSlot=(_now-_lastSlot>iv*2.5)?_now:_now-((_now-_lastSlot)%iv); }
+  _rafI+=Math.min(60,_now-_lastRaf-_rafI)*.1; _lastRaf=_now;   // measured display refresh interval: a frame may be released up to half a refresh early, so 60/45/30 locks hit their target on 60-240 Hz displays (a fixed margin gave ~48 fps for a 60 lock on 144 Hz)
+  if(FPS_CAP>0){ const iv=1000/FPS_CAP; if(_now-_lastSlot<iv-_rafI*.5) return; _lastSlot+=iv; if(_now-_lastSlot>iv) _lastSlot=_now; }
   /* even-speed smoothing: raw frame times jitter (vsync/GC), which makes speed look uneven. Blend ordinary jitter toward a running average; real hitches pass through. */
   let dt=Math.min(clock.getDelta(),.05);
   if(_dtSm>0&&Math.abs(dt-_dtSm)<_dtSm*.5) _dtSm+=(dt-_dtSm)*.25, dt=_dtSm; else _dtSm=dt;
+  const rdt=dt; if(CIN.on) dt=1e-5;   // event cinematic: freeze the world (timer, traffic, movement), the cinematic runs on real time
   time+=dt;
   physics(dt); dist+=fwd*dt; runDist+=fwd*dt; engineTick(dt);
   if(state==='exit'){ exitT+=dt; if(exitT>=CINE_T) endRun('exit'); }
@@ -4444,7 +4570,7 @@ function frame(){
     }
   }
 
-  try{ evTick(dt); }catch(e){ console.error('[events]',e); try{ popup('EVENT ERROR: '+(e&&e.message||e),'bad'); }catch(x){} evEnd(true); EV.cool=EVC.afterEvent; }   // a failing event must never freeze the game
+  try{ if(CIN.on) cinTick(rdt); else evTick(dt); }catch(e){ cinEnd(); console.error('[events]',e); try{ popup('EVENT ERROR: '+(e&&e.message||e),'bad'); }catch(x){} evEnd(true); EV.cool=EVC.afterEvent; }   // a failing event must never freeze the game
   brkAssist+=(.4*threat-brkAssist)*(1-Math.exp(-14*dt));      // up to +40% braking as a collision gets close
   // wheels (fronts steer), body, shadow
   const w0=speed/.345, sa=steer*.5/(1+speed/20);
@@ -4483,9 +4609,10 @@ function frame(){
   const k=firstCam?1:1-Math.exp(-9*dt); firstCam=false;
   if(state==='exit') cineCam(); else{ camera.position.lerp(_cp,k); _lk.lerp(_cl,k); }
   if(paintView){ if(SR.on) showroomCam(dt); else{ pvA+=dt*.3; { const jh=CS.sel==='jet'?JET_H:0; camera.position.set(px+Math.sin(pvA)*6.4,1.4+jh+.25*Math.sin(pvA*.7),Math.cos(pvA)*6.4); _lk.set(px,.55+jh,0); } } }   // garage/paint orbit (SR.on = the title-screen Showroom has its own free camera)
+  if(CIN.on) cinCam(); else if(camera.up.y<.9999) camera.up.set(0,1,0);
   if(shake>0){ camera.position.x+=(Math.random()-.5)*shake*.4; camera.position.y+=(Math.random()-.5)*shake*.3; }
   camera.lookAt(_lk);
-  const fov=state==='exit'?cineFov:38+14*gauss(speed,0,90); if(Math.abs(fov-camera.fov)>.01){ camera.fov=fov; camera.updateProjectionMatrix(); }
+  const fov=CIN.on?CIN.fovNow:state==='exit'?cineFov:38+14*gauss(speed,0,90); if(Math.abs(fov-camera.fov)>.01){ camera.fov=fov; camera.updateProjectionMatrix(); }
   sky.position.copy(camera.position);
   snowU.uCam.value.copy(camera.position); snowU.uT.value=time%1500; snowU.uD.value=dist%90; snowU.uPx.value=renderer.getPixelRatio();
   gaugeTick(); updateHud();
@@ -4600,13 +4727,14 @@ var noOncoming=!!SET.noOnc;   // [setting] 'Hide oncoming traffic' (Settings): o
 eng.manualOff=!SET.eng; radio.manualOff=!SET.radio;       // startRun() only switches engine / radio on when these allow it
 function saveSet(){ store.set(SET_KEY,JSON.stringify(SET)); }
 function renderSet(){
-  $('sEng').checked=SET.eng; $('sRad').checked=SET.radio; $('sNoOnc').checked=!!SET.noOnc;
+  $('sEng').checked=SET.eng; $('sRad').checked=SET.radio; $('sNoOnc').checked=!!SET.noOnc; $('sCvTraf').checked=!!SET.cvTraf;
   $('rstOpen').disabled=ADMIN; $('rstOpen').textContent=ADMIN?'Reset unavailable in admin mode':'Reset save data…';
   if(ADMIN) $('rstBox').hidden=true;
 }
 $('sEng').addEventListener('change',e=>{ SET.eng=e.target.checked; eng.manualOff=!SET.eng; saveSet(); });
 $('sRad').addEventListener('change',e=>{ SET.radio=e.target.checked; radio.manualOff=!SET.radio; saveSet(); });
 $('sNoOnc').addEventListener('change',e=>{ SET.noOnc=e.target.checked; noOncoming=SET.noOnc; if(!noOncoming){ for(let i=0;i<trafficCars.length;i++){ const t=trafficCars[i]; if(t.oncoming&&!adminTrafficDisabled){ respawn(t,true); t.g.visible=true; } } } saveSet(); });
+$('sCvTraf').addEventListener('change',e=>{ SET.cvTraf=e.target.checked; saveSet(); });
 $('sAdd').addEventListener('click',()=>$('addf').click());
 const _sg=setGfxUI; setGfxUI=function(on){ _sg(on); if(on){ renderSet(); $('rstBox').hidden=true; $('rstIn').value=''; $('rstGo').disabled=true; } };
 $('rstOpen').addEventListener('click',()=>{ $('rstBox').hidden=false; $('rstOpen').hidden=true; $('rstIn').value=''; $('rstGo').disabled=true; $('rstIn').focus(); });
@@ -4789,7 +4917,7 @@ if(prof&&prof.pending) lbSubmit();
   for(const a of [shopA,blackMarketA]) a.preload='none'; const warm=a=>{ if(a.preload!=='auto'){ a.preload='auto'; try{ a.load(); }catch(e){} } };
   setTimeout(()=>warm(shopA),20000); const _ss=setShop; setShop=function(on){ if(on){ warm(shopA); warm(blackMarketA); } return _ss.apply(this,arguments); }; }
 /* ---------------- teardown helpers (not called in normal play; thin, for embeds/hot-reload/tests) */
-var _raf, _lastSlot=0, _dtSm=0;
+var _raf, _lastSlot=0, _dtSm=0, _rafI=16.7, _lastRaf=0;
 function _disposeTree(root){ if(!root) return; root.traverse(o=>{ if(o.geometry) o.geometry.dispose(); const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[]; for(let i=0;i<ms.length;i++){ const m=ms[i]; if(!m) continue; for(const k in m){ const t=m[k]; if(t&&t.isTexture) t.dispose(); } m.dispose(); } }); }   // geometry + material + every texture on it
 function evDestroy(){ evEnd(true);   // events: remove + free the cruiser, showcase plane/train and convoy pool (rebuilt on demand if the game keeps running)
   const objs=[EV.pol&&EV.pol.g, EV.plane, EV.train, EV.train&&EV.train.userData.track]; for(let i=0;i<EV.pool.length;i++) objs.push(EV.pool[i].g);
