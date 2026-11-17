@@ -4247,12 +4247,14 @@ function evMakeBalloonPool(){
 }
 function evBalloonUpdate(c,dt){
   const P=runDist-c.P0, visible=EV._balloonVisible; for(let i=0;i<6;i++) visible[i]=null;
-  let passed=0;
+  let passed=0, finished=false;
   for(let i=0;i<c.balloons.length;i++){
-    const b=c.balloons[i]; if(b.passed){ passed++; continue; }
+    const b=c.balloons[i];
+    // Every participant advances every simulation tick, including balloons already overtaken.
     b.q+=b.v*dt;
-    if(b.q>=c.R){ popup('BALLOON FLEET REACHED THE FINISH · RACE LOST','bad'); evEnd(); return; }
-    if(P>=b.q){ b.passed=true; passed++; continue; }
+    if(!b.passed&&P>=b.q) b.passed=true;
+    if(b.q>=c.R) finished=true;
+    if(b.passed){ passed++; continue; }
     const rel=b.q-P;
     if(rel>0&&rel<520){
       for(let slot=0;slot<6;slot++){
@@ -4264,6 +4266,10 @@ function evBalloonUpdate(c,dt){
     }
   }
   c.passed=passed;
+  // A finish is fatal unless the player has already overtaken the entire fleet.
+  if(finished&&passed<50){ popup('BALLOON FLEET REACHED THE FINISH · RACE LOST','bad'); evEnd(); return; }
+  // Reassign the six pooled groups from the six nearest active records every tick.
+  // Unused slots are explicitly released, preventing stale or frozen models.
   for(let i=0;i<6;i++){
     const g=EV.balloonPool[i], v=visible[i];
     if(!v){ g.visible=false; g.userData.balloonIndex=-1; continue; }
@@ -4298,8 +4304,10 @@ function evStart(kind){
   if(kind==='plane'||kind==='train'){ const air=kind==='plane';
     if(air&&!EV.plane) EV.plane=evMakePlane(); if(!air&&!EV.train) EV.train=evMakeTrain();
     const o=air?EV.plane:EV.train, top=((CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].topSpeedMph)||150)/MPH;
-    const reach=Math.min(top,evThrMs()*1.15);   // pace is set from what THIS car can sustain on a busy road (not its theoretical top speed), so a Prius and a Chiron both get an even race
-    EV.cur={k:kind,t:0,wx:air?'rain':'clear',P0:runDist,Q:0,v0:speed,vt:Math.max(30,reach*(air?.90:.86)),aiV:speed,o,R:EVC.raceMi*1609.34}; o.visible=true; if(!air) o.userData.track.visible=true;
+    const reach=Math.min(top,evThrMs()*1.15);
+    // Per-car rated minimum: the plane holds a little more pace than the train.
+    const vMin=top*(air?.64:.60), vTarget=Math.max(vMin,reach*(air?.90:.86));
+    EV.cur={k:kind,t:0,wx:air?'rain':'clear',P0:runDist,Q:0,v0:speed,vt:vTarget,vMin,aiV:speed,o,R:EVC.raceMi*1609.34}; o.visible=true; if(!air) o.userData.track.visible=true;
     popup('SHOWCASE RACE · '+(air?'CARGO PLANE':'FREIGHT TRAIN')+' · '+EVC.raceMi+' MILES','good'); cinBegin(kind);
     { const sg=RADIO.find(t=>t.t===(air?'Hydra':'Train in Vain')); if(sg&&!sg.bad&&(radio.on||!radio.manualOff)){ if(!radio.on) setRadio(true); playTrack(sg); } }   // each race has its own theme (only when the radio is on)
     return true; }
@@ -4307,14 +4315,13 @@ function evStart(kind){
     evMakeBalloonPool();
     const R=EVC.raceMi*1609.34, balloons=[];
     const carTop=((CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].topSpeedMph)||150)/MPH;
-    // Pace scales with the selected car, but is based on a sustainable race speed rather than the player's momentary speed.
-    // The front balloon is deliberately close to the catch/finish boundary: skilled driving should reach it just before it finishes.
-    const pace=Math.max(carTop*.70,Math.min(carTop*.86,speed||carTop*.70));
+    // Pace scales with this car's rated top speed. The field spans the road ahead;
+    // the leader starts at 70% of race distance and runs at about 25% of rated top speed.
     for(let i=0;i<50;i++){
-      const q=105+i*(R*.83-105)/49, progress=q/R;
-      const ratio=.055+.105*Math.pow(progress/.83,1.25);
-      const stagger=1+((((i*37)%9)-4)*.008);
-      balloons.push({q,v:pace*ratio*stagger,lane:i%3,phase:i*1.71,passed:false});
+      const progress=i/49, q=110+progress*(R*.70-110);
+      const basePace=.19+.06*progress;
+      const stagger=1+((((i*37)%9)-4)*.006);
+      balloons.push({q,v:carTop*basePace*stagger,lane:i%3,phase:i*1.71,passed:false});
     }
     EV.balloons=balloons;
     EV.cur={k:'balloon',t:0,wx:'clear',sunny:true,P0:runDist,R,balloons,passed:0};
@@ -4543,7 +4550,7 @@ function evRace(c,dt,H){
   let sf=1;
   if(c.slowT>0){ c.slowT-=dt; sf=1-.30*Math.min(1,c.slowT/.8); }
 
-  const targetV=Math.max(0,(c.v0+(c.vt*f-c.v0)*ramp)*paceFactor*sf*(1+.02*Math.sin(c.t*.45)));
+  const targetV=Math.max(c.vMin,(c.v0+(c.vt*f-c.v0)*ramp)*paceFactor*sf*(1+.02*Math.sin(c.t*.45)));
   if(!Number.isFinite(c.aiV)) c.aiV=Math.max(0,c.v0);
   const accel=air?1.65:1.45, decel=air?2.25:2.0; // m/s²: gradual pickup, slightly quicker lift-off
   const dv=targetV-c.aiV;
@@ -4685,7 +4692,14 @@ function frame(){
     }
   }
 
-  try{ if(CIN.on) cinTick(rdt); else evTick(dt); }catch(e){ cinEnd(); console.error('[events]',e); try{ popup('EVENT ERROR: '+(e&&e.message||e),'bad'); }catch(x){} evEnd(true); EV.cool=EVC.afterEvent; }   // a failing event must never freeze the game
+  try{
+    if(CIN.on){
+      cinTick(rdt);
+      // Showcase cinematics freeze the ordinary world, but the balloon race remains live.
+      // This is the sole cinematic-path balloon simulation call for this frame.
+      if(EV.cur&&EV.cur.k==='balloon'){ EV.cur.t+=rdt; evBalloonUpdate(EV.cur,rdt); }
+    } else evTick(dt);
+  }catch(e){ cinEnd(); console.error('[events]',e); try{ popup('EVENT ERROR: '+(e&&e.message||e),'bad'); }catch(x){} evEnd(true); EV.cool=EVC.afterEvent; }   // a failing event must never freeze the game
   brkAssist+=(.4*threat-brkAssist)*(1-Math.exp(-14*dt));      // up to +40% braking as a collision gets close
   // wheels (fronts steer), body, shadow
   const w0=speed/.345, sa=steer*.5/(1+speed/20);
