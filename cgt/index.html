@@ -4442,7 +4442,6 @@ function evConvoy(c,dt,H){
   if(H)H.push('<b style="color:#8fe3a2">CONVOY</b> · '+(near>=2?'in formation  +'+rate.toLocaleString()+'/s':'<span style="opacity:.8">get alongside the convoy</span>'),'Bonus '+Math.floor(c.bonus).toLocaleString()+' · '+Math.ceil(Math.max(0,EVC.convoySecs-c.t))+' s left · don\'t touch them');
   if(c.t>=EVC.convoySecs){ popup('CONVOY COMPLETE  +'+Math.floor(c.bonus).toLocaleString(),'good'); evEnd(); }
 }
-const _pbw=[0,0,0,0,0,0,0,0];   // scratch biome weights for the showcase plane (no per-frame allocation)
 function evRace(c,dt,H){
   const air=c.k==='plane', P=runDist-c.P0, ramp=Math.min(1,c.t/10);
   // theatrics: the opponent is ~10% faster than its base pace for the first 4 miles (it pulls ahead), then fades hard over the last mile so a late charge can catch it
@@ -4452,16 +4451,16 @@ function evRace(c,dt,H){
   const gapQ=c.Q-P, rb=gapQ>65?1-Math.min(.55,(gapQ-65)/150):gapQ<-65?1+Math.min(.65,(-gapQ-65)/120):1;   // rubber band only engages once the gap is 65 m or more either way   // tight band: it eases off when it gets away and hunts you down when you pull ahead, so the gap stays small both ways
   let sf=1; if(c.slowT>0){ c.slowT-=dt; sf=1-.45*Math.min(1,c.slowT/.8); }   // you crashed: the opponent eases off for a few seconds, then recovers smoothly
   const v=(c.v0+(c.vt*f-c.v0)*ramp)*rb*sf*(1+.03*Math.sin(c.t*.45));
-  c.Q+=v*dt; c.Q=Math.min(P+140,Math.max(P-110,c.Q)); const rel=c.Q-P-6, o=c.o;   // hard limits: never more than ~140 m ahead or ~110 m behind
+  let vv=v; if(gapQ<-65) vv=Math.max(v,speed*(1.02+Math.min(.25,(-gapQ-65)/240)));   // if you pull away it actively chases: it runs faster than you until the gap is back under 65 m
+  c.Q+=vv*dt; c.Q=Math.min(P+140,Math.max(P-110,c.Q)); const rel=c.Q-P-6, o=c.o;   // hard limits: never more than ~140 m ahead or ~110 m behind
   // drawn at its real distance from you (rel = metres ahead of your front bumper, negative when you lead)
   const dz=Math.max(-420,Math.min(430,rel));   // true position: the loco/plane sits exactly as far ahead of (or behind) you as the HUD gap says
   if(air){
-    // flies low enough to see from the chase camera, and swings to the other side of the sky wherever terrain on its side would be in the way
-    // (coast rock slope / metro and coastal-city high-rises are on the right; the left is open sea and beach). Checked 60 m ahead of the plane.
-    biomeWeights(dist-biomeBase+Math.max(0,dz)+60,150,_pbw); const sea=_pbw[1]+_pbw[3]+_pbw[4];
-    if(c.sl===undefined) c.sl=sea>.3; else if(!c.sl&&sea>.35) c.sl=true; else if(c.sl&&sea<.2) c.sl=false;
-    const tx=c.sl?-30:30; if(c.ox===undefined) c.ox=tx; c.ox+=(tx-c.ox)*Math.min(1,dt*.7);
-    o.position.set(c.ox,(c.sl?13:16)+Math.sin(c.t*.7)*1.2+7*Math.max(0,1-Math.abs(c.ox)/18),dz);   // climbs a little while crossing over the road
+    // The plane is drawn close to the car so it is easy to see, and it flies straight above the road: every piece of terrain, cliff and building lies
+    // at least 24 m off the road centre, and at this scale its wings (+-17 m) never reach them. It also stays above gantry signs and tunnel roofs.
+    if(o.scale.x!==.62) o.scale.setScalar(.62);
+    const pz=Math.max(24,Math.min(95,rel*.45+40));               // 24 m ahead when you are well in front, 95 m when it is well ahead
+    o.position.set(-2+Math.sin(c.t*.3)*3,Math.max(14,Math.min(19,11+pz*.06))+Math.sin(c.t*.7)*.8,pz);
     o.rotation.set(0,0,Math.sin(c.t*.4)*.04); }
   else { o.position.set(-24,0,dz); o.rotation.set(-Math.atan(roadSlopeAt(dz)),0,0); o.userData.track.position.set(-24,0,0); }
   if(P>=c.R){ const b=Math.max(10000,Math.round(score*.25)); score+=b; timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+10); popup('YOU WON THE RACE  +'+b.toLocaleString()+'  ·  +10s','good'); evEnd(); return; }
