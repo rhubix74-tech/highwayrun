@@ -391,7 +391,7 @@
   <div class="tutfoot"><button id="tutorialDone" type="button">Got it — let's drive</button></div>
 </div></div>
 <div id="lb"><div class="card"><h1>Leaderboards</h1><div id="lbWho" class="nb" style="font-size:13px"></div>
-  <div class="lbtabs"><button data-b="cash" class="on">Cash earned</button><button data-b="score">Best score</button><button data-b="miles">Miles driven</button></div>
+  <div class="lbtabs"><button data-b="cash" class="on">Cash earned</button><button data-b="score">Best score</button><button data-b="miles">Miles driven</button><button data-b="coop">Co-op</button></div>
   <div id="lbRows"></div><div id="lbNote"></div>
   <button id="lbClose" style="background:#e8edf7;color:#0b0f16;border:0;border-radius:999px;font:inherit;font-weight:600;padding:9px 24px;cursor:pointer">Back</button></div></div>
 <div id="gfx"><div class="card"><h1>Settings</h1><p>Set everything here, before the run. Camera is the only thing you change while driving.</p>
@@ -2836,6 +2836,7 @@ function dropsTick(){
 const VIEWS2={chase:{p:[0,1.9,-7.4],t:[0,.8,9]},side:{p:[-5.6,.85,.6],t:[0,.55,.8]},front:{p:[2.6,1.0,7.2],t:[0,.6,.2]}};
 let view='chase', speedTarget=0, speed=20, dist=0, px=0, yaw=0, vl=0, steer=0, thrS=0, brkS=0, shake=0, inv=0, yr=0, ayS=0, accS=0, fwd=0;
 let tStreak=0, weave=0, lastGap=-1, wasOff=false, nextBonus=100000, runT=0, bHeat=0, lastBT=-999, shopOpen=false, bmOpen=false, paintView=false, pvA=.6, titleOn=true, exZone=false, exitCash=0, camFrom=null;
+var MP={on:false,mode:'',link:false};   // multiplayer state (filled in by the multiplayer block near the end of the script)
 let state='menu', score=0, miles=0, mult=1, clean=0, timeLeft=180, soundAsked=false;
 const CAR_BONUS={nsx:'Gold Coins ($8) Can Be Found on the Road',m3:'No Reckless Drivers · Close Passes Add +0.75 s',chiron:'x10 Score While Above 250 MPH',dawn:'x2 Cash-Out Money · x2 Rain Chance',prius:'Free Power-Up Every Run: Nitrous or Insurance (your choice) · +15 s Starting Time · x1.5 Time Bonuses',jet:'Flies Above Traffic · No Exit · Unranked · Red Token Reward',fiesta:'Immune to Crashes With Other Fiestas',accord:'Immune to Crashes With Other Accords',ram:'Immune to Crashes With Other Rams',aero:'Reduced Traffic Density',daytona:'1 in 10 Chance to Double Each Time Bonus',zonda:'Exits Every 5 Miles Instead of 10',gt:'No Bonus, Starter Car',enzo:'Less Score Lost in Crashes',viper:'2 Uses of Single-Use Power-Ups',charger:'+30 Seconds Starting Time & Only −10 s per Crash'};
 const puMax=()=>CS.sel==='viper'?2:1, puLeft=u=>puMax()>1?' ('+(puMax()-u)+' LEFT)':'';
@@ -3134,8 +3135,8 @@ function crash(label,rel){
   if(CH.active&&chCrash()) return;
   const rm=Math.max(0,rel)*MPH, pct=Math.min(.4,.08+rm*.004);      // 8-40% of your current score, harder the faster you hit
   const pen=Math.min(Math.floor(score),Math.round((1000+rm*30+score*pct)*crashKeep()));
-  score-=pen; mult=1; clean=0; tStreak=0; timeLeft=Math.max(0,timeLeft-crashTime()); inv=1.6; shake=1; weave=0; lastGap=-1;
-  popup((pen?'−'+pen.toLocaleString()+'  ':'')+'−'+crashTime()+'s  '+label,'bad');
+  score-=pen; mult=1; clean=0; tStreak=0; if(!(MP.on&&MP.mode==='battle')) timeLeft=Math.max(0,timeLeft-crashTime()); inv=1.6; shake=1; weave=0; lastGap=-1;
+  popup((pen?'−'+pen.toLocaleString()+'  ':'')+(MP.on&&MP.mode==='battle'?'':'−'+crashTime()+'s  ')+label,'bad');
   $('flash').style.opacity=.55; setTimeout(()=>{$('flash').style.opacity=0},120); pop(.9,3);
   try{ const pc=EV.cur; if(pc&&(pc.k==='plane'||pc.k==='train')){ pc.slowT=3; popup((pc.k==='plane'?'THE CARGO PLANE':'THE FREIGHT TRAIN')+' EASES OFF','good'); }   // crashing slows the showcase opponent for a moment
   if(pc&&pc.k==='police'){ pc.gr=12; pc.gap=Math.max(pc.gap,45); popup('THE POLICE HANG BACK · GET YOUR SPEED UP','good'); } }catch(e){}   // a crash gives you time to rebuild a gap
@@ -3143,12 +3144,12 @@ function crash(label,rel){
 /* TIME is earned by clean driving: every thread / wall cleared adds seconds, and the reward grows with an unbroken streak (up to 3.7 s per row).
    A crash or a missed gap breaks the streak, and a crash also costs 4 s. At full difficulty a row passes every 90/(speed - traffic) s, so a long
    streak at ~100+ mph earns more time than it burns - in theory you can go forever - while sloppy driving slowly bleeds the clock. */
-function gainTime(base){ if(isBetaCar()) return 0; tStreak++; let g=base+.3*Math.min(8,tStreak-1); if(CS.sel==='prius') g*=1.5; if(CS.sel==='daytona'&&Math.random()<.1){ g*=2; popup('LUCKY · TIME BONUS DOUBLED','good'); } timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+g); return g; }
+function gainTime(base){ if(isBetaCar()) return 0; if(MP.on&&MP.mode==='battle'){ tStreak++; return 0; } tStreak++; let g=base+.3*Math.min(8,tStreak-1); if(CS.sel==='prius') g*=1.5; if(CS.sel==='daytona'&&Math.random()<.1){ g*=2; popup('LUCKY · TIME BONUS DOUBLED','good'); } timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+g); return g; }
 function threadGap(r){
   if(isBetaCar()) return;
   const ch=lastGap>=0&&r.gap!==lastGap; weave=ch?Math.min(8,weave+1):1; lastGap=r.gap;
   const b=Math.round(400*mult*(runPU.double?2:1)*weave*speedK()); score+=b;
-  if(CH.active){ CH.st.th++; CH.st.wm=Math.max(CH.st.wm,weave); } const ts=gainTime(1.3); popup((weave>1?'WEAVE x'+weave:'THREAD THE GAP')+'  +'+b.toLocaleString()+'  ·  +'+ts.toFixed(1)+'s','good');
+  if(CH.active){ CH.st.th++; CH.st.wm=Math.max(CH.st.wm,weave); } const ts=gainTime(1.3); popup((weave>1?'WEAVE x'+weave:'THREAD THE GAP')+'  +'+b.toLocaleString()+(ts>0?'  ·  +'+ts.toFixed(1)+'s':''),'good');
 }
 // Scout's RPG: a reusable rocket, one shot every 90 seconds.
 const rocketMat=new THREE.MeshStandardMaterial({color:0x2d343b,metalness:.65,roughness:.32,emissive:0x351008});
@@ -3205,7 +3206,7 @@ function physics(dt){
     const mph=speed*MPH;
     if(!isBetaCar()&&mph>40&&!off) score+=3*Math.pow((mph-40)/8,2)*mult*(runPU.double?2:1)*(CS.sel==='chiron'&&mph>250?10:1)*dt;
     if(CS.sel==='chiron'){ const on=mph>250; if(on&&!chironX10) popup('250+ MPH · x10 SCORE','good'); chironX10=on; }
-    miles+=fwd*dt/1609.34; clean+=dt; mult=(1+Math.min(4,Math.floor(clean/8)))*(raining()?1.5:1);   // rain: x1.5 on the multiplier
+    miles+=fwd*dt/1609.34; clean+=dt; mult=(1+Math.min(4,Math.floor(clean/8)))*(raining()?1.5:1)*(MP.link?1.25:1);   // rain: x1.5 on the multiplier
     if(CH.active&&chTick(dt)) return;
     if(!isBetaCar()){ const kE=exitK(), lz=runDist-kE*EX; if(lz>-10&&lz<40&&px<-5.2){ startExit(kE*EX); if(state!=='run') return; } }   // challenge runs that ignore the exit keep the clock running   // in the exit lane at the gore: take the exit
     while(false){    // +10 s every 100k pts; each bonus earned within BONUS_WIN s of the last one makes the next gap 40% bigger (up to x3.4), and it cools off again when you slow down
@@ -4774,11 +4775,12 @@ function frame(){
     if(run&&!r.done&&r.pz>0&&r.z<=0){
       r.done=true;
       if(trafficAlpha(r.z).a<.5){ /* empty exit zone: no points for threading cars that aren't there */ }
-      else if(r.wall){ if(!r.hit&&!isBetaCar()){ const b=Math.round(1500*mult*(runPU.double?2:1)*speedK()); score+=b; if(CH.active) CH.st.th++; const ts=gainTime(3); popup('WALL CLEARED +'+b.toLocaleString()+'  ·  +'+ts.toFixed(1)+'s','good'); } }
+      else if(r.wall){ if(!r.hit&&!isBetaCar()){ const b=Math.round(1500*mult*(runPU.double?2:1)*speedK()); score+=b; if(CH.active) CH.st.th++; const ts=gainTime(3); popup('WALL CLEARED +'+b.toLocaleString()+(ts>0?'  ·  +'+ts.toFixed(1)+'s':''),'good'); } }
       else if(!isBetaCar()&&!r.hit&&Math.abs(px-LANES[r.gap])<1.5) threadGap(r); else{ weave=0; tStreak=0; }
     }
   }
 
+  try{ if(MP.on) mpTick(rdt); }catch(e){ console.error('[mp]',e); }
   try{
     if(CIN.on){
       cinTick(rdt);
@@ -5122,8 +5124,8 @@ function lbWhy(r){        // say what actually went wrong instead of one generic
   if(r.ok) return 'The server answered without leaderboard data';
   const d=r.j&&(r.j.detail||r.j.error); return 'Leaderboard server error '+r.status+(d?': '+d:'')+(r.status===500?' (is the D1 table created and bound as DB?)':'');
 }
-const lbFmt=(b,v)=>b==='cash'?money(v):b==='score'?Math.floor(v).toLocaleString():(+v).toFixed(1)+' mi';
-const lbMine=b=>b==='cash'?stats.earned:b==='score'?stats.best:stats.miles;
+const lbFmt=(b,v)=>b==='cash'?money(v):(b==='score'||b==='coop')?Math.floor(v).toLocaleString():(+v).toFixed(1)+' mi';
+const lbMine=b=>b==='cash'?stats.earned:b==='score'?stats.best:b==='coop'?(stats.coop||0):stats.miles;
 async function lbRender(){
   const b=lbTab, rows=$('lbRows'), note=$('lbNote'); document.querySelectorAll('.lbtabs button').forEach(x=>x.classList.toggle('on',x.dataset.b===b));
   const carName=id=>{ const c=CARS.find(q=>q.id===id); return c?c.name:(id==='gt'?'Porsche Carrera GT':String(id||'')); };
@@ -5132,7 +5134,7 @@ async function lbRender(){
   if(LB_URL){ rows.innerHTML='<div><span>Loading…</span></div>'; r=await lbApi('/top?board='+b); if(lbTab!==b) return; list=r&&r.ok&&r.j&&r.j.rows; }
   if(!list){ note.textContent=LB_URL?lbWhy(r)+' - showing this device only.':'Online boards are not connected yet - showing this device only.'; list=prof?[{name:prof.name,v:lbMine(b),car:b==='score'?(stats.bestCar||'gt'):null}]:[]; }
   else note.textContent='Top '+list.length+' · updates after every run';
-  rows.innerHTML=list.map((r,i)=>'<div'+(prof&&r.name===prof.name?' class="me"':'')+'><b>'+(i+1)+'</b><span>'+String(r.name).replace(/[<>&]/g,'')+(b==='score'?'<small style="display:block;opacity:.6;font-size:11px">'+String(carName(r.car||'gt')).replace(/[<>&]/g,'')+'</small>':'')+'</span><i>'+lbFmt(b,r.v)+'</i></div>').join('')||'<div><span>No entries yet</span></div>';
+  rows.innerHTML=list.map((r,i)=>'<div'+(prof&&r.name===prof.name?' class="me"':'')+'><b>'+(i+1)+'</b><span>'+String(r.name).replace(/[<>&]/g,'')+(b==='score'?'<small style="display:block;opacity:.6;font-size:11px">'+String(carName(r.car||'gt')).replace(/[<>&]/g,'')+'</small>':'')+(b==='coop'&&r.mate?'<small style="display:block;opacity:.6;font-size:11px">with '+String(r.mate).replace(/[<>&]/g,'')+'</small>':'')+'</span><i>'+lbFmt(b,r.v)+'</i></div>').join('')||'<div><span>No entries yet</span></div>';
 }
 function openLB(){ if(!prof){ lbShowName(true); return; } $('lb').classList.add('show'); window.__lbModal='lb'; lbRender(); }
 function closeLB(){ $('lb').classList.remove('show'); window.__lbModal=undefined; }
@@ -5148,6 +5150,237 @@ if(prof&&prof.pending) lbSubmit();
   // music: the shop / black-market tracks load when a shop is about to open instead of at startup
   for(const a of [shopA,blackMarketA]) a.preload='none'; const warm=a=>{ if(a.preload!=='auto'){ a.preload='auto'; try{ a.load(); }catch(e){} } };
   setTimeout(()=>warm(shopA),20000); const _ss=setShop; setShop=function(on){ if(on){ warm(shopA); warm(blackMarketA); } return _ss.apply(this,arguments); }; }
+/* ================= 2-player multiplayer: Co-op and Battle =================
+   Needs the leaderboard worker (it also hosts the match rooms) and a registered leaderboard name.
+   Each driver simulates their own road and traffic; the other player's car is shown in the right place on YOUR road
+   (their distance minus yours, their lane) in the car they chose. Positions are streamed ~10 times a second and smoothed. */
+Object.assign(MP,{on:false,mode:'',stage:'off',ws:null,code:'',slot:-1,roster:[null,null],ready:false,queue:false,dur:0,myEnd:null,peerEnd:null,res:null,
+  kind:'',pick:'coop',lastSend:0,pingT:null,link:false,rc:null,rcId:'',rd:0,rx:0,rsp:0,rsc:0,rst:'r',rrecv:0,dd:0,dx:0,dyaw:0,ryaw:0,peerLeft:false,cdT:null,matchWith:''});
+window.__mp=MP;
+const MP_BATTLE_SECS=600;
+const mpName=s=>String(s||'').replace(/[<>&"]/g,'');
+const mpCarName=id=>{ const c=CARS.find(q=>q.id===id); return c?c.name:String(id||''); };
+const mpBase=()=>LB_URL.replace(/^http/,'ws').replace(/\/$/,'');
+/* ---- DOM ---- */
+(function mpDom(){
+  const css=document.createElement('style'); css.textContent=`
+  #mpm{position:fixed;inset:0;z-index:95;display:none;align-items:center;justify-content:center;background:rgba(4,6,12,.72);backdrop-filter:blur(6px);font-family:system-ui,sans-serif;color:#fff}
+  #mpm.show{display:flex}
+  #mpm .mpc{width:min(92vw,520px);max-height:92vh;overflow:auto;padding:22px 24px;border-radius:18px;background:rgba(14,18,28,.96);border:1px solid rgba(255,255,255,.16);box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  #mpm h2{margin:0 0 4px;font-size:22px;letter-spacing:.04em} #mpm p.sub{margin:0 0 14px;opacity:.7;font-size:13px;line-height:1.4}
+  #mpm .mpmode{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+  #mpm button{font:600 14px system-ui,sans-serif;color:#fff;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:11px 14px;cursor:pointer}
+  #mpm button:hover{background:rgba(255,255,255,.18)} #mpm button:disabled{opacity:.45;cursor:default}
+  #mpm .mpmode button{text-align:left;padding:12px} #mpm .mpmode button small{display:block;font-weight:500;opacity:.7;margin-top:3px;font-size:12px;line-height:1.3}
+  #mpm .mpmode button.on{background:#ffd76a;color:#10131c;border-color:#ffd76a} #mpm .mpmode button.on small{opacity:.8}
+  #mpm .mprow{display:flex;gap:10px;margin:10px 0} #mpm .mprow>*{flex:1}
+  #mpm input{flex:1;min-width:0;font:700 20px ui-monospace,monospace;letter-spacing:.3em;text-transform:uppercase;text-align:center;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35);color:#fff}
+  #mpm .go{background:#2fb86b;border-color:#2fb86b} #mpm .go:hover{background:#38d17b}
+  #mpm .rules{font-size:12px;line-height:1.5;opacity:.75;margin:8px 0 2px}
+  #mpm #mpMsg{min-height:18px;font-size:13px;color:#ff9b8f;margin:8px 0 0}
+  #mpCodeBig{font:800 44px ui-monospace,monospace;letter-spacing:.25em;text-align:center;margin:6px 0 2px;color:#ffd76a;cursor:pointer}
+  #mpStatus{text-align:center;font-size:13px;opacity:.8;margin:0 0 10px}
+  #mpRoster .pl{display:flex;align-items:center;gap:10px;padding:10px 12px;margin:6px 0;border-radius:12px;background:rgba(255,255,255,.07);font-size:14px}
+  #mpRoster .pl b{flex:1} #mpRoster .pl i{font-style:normal;opacity:.65;font-size:12px} #mpRoster .pl em{font-style:normal;font-weight:700;font-size:12px;padding:3px 9px;border-radius:99px;background:rgba(255,255,255,.12)} #mpRoster .pl em.rdy{background:#2fb86b}
+  #mpCd{position:fixed;inset:0;z-index:96;display:none;align-items:center;justify-content:center;pointer-events:none;background:rgba(0,0,0,.35);color:#fff;font:900 clamp(80px,22vw,220px)/1 system-ui,sans-serif;text-shadow:0 6px 40px rgba(0,0,0,.7)}
+  #mpCd.show{display:flex}
+  #mpHud{position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:31;display:none;padding:6px 14px;border-radius:12px;background:rgba(8,10,16,.66);border:1px solid rgba(255,255,255,.18);color:#fff;font:600 13px/1.35 system-ui,sans-serif;text-align:center;pointer-events:none;min-width:200px}
+  #mpHud.show{display:block} #mpHud b{color:#ffd76a} #mpHud .lead{color:#7dffb0} #mpHud .trail{color:#ff9b8f} #mpHud .lnk{color:#7de8ff;font-size:11px;letter-spacing:.1em}
+  #mpRes{position:fixed;inset:0;z-index:94;display:none;align-items:center;justify-content:center;background:rgba(4,6,12,.78);backdrop-filter:blur(6px);color:#fff;font-family:system-ui,sans-serif}
+  #mpRes.show{display:flex} #mpRes .mpc{width:min(92vw,480px);padding:24px;border-radius:18px;background:rgba(14,18,28,.97);border:1px solid rgba(255,255,255,.16);text-align:center}
+  #mpRes h2{margin:0 0 6px;font-size:30px;letter-spacing:.06em} #mpRes .row{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;margin:6px 0;border-radius:12px;background:rgba(255,255,255,.07);font-size:15px}
+  #mpRes .row.me{outline:2px solid #ffd76a} #mpRes .tot{font-size:34px;font-weight:800;color:#ffd76a;margin:10px 0} #mpRes p{opacity:.75;font-size:13px;margin:6px 0}
+  #mpRes button{margin-top:12px;font:700 15px system-ui,sans-serif;color:#10131c;background:#ffd76a;border:0;border-radius:12px;padding:12px 26px;cursor:pointer}
+  #tMp small{display:block}`;
+  document.head.appendChild(css);
+  const m=document.createElement('div'); m.id='mpm'; m.innerHTML=`<div class="mpc">
+    <div id="mpA"><h2>Multiplayer</h2><p class="sub">Two drivers, one match. Pick a mode, then find a partner with a match code or a random match.</p>
+      <div class="mpmode"><button type="button" data-m="coop" class="on">Co-op<small>Team up: your scores add up on a separate co-op leaderboard</small></button>
+        <button type="button" data-m="battle">Battle<small>10:00 on a fixed clock · highest score wins</small></button></div>
+      <div class="mprow"><button type="button" id="mpRand" class="go">Random match</button><button type="button" id="mpCreate">Create match code</button></div>
+      <div class="mprow"><input id="mpCode" maxlength="5" placeholder="CODE" autocomplete="off" spellcheck="false"><button type="button" id="mpJoin">Join</button></div>
+      <div class="rules" id="mpRules"></div><div id="mpMsg"></div><div class="mprow"><button type="button" id="mpClose">Back</button></div></div>
+    <div id="mpB" style="display:none"><div id="mpCodeBig"></div><p id="mpStatus"></p><div id="mpRoster"></div><div class="rules" id="mpRules2"></div>
+      <div class="mprow"><button type="button" id="mpReady" class="go">Ready</button><button type="button" id="mpLeave">Leave</button></div></div></div>`;
+  document.body.appendChild(m);
+  const cd=document.createElement('div'); cd.id='mpCd'; document.body.appendChild(cd);
+  const hud=document.createElement('div'); hud.id='mpHud'; document.body.appendChild(hud);
+  const res=document.createElement('div'); res.id='mpRes'; res.innerHTML='<div class="mpc"><div id="mpResB"></div><button type="button" id="mpResBack">Back to menu</button></div>'; document.body.appendChild(res);
+  $('tStart').insertAdjacentHTML('afterend','<button class="tb alt" id="tMp"><span>Multiplayer<small>Co-op · Battle</small></span></button>');
+})();
+const MP_RULES={
+  coop:'Co-op: each of you drives your own road and the other car appears beside you in its true position. Your final scores are added together for the team score. Stay within 60 m of your partner for a TEAM LINK x1.25 score multiplier. Normal timer, bonuses and exits; the match ends when both of you finish. Power-ups are off.',
+  battle:'Battle: a fixed 10:00 clock (no time bonuses, crashes cost score only, no exits). When the time is up the higher score wins. Quitting or disconnecting forfeits. Power-ups are off.'};
+function mpSetPick(m){ MP.pick=m; document.querySelectorAll('#mpm .mpmode button').forEach(b=>b.classList.toggle('on',b.dataset.m===m)); $('mpRules').textContent=MP_RULES[m]; }
+const mpMsg=t=>{ $('mpMsg').textContent=t||''; };
+function mpShow(stage){
+  MP.stage=stage; const menu=stage==='menu'; $('mpA').style.display=menu?'':'none'; $('mpB').style.display=menu?'none':'';
+  const open=stage==='menu'||stage==='lobby'||stage==='search'; $('mpm').classList.toggle('show',open); window.__lbModal=open?'mp':(window.__lbModal==='mp'?undefined:window.__lbModal);
+}
+function mpOpenMenu(){
+  if(!LB_URL){ alert('Multiplayer needs the online leaderboard server.'); return; }
+  if(!prof){ lbShowName(true); return; }
+  mpSetPick(MP.pick); mpMsg(isBetaCar()?'Black Market cars (and Scout\'s Ship) are unranked and can\'t play multiplayer — pick a regular car in the garage.':''); mpShow('menu');
+}
+$('tMp').addEventListener('click',mpOpenMenu);
+$('mpClose').addEventListener('click',()=>mpShow('off'));
+document.querySelector('#mpm .mpmode').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) mpSetPick(b.dataset.m); });
+$('mpCode').addEventListener('keydown',e=>{ e.stopPropagation(); if(e.key==='Enter') $('mpJoin').click(); }); $('mpCode').addEventListener('keyup',e=>e.stopPropagation());
+$('mpCode').addEventListener('input',e=>{ e.target.value=e.target.value.toUpperCase().replace(/[^A-Z2-9]/g,''); });
+addEventListener('keydown',e=>{ if(e.code==='Escape'&&MP.stage==='menu'){ mpShow('off'); e.stopImmediatePropagation(); } },true);
+/* ---- connection ---- */
+async function mpReady0(){
+  if(isBetaCar()){ mpMsg('Pick a regular (ranked) car first.'); return false; }
+  if(prof.pending){ const r=await lbApi('/register',{id:prof.id,name:prof.name,token:prof.token}); if(r&&r.ok){ prof.pending=false; saveProf(); } else { mpMsg('Could not register your name online: '+(r&&r.j&&r.j.error||'server unreachable')); return false; } }
+  return true;
+}
+function mpClose(){ clearInterval(MP.pingT); MP.pingT=null; if(MP.ws){ const w=MP.ws; MP.ws=null; try{ w.onclose=null; w.onmessage=null; w.close(); }catch(e){} } }
+function mpSend(o){ if(MP.ws&&MP.ws.readyState===1) MP.ws.send(JSON.stringify(o)); }
+function mpOpenWs(path,onMsg,onFail,onOpen){
+  mpClose(); let ws; const q=(path.indexOf('?')<0?'?':'&')+'id='+prof.id+'&token='+prof.token;
+  try{ ws=new WebSocket(mpBase()+path+q); }catch(e){ onFail('Could not open a connection'); return; }
+  MP.ws=ws; let opened=false;
+  ws.onopen=()=>{ opened=true; clearInterval(MP.pingT); MP.pingT=setInterval(()=>mpSend({t:'ping'}),15000); if(onOpen) onOpen(); };
+  ws.onmessage=ev=>{ let m; try{ m=JSON.parse(ev.data); }catch(e){ return; } onMsg(m); };
+  ws.onclose=()=>{ if(MP.ws!==ws) return; MP.ws=null; clearInterval(MP.pingT); MP.pingT=null; if(!opened) onFail('Could not reach the match server (is the worker updated with multiplayer?)'); else mpDropped(); };
+  ws.onerror=()=>{};
+}
+function mpDropped(){
+  if(MP.stage==='lobby'||MP.stage==='search'){ mpShow('menu'); mpMsg('Disconnected from the match server.'); }
+  else if(MP.on&&MP.stage!=='done'){ MP.peerLeft=true; }     // mid-match: keep playing; the server settles with the last scores we sent
+}
+const mpCode=()=>{ const a='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let c=''; for(let i=0;i<5;i++) c+=a[Math.floor(Math.random()*a.length)]; return c; };
+async function mpEnterRoom(code,kind){      // kind: 'create' | 'join' | 'matched'
+  MP.kind=kind; MP.code=code; MP.roster=[null,null]; MP.ready=false; MP.res=null; MP.myEnd=null; MP.peerEnd=null; MP.peerLeft=false;
+  const qs=kind==='create'?'&create=1':kind==='matched'?'&matched=1':'';
+  mpOpenWs('/mp/room/'+code+'?mode='+MP.pick+qs,mpOnRoomMsg,t=>{ mpShow('menu'); mpMsg(t); },()=>mpSend({t:'hi',car:CS.sel}));
+  mpShow('lobby'); $('mpCodeBig').textContent=code; $('mpCodeBig').title='Click to copy'; mpRenderLobby();
+}
+$('mpCodeBig').addEventListener('click',()=>{ try{ navigator.clipboard.writeText(MP.code); $('mpStatus').textContent='Code copied'; }catch(e){} });
+$('mpCreate').addEventListener('click',async()=>{ mpMsg(''); if(!await mpReady0()) return; lazyEnsure(CS.sel); mpEnterRoom(mpCode(),'create'); });
+$('mpJoin').addEventListener('click',async()=>{ mpMsg(''); const c=$('mpCode').value.trim(); if(!/^[A-Z2-9]{5}$/.test(c)){ mpMsg('Enter the 5-character match code.'); return; } if(!await mpReady0()) return; lazyEnsure(CS.sel); mpEnterRoom(c,'join'); });
+$('mpRand').addEventListener('click',async()=>{
+  mpMsg(''); if(!await mpReady0()) return; lazyEnsure(CS.sel); MP.queue=true; mpShow('search'); $('mpCodeBig').textContent='···'; mpRenderLobby();
+  mpOpenWs('/mp/queue/'+MP.pick,m=>{ if(m.t==='matched'){ MP.queue=false; MP.matchWith=m.with||''; mpEnterRoom(m.code,'matched'); } else if(m.t==='err'){ mpShow('menu'); mpMsg(m.msg||'Matchmaking failed'); } },t=>{ MP.queue=false; mpShow('menu'); mpMsg(t); });
+});
+$('mpLeave').addEventListener('click',()=>{ MP.queue=false; mpClose(); MP.roster=[null,null]; mpShow('menu'); });
+$('mpReady').addEventListener('click',()=>{ if(MP.queue) return; MP.ready=!MP.ready; mpSend({t:'ready',v:MP.ready}); mpRenderLobby(); });
+function mpRenderLobby(){
+  const searching=MP.queue, mode=MP.pick; $('mpRules2').textContent=MP_RULES[mode];
+  $('mpStatus').textContent=searching?'Searching for a '+(mode==='coop'?'co-op partner':'battle opponent')+'…':MP.roster.filter(Boolean).length<2?'Waiting for a second driver — share the code':'Both drivers are here — press Ready';
+  $('mpRoster').innerHTML=searching?'<div class="pl"><b>'+mpName(prof.name)+'</b><i>'+mpName(mpCarName(CS.sel))+'</i><em>searching</em></div>':
+    [0,1].map(i=>{ const p=MP.roster[i]; return p?'<div class="pl"><b>'+mpName(p.name)+(i===MP.slot?' (you)':'')+'</b><i>'+mpName(mpCarName(p.car))+'</i><em class="'+(p.ready?'rdy':'')+'">'+(p.ready?'READY':'not ready')+'</em></div>':'<div class="pl"><b style="opacity:.5">Waiting for driver…</b></div>'; }).join('');
+  $('mpReady').style.display=searching?'none':''; $('mpReady').textContent=MP.ready?'Not ready':'Ready'; $('mpReady').disabled=MP.roster.filter(Boolean).length<2;
+}
+function mpOnRoomMsg(m){
+  if(m.t==='err'){ mpClose(); mpShow('menu'); mpMsg(m.msg||'Could not join'); return; }
+  if(m.t==='room'){
+    MP.slot=m.you; MP.pick=m.mode; MP.roster=m.players; mpSetPick(m.mode); const me=MP.roster[MP.slot]; if(me) MP.ready=me.ready;
+    const peer=MP.roster[1-MP.slot]; if(peer&&peer.car) lazyEnsure(peer.car);
+    if(MP.stage==='lobby'||MP.stage==='search') mpRenderLobby(); return;
+  }
+  if(m.t==='go'){ mpGo(m); return; }
+  if(m.t==='s'){ MP.rd=m.d; MP.rx=m.x; MP.rsp=m.sp; MP.rsc=m.sc; MP.ryaw=m.yaw||0; MP.rst=m.st; MP.rrecv=performance.now(); if(!MP.gotS){ MP.gotS=true; MP.dd=m.d; MP.dx=m.x; } return; }
+  if(m.t==='peerend'){ MP.peerEnd={score:m.score,why:m.why}; MP.rsc=m.score; if(MP.myEnd) mpShowWait(); return; }
+  if(m.t==='left'){ MP.peerLeft=true; MP.rsc=m.score; return; }
+  if(m.t==='result'){ MP.res=m; mpShowResult(); return; }
+}
+/* ---- start of a match ---- */
+function mpGo(m){
+  MP.roster=m.players||MP.roster; MP.dur=m.dur||0; MP.mode=m.mode; MP.on=true; MP.gotS=false; MP.peerLeft=false; MP.myEnd=null; MP.peerEnd=null; MP.res=null; MP.rsc=0; MP.rd=0; MP.dd=0; MP.rx=0; MP.dx=0; MP.link=false; MP.lastSend=0;
+  mpShow('count'); $('mpm').classList.remove('show'); window.__lbModal=undefined;
+  const peer=MP.roster[1-MP.slot]; if(peer) lazyEnsure(peer.car);
+  const t0=performance.now(), total=m.in||3500, cd=$('mpCd'); cd.classList.add('show');
+  clearInterval(MP.cdT); MP.cdT=setInterval(()=>{
+    const left=total-(performance.now()-t0), n=Math.ceil(left/1000);
+    if(left<=0){ clearInterval(MP.cdT); cd.classList.remove('show'); mpStartRun(); return; }
+    cd.textContent=n>3?'GET READY':String(n);
+  },60);
+}
+function mpStartRun(){
+  if(!lazyReady(CS.sel)){ setTimeout(mpStartRun,150); return; }
+  const eq={}; for(const k in PU.equipped){ eq[k]=PU.equipped[k]; PU.equipped[k]=false; }   // power-ups are off in multiplayer
+  loadoutOpen=false; $('loadout').classList.remove('show');
+  try{ startRun(); } finally { for(const k in eq) PU.equipped[k]=eq[k]; }
+  if(MP.mode==='battle') timeLeft=MP_BATTLE_SECS;
+  MP.stage='play'; $('mpHud').classList.add('show');
+}
+/* ---- per-frame: stream my state, draw their car, HUD ---- */
+function mpRemoveCar(){ if(MP.rc){ if(MP.rc.g.parent) MP.rc.g.parent.remove(MP.rc.g); MP.rc=null; MP.rcId=''; } }
+function mpNameTag(txt){
+  const c=document.createElement('canvas'); c.width=512; c.height=96; const g=c.getContext('2d'); g.font='800 54px system-ui,sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+  const w=Math.min(500,g.measureText(txt).width+44); g.fillStyle='rgba(8,10,16,.7)'; g.beginPath(); g.roundRect?g.roundRect(256-w/2,10,w,76,38):g.rect(256-w/2,10,w,76); g.fill(); g.fillStyle='#fff'; g.fillText(txt,256,50);
+  const t=new THREE.CanvasTexture(c); const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false,fog:false})); s.scale.set(4.4,.83,1); s.renderOrder=20; return s;
+}
+function mpTick(dt){
+  if(!MP.on) return;
+  const now=performance.now(), running=state==='run';
+  // my state -> server (10 Hz)
+  if((running||state==='exit')&&now-MP.lastSend>=100){ MP.lastSend=now; mpSend({t:'s',d:+runDist.toFixed(1),x:+px.toFixed(2),sp:+speed.toFixed(2),sc:Math.floor(score),yaw:+yaw.toFixed(3),st:running?'r':'x'}); }
+  const peer=MP.roster[1-MP.slot], pid=peer&&peer.car||'gt';
+  // their car
+  if(MP.rcId!==pid){ mpRemoveCar(); }
+  if(!MP.rc&&peer){ const t=cvMake(pid); if(t){ t.g.add(mpNameTag(mpName(peer.name))); t.g.children[t.g.children.length-1].position.y=2.35; MP.rc=t; MP.rcId=pid; } else lazyEnsure(pid); }
+  const live=MP.rc&&running&&MP.gotS&&MP.rst==='r'&&!MP.peerEnd&&!MP.peerLeft;
+  if(MP.rc){
+    if(!live) MP.rc.g.visible=false;
+    else{
+      const age=Math.min(.4,(now-MP.rrecv)/1000), pd=MP.rd+MP.rsp*age, k=1-Math.exp(-dt*9);
+      MP.dd+=(pd-MP.dd)*k; MP.dx+=(MP.rx-MP.dx)*k; MP.dyaw+=(MP.ryaw-MP.dyaw)*k;
+      const z=MP.dd-runDist, vis=Math.abs(z)<420; MP.rc.g.visible=vis;
+      if(vis){ const g=MP.rc.g; g.position.set(MP.dx+bendXAt(z),yAt(z),z); g.rotation.set(-Math.atan(roadSlopeAt(z)),MP.dyaw+Math.atan((bendXAt(z+2)-bendXAt(z-2))*.25),0,'YXZ');
+        const cw=MP.rc.cw; for(let i=0;i<cw.length;i++){ const w=cw[i]; w.angle+=MP.rsp/w.r*dt; w.sp.rotation.x=w.angle; } }
+    }
+  }
+  // co-op: TEAM LINK when you're close together
+  MP.link=MP.mode==='coop'&&!!live&&running&&Math.abs(MP.dd-runDist)<60;
+  // battle: the clock is fixed, so time bonuses and penalties are ignored
+  if(MP.mode==='battle'&&running){ timeLeft=Math.max(0,MP_BATTLE_SECS-runT); if(timeLeft<=0) endRun('time'); }
+  // HUD
+  if(now-(MP._hudT||0)>=120){ MP._hudT=now; mpHudUpdate(peer); }
+}
+function mpHudUpdate(peer){
+  const me=Math.floor(Math.max(0,score)), th=Math.floor(MP.myEnd?MP.myEnd.score:MP.rsc), pn=peer?mpName(peer.name):'Partner', fmt=n=>Math.floor(n).toLocaleString(), h=$('mpHud');
+  const peerScore=MP.peerEnd?MP.peerEnd.score:MP.rsc, myScore=MP.myEnd?MP.myEnd.score:me;
+  const ended=MP.peerEnd?' (finished)':MP.peerLeft?' (left)':'';
+  if(MP.mode==='coop'){ h.innerHTML='TEAM <b>'+fmt(myScore+peerScore)+'</b> · '+pn+' '+fmt(peerScore)+ended+(MP.link?'<div class="lnk">TEAM LINK x1.25</div>':'<div class="lnk" style="opacity:.45">get within 60 m for TEAM LINK</div>'); }
+  else{ const d=myScore-peerScore; h.innerHTML='VS <b>'+pn+'</b> '+fmt(peerScore)+ended+'<div class="'+(d>=0?'lead':'trail')+'">'+(d>=0?'LEADING':'TRAILING')+' by '+fmt(Math.abs(d))+'</div>'; }
+}
+/* ---- end of my run / results ---- */
+{ const _er=endRun;
+  endRun=function(why){
+    if(!MP.on) return _er.apply(this,arguments);
+    if(MP.myEnd) return;
+    ghostLeft=0; ghostVisual(false); state='over'; $('ov').classList.add('hide'); $('cine').classList.remove('on'); $('cineCap').classList.remove('in');
+    MP.myEnd={score:Math.floor(Math.max(0,score)),why:String(why||'time')}; mpSend({t:'end',score:MP.myEnd.score,why:MP.myEnd.why});
+    if(!MP.res) mpShowWait();
+  }; }
+function mpShowWait(){
+  const peer=MP.roster[1-MP.slot], pn=peer?mpName(peer.name):'your partner';
+  $('mpResB').innerHTML='<h2>FINISHED</h2><div class="tot">'+MP.myEnd.score.toLocaleString()+'</div><p>Waiting for '+pn+' to finish… ('+Math.floor(MP.peerEnd?MP.peerEnd.score:MP.rsc).toLocaleString()+' so far)</p>';
+  $('mpResBack').style.display='none'; $('mpRes').classList.add('show');
+}
+function mpShowResult(){
+  const r=MP.res; if(!r) return; MP.stage='done'; $('mpHud').classList.remove('show'); mpRemoveCar();
+  const rows=r.players.map(p=>'<div class="row'+(p.slot===r.you?' me':'')+'"><span>'+mpName(p.name)+(p.slot===r.you?' (you)':'')+(p.why==='esc'?' · quit':p.why==='dc'?' · left':'')+'</span><b>'+p.score.toLocaleString()+'</b></div>').join('');
+  let head, extra='';
+  if(r.mode==='battle'){ head=r.winner===r.you?'VICTORY':r.winner<0?'DRAW':'DEFEAT'; extra='<p>'+(r.forfeit?'The match ended by forfeit.':'10:00 battle · highest score wins')+'</p>'; }
+  else{ head='CO-OP COMPLETE'; extra='<div class="tot">'+r.team.toLocaleString()+'</div><p>Team score'+(r.counted?' · counted on the Co-op leaderboard (your best: '+(r.coopBest||0).toLocaleString()+')':' · too short or unavailable, not counted on the leaderboard')+'</p>';
+    if(r.coopBest){ stats.coop=Math.max(stats.coop||0,r.coopBest); saveStats(); } }
+  $('mpResB').innerHTML='<h2>'+head+'</h2>'+rows+extra; $('mpResBack').style.display=''; $('mpRes').classList.add('show');
+}
+function mpReset(){
+  clearInterval(MP.cdT); $('mpCd').classList.remove('show'); mpClose(); mpRemoveCar(); MP.on=false; MP.stage='off'; MP.link=false; MP.queue=false; MP.res=null; MP.myEnd=null; MP.peerEnd=null; MP.roster=[null,null];
+  $('mpHud').classList.remove('show'); $('mpRes').classList.remove('show'); mpShow('off');
+}
+$('mpResBack').addEventListener('click',()=>{ mpReset(); showTitle(); });
+/* ---- rules inside a match ---- */
+{ const _sx=startExit; startExit=function(E){ if(MP.on&&MP.mode==='battle'){ if(!MP._noExit||performance.now()-MP._noExit>4000){ MP._noExit=performance.now(); popup('NO EXITS IN BATTLE','bad'); } return; } return _sx.apply(this,arguments); }; }
+{ const _rr=recordRun; recordRun=function(){ if(MP.on) return []; return _rr.apply(this,arguments); }; }   // multiplayer runs don't touch the solo score / miles records
+{ const _ep=evPick; evPick=function(){ return MP.on?null:_ep.apply(this,arguments); }; }              // no random events in multiplayer (they freeze the world and pay big bonuses)
+addEventListener('keydown',e=>{ if(e.code==='Escape'&&MP.on&&state==='run'){ e.stopImmediatePropagation(); e.preventDefault(); if(confirm('Quit the match? It counts as a forfeit in Battle.')) endRun('esc'); } },true);
+addEventListener('beforeunload',()=>{ if(MP.ws) try{ MP.ws.close(); }catch(e){} });
+
 /* ---------------- teardown helpers (not called in normal play; thin, for embeds/hot-reload/tests) */
 var _raf, _lastSlot=0, _dtSm=0, _rafI=16.7, _lastRaf=0;
 function _disposeTree(root){ if(!root) return; root.traverse(o=>{ if(o.geometry) o.geometry.dispose(); const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[]; for(let i=0;i<ms.length;i++){ const m=ms[i]; if(!m) continue; for(const k in m){ const t=m[k]; if(t&&t.isTexture) t.dispose(); } m.dispose(); } }); }   // geometry + material + every texture on it
