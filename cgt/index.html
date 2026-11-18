@@ -4206,6 +4206,52 @@ function evBuildPolice(){
 }
 /* ---- showcase racers: a cargo plane and a freight train, built from primitives ---- */
 function evMat(c,r,m){ const x=new THREE.MeshStandardMaterial({color:c,roughness:r===undefined?.55:r,metalness:m===undefined?.2:m}); bendMat(x); return x; }
+
+/* ---- Cargo plane: Lowpoly AC-130 GLB (CC-BY 4.0, "Lowpoly AC-130" by SIpriv on Sketchfab). The four propeller blade pairs are fused into the engine mesh, so at load
+   they are cut out (as thin connected pieces) into their own meshes pivoting on each hub, then spun every frame. The model's nose points -Z; it is turned to +Z and scaled to ~53 m long. */
+const PLANE={url:'lowpoly_ac-130.glb',tpl:null,wait:[],props:[],S:3.6,spin:0};
+function evPlaneSplitProps(root){
+  root.traverse(o=>{
+    if(!o.isMesh||PLANE.props.length||!o.geometry||!o.geometry.index) return;
+    const geo=o.geometry, P=geo.attributes.position, I=geo.index, n=I.count, K=i=>Math.round(P.getX(i)*500)+','+Math.round(P.getY(i)*500)+','+Math.round(P.getZ(i)*500);
+    const par=new Map(), f=k=>{ if(!par.has(k)) par.set(k,k); while(par.get(k)!==k){ par.set(k,par.get(par.get(k))); k=par.get(k); } return k; };
+    for(let t=0;t<n;t+=3){ const a=f(K(I.getX(t))); par.set(f(K(I.getX(t+1))),a); par.set(f(K(I.getX(t+2))),a); }
+    const comps=new Map();
+    for(let t=0;t<n;t+=3){ const r=f(K(I.getX(t))); let c=comps.get(r); if(!c){ c={tris:[],b:new THREE.Box3()}; comps.set(r,c); }
+      c.tris.push(t); for(let k=0;k<3;k++) c.b.expandByPoint(new THREE.Vector3().fromBufferAttribute(P,I.getX(t+k))); }
+    const blades=[...comps.values()].filter(c=>{ const z=c.b.max.z-c.b.min.z, w=Math.max(c.b.max.x-c.b.min.x,c.b.max.y-c.b.min.y); return z<.12&&w>.8&&w<2.5; });
+    if(blades.length<2||blades.length>16) return;                  // not the engine mesh
+    const hubs=[]; blades.forEach(c=>{ const cx=(c.b.min.x+c.b.max.x)/2, cy=(c.b.min.y+c.b.max.y)/2, h=hubs.find(q=>Math.abs(q.x-cx)<.6&&Math.abs(q.y-cy)<.6); if(h) h.cs.push(c); else hubs.push({x:cx,y:cy,cs:[c]}); });
+    const cut=new Set(); const names=Object.keys(geo.attributes);
+    hubs.forEach(h=>{
+      const b=new THREE.Box3(); h.cs.forEach(c=>b.union(c.b)); const ctr=b.getCenter(new THREE.Vector3());
+      const tris=[]; h.cs.forEach(c=>c.tris.forEach(t=>{ tris.push(t); cut.add(t); }));
+      const g2=new THREE.BufferGeometry();
+      names.forEach(nm=>{ const a=geo.attributes[nm], arr=new a.array.constructor(tris.length*3*a.itemSize);
+        tris.forEach((t,ti)=>{ for(let k=0;k<3;k++){ const vi=I.getX(t+k); for(let c=0;c<a.itemSize;c++) arr[(ti*3+k)*a.itemSize+c]=a.array[vi*a.itemSize+c]; } });
+        g2.setAttribute(nm,new THREE.BufferAttribute(arr,a.itemSize,a.normalized)); });
+      g2.translate(-ctr.x,-ctr.y,-ctr.z);
+      const m=Array.isArray(o.material)?o.material[0]:o.material, mc=m.clone(); mc.side=THREE.DoubleSide;
+      const pm=new THREE.Mesh(g2,mc); pm.position.copy(ctr); pm.name='AC130_PROP'; pm.userData.prop=true; o.add(pm);
+    });
+    const keep=[]; for(let t=0;t<n;t+=3) if(!cut.has(t)) keep.push(I.getX(t),I.getX(t+1),I.getX(t+2));
+    geo.setIndex(keep); PLANE.props=hubs.length;
+  });
+}
+function evPlaneApply(g){
+  [...g.children].forEach(c=>{ g.remove(c); c.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); });
+  const inner=PLANE.tpl.clone(true), wrap=new THREE.Group(); inner.position.set(0,-1.5,-1.75); wrap.add(inner); wrap.rotation.y=Math.PI; wrap.scale.setScalar(PLANE.S);
+  const props=[]; const seen=new Map();
+  inner.traverse(o=>{
+    if(!o.isMesh) return; o.frustumCulled=false; o.castShadow=false;
+    const src=Array.isArray(o.material)?o.material:[o.material];
+    const cl=src.map(sm=>{ const m=sm.clone(); bendMat(m); return m; }); o.material=Array.isArray(o.material)?cl:cl[0];
+    if(o.userData.prop) props.push(o);
+  });
+  g.add(wrap); g.userData.props=props; g.userData.glb=true;
+}
+function evPlaneSpin(g,dt){ const p=g.userData.props; if(!p) return; PLANE.spin=(PLANE.spin+dt*34)%(Math.PI*2); for(let i=0;i<p.length;i++) p[i].rotation.z=PLANE.spin+i*.6; }
+try{ new THREE.GLTFLoader().load(PLANE.url,gl=>{ try{ evPlaneSplitProps(gl.scene); PLANE.tpl=gl.scene; PLANE.wait.splice(0).forEach(evPlaneApply); }catch(e){ console.error('[plane glb]',e); } },undefined,e=>console.warn('Cargo plane model not found, using the placeholder',PLANE.url)); }catch(e){}
 function evMakePlane(){
   const g=new THREE.Group(), wh=evMat(0xf1f3f5), gy=evMat(0x8b939b), bl=evMat(0x1c3f7a), dk=evMat(0x2a2e33);
   const fus=new THREE.Mesh(new THREE.CylinderGeometry(3.4,3.4,46,18),wh); fus.rotation.x=Math.PI/2;
@@ -4217,7 +4263,9 @@ function evMakePlane(){
     const ts=new THREE.Mesh(new THREE.BoxGeometry(9,.4,4),gy); ts.position.set(s*6,9,-33); ts.rotation.y=-s*.25; g.add(ts);
     for(const ex of [9,19]){ const e=new THREE.Mesh(new THREE.CylinderGeometry(1.15,1.15,5,12),dk); e.rotation.x=Math.PI/2; e.position.set(s*ex,-2.3,4-ex*.25); g.add(e); } }
   const fin=new THREE.Mesh(new THREE.BoxGeometry(.6,10,7),bl); fin.position.set(0,6,-31); fin.rotation.x=.25; g.add(fin);
-  g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; scene.add(g); return g;
+  g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; scene.add(g);
+  if(PLANE.tpl) evPlaneApply(g); else PLANE.wait.push(g);   // the AC-130 model replaces the placeholder shapes as soon as it is loaded
+  return g;
 }
 function evMakeTrain(){
   const g=new THREE.Group(), loco=new THREE.Mesh(new THREE.BoxGeometry(3.4,3.8,20,1,1,6),evMat(0xc2371b,.5,.3)), cab=new THREE.Mesh(new THREE.BoxGeometry(3.4,1.2,6,1,1,2),evMat(0x1a1c20)); loco.position.set(0,2.6,0); cab.position.set(0,4.9,-6); g.add(loco,cab);
@@ -4769,10 +4817,11 @@ function frame(){
       if(r.wall&&r.z<260&&r.z>-40) t.off=Math.max(-60,Math.min(60,t.off+(t.v-VT)*dt));
       { const bz=r.z+t.off, ta=trafficAlpha(bz); t.alpha=ta.a; t.pz=t.z; t.z=bz+(ta.before?46*Math.pow(1-ta.a,1.6):0); t.g.position.set(t.x,0,t.z); t.g.rotation.x=-Math.atan(roadSlopeAt(t.z)); applyCarAlpha(t); }
       if(!run||t.crashT>0||t.alpha<.5||CS.sel==='jet') continue;   // the jet flies over traffic
-      { const gapZ=t.z-4.45, closing=speed-t.v;                                  // bumper-to-bumper distance and closing speed
+      { const gapZ=t.z-(t.type===0?4.0:4.45), closing=speed-t.v;                                  // bumper-to-bumper distance and closing speed
         if(gapZ>-.5&&gapZ<80&&closing>1&&Math.abs(px-t.x)<2.1){ const ttc=Math.max(gapZ,0)/closing; threat=Math.max(threat,Math.min(1,Math.max(0,1-ttc/2.6))); } }
       const dx=px-t.x, adx=Math.abs(dx);
-      if(adx<1.8&&Math.abs(t.z)<4.3){
+      const hbX=t.type===0?1.5:1.8, hbZ=t.type===0?3.85:4.3;   // the small Fiesta Mk1 (3.75 m x ~1.6 m) gets a hitbox sized to the model
+      if(adx<hbX&&Math.abs(t.z)<hbZ){
         if(sameKindTraffic(t)){ if(!t.ph){ t.ph=1; popup('SAME MODEL · NO DAMAGE','good'); } }   // Fiesta/Accord/Ram drive through their own kind
         else if(ghostLeft>0){const sd=dx>=0?1:-1;t.crashT=1.45;t.vx=-sd*9;t.spin=-sd*6;t.gone=false;r.hit=true;}
         else if(nitrousLeft>0){const sd=dx>=0?1:-1;t.crashT=1.45;t.vx=-sd*13;t.spin=-sd*8;t.gone=false;r.hit=true;popup('NITROUS IMPACT','good');}
@@ -4796,6 +4845,7 @@ function frame(){
   }
 
   try{ if(MP.on) mpTick(rdt); }catch(e){ console.error('[mp]',e); }
+  try{ if(EV.plane&&EV.plane.visible) evPlaneSpin(EV.plane,rdt); }catch(e){}
   try{
     if(CIN.on){
       cinTick(rdt);
