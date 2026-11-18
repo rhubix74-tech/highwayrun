@@ -4340,7 +4340,7 @@ function evStart(kind){
     const o=air?EV.plane:EV.train, top=((CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].topSpeedMph)||150)/MPH;
     const reach=Math.min(top,evThrMs()*1.15);
     // Per-car rated minimum: the plane holds a little more pace than the train.
-    const vMin=top*(air?.64:.60), vTarget=Math.max(vMin,reach*(air?.90:.86));
+    const vMin=top*(air?.72:.68), vTarget=Math.max(vMin,reach*(air?1.0:.95));   // balance: opponents were too slow, so the player won too often
     EV.cur={k:kind,t:0,wx:air?'rain':'clear',P0:runDist,Q:0,v0:speed,vt:vTarget,vMin,aiV:speed,o,R:EVC.raceMi*1609.34}; o.visible=true; if(!air) o.userData.track.visible=true;
     popup('SHOWCASE RACE · '+(air?'CARGO PLANE':'FREIGHT TRAIN')+' · '+EVC.raceMi+' MILES','good'); cinBegin(kind);
     { const sg=RADIO.find(t=>t.t===(air?'Hydra':'Train in Vain')); evPlayTheme(sg); }   // temporary showcase theme; restore the previous radio state at event end
@@ -4630,7 +4630,7 @@ function evStreetRace(c,dt,H){
 function evRace(c,dt,H){
   const air=c.k==='plane', P=runDist-c.P0, ramp=Math.min(1,c.t/10);
   // Keep a modest late-race fade so the finish remains contestable without giving away the race.
-  const fade=c.Q<=3.5*1609.34?0:Math.min(1,(c.Q-3.5*1609.34)/500), f=1.02-.10*fade*fade*(3-2*fade);
+  const fade=c.Q<=3.5*1609.34?0:Math.min(1,(c.Q-3.5*1609.34)/500), f=1.07-.06*fade*fade*(3-2*fade);
   if(fade>0&&!c.faded){ c.faded=true; popup((air?'THE CARGO PLANE':'THE FREIGHT TRAIN')+' IS FADING · FINAL MILE!','good'); }
 
   // Gap assistance is deliberately restrained and smoothed through AI acceleration.
@@ -4640,12 +4640,18 @@ function evRace(c,dt,H){
   const paceFactor=gapQ>80
     ? 1-Math.min(.18,(gapQ-80)/900)
     : gapQ<-80 ? 1+Math.min(.12,(-gapQ-80)/900) : 1;
+  let chase=false;
   let sf=1;
   if(c.slowT>0){ c.slowT-=dt; sf=1-.30*Math.min(1,c.slowT/.8); }
 
-  const targetV=Math.max(c.vMin,(c.v0+(c.vt*f-c.v0)*ramp)*paceFactor*sf*(1+.02*Math.sin(c.t*.45)));
+  let targetV=Math.max(c.vMin,(c.v0+(c.vt*f-c.v0)*ramp)*paceFactor*sf*(1+.02*Math.sin(c.t*.45)));
+  // Comeback rules, both ways, so a bad stretch is never the end of the race and a good one is never a free win:
+  // - more than 120 m behind: the opponent stops pulling away (it holds at or below your speed), so you can close the gap by driving faster
+  // - more than 80 m ahead of the opponent: it chases at a little above your speed, harder the further you are ahead
+  if(gapQ>120) targetV=Math.min(targetV,Math.max(c.vMin*.6,speed*(1-Math.min(.12,(gapQ-120)/800))));
+  else if(gapQ<-80){ chase=true; targetV=Math.max(targetV,speed*(1.02+Math.min(.2,(-gapQ-80)/400))); }
   if(!Number.isFinite(c.aiV)) c.aiV=Math.max(0,c.v0);
-  const accel=air?1.65:1.45, decel=air?2.25:2.0; // m/s²: gradual pickup, slightly quicker lift-off
+  const accel=(air?1.65:1.45)*(chase?1.6:1), decel=air?2.25:2.0; // m/s²: gradual pickup, slightly quicker lift-off
   const dv=targetV-c.aiV;
   c.aiV+=Math.max(-decel*dt,Math.min(accel*dt,dv));
   const v=Math.max(0,c.aiV);
