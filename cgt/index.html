@@ -4238,12 +4238,14 @@ function evPlaneSplitProps(root){
     geo.setIndex(keep); PLANE.props=hubs.length;
   });
 }
+const PLANE_GEAR=new Set(['Object_16','Object_19','Object_24','Object_37','Object_27','Object_30','Object_40','Object_43','Object_33']);   // nose + main gear wheels, struts and the nose-gear panel
 function evPlaneApply(g){
   [...g.children].forEach(c=>{ g.remove(c); c.traverse(o=>{ if(o.geometry) o.geometry.dispose(); }); });
   const inner=PLANE.tpl.clone(true), wrap=new THREE.Group(); inner.position.set(0,-1.5,-1.75); wrap.add(inner); wrap.rotation.y=Math.PI; wrap.scale.setScalar(PLANE.S);
   const props=[]; const seen=new Map();
   inner.traverse(o=>{
-    if(!o.isMesh) return; o.frustumCulled=false; o.castShadow=false;
+    if(!o.isMesh) return; if(PLANE_GEAR.has(o.name)){ o.visible=false; return; }   // gear up: no landing gear in flight
+    o.frustumCulled=false; o.castShadow=false;
     const src=Array.isArray(o.material)?o.material:[o.material];
     const cl=src.map(sm=>{ const m=sm.clone(); bendMat(m); return m; }); o.material=Array.isArray(o.material)?cl:cl[0];
     if(o.userData.prop) props.push(o);
