@@ -4388,6 +4388,10 @@ function evTick(dt){
   const c=EV.cur;
   if(!c){
     if(!EV.pol&&!EV.polReq&&(tunnelGroup.visible||runT>12)) evBuildPolice();   // get the cruiser model ready well before it can be needed (it used to start loading only near a tunnel, so a chase 'dispatched' then waited on the download)
+    if(MP.on){   // multiplayer: events are scheduled from the room code, so BOTH drivers get the same event (same kind, same moment) and freeze for the same cinematic
+      EV.cool-=dt;
+      if(MP.stage==='play'&&MP.evR&&EV.cool<=0&&(performance.now()-MP.evT0)/1000>=MP.evAt){ const k=MP.evKind; mpEvNext(); evStart(k); }
+      EV.wasT=!!tunnelActive; return; }
     EV.cool-=dt; const inT=!!tunnelActive;
     if(inT&&!EV.wasT&&EV.cool<=0&&Math.random()<1/EVC.tunnelOdds){ const k=evPick(); if(k) evStart(k); }   // moderate chance on eligible tunnel entry (about 1 in 5)
     else if(EV.cool<=0&&runT>40&&(EV._amb=(EV._amb||0)+dt)>=1){ EV._amb=0; if(Math.random()<1/EVC.ambientSecs){ const k=evPick(); if(k) evStart(k); } }   // independent open-road roll: average 2 minutes between rolls
@@ -4452,7 +4456,7 @@ function cinBegin(kind){
   document.body.classList.add('cin'); CIN.on=true; CIN.k=kind; CIN.t=0; CIN.roll=0; CIN.fov=0; CIN.cars=null;
   CIN.dur={train:6.4,plane:6.6,police:5.6,convoy:6.8,balloon:6.2}[kind]; CIN.bs=CIN.dur-2.1;
   if(EV.hud){ EV.hud.style.display='none'; EV._hs=null; } evSiren(false);
-  d.top.style.height=d.bot.style.height='11vh'; d.skip.style.opacity=.85;
+  d.top.style.height=d.bot.style.height='11vh'; d.skip.style.opacity=MP.on?0:.85; d.skip.style.pointerEvents=MP.on?'none':'auto';   // no skipping in multiplayer: both drivers sit through the same cinematic
   const tt=_cinTitles[kind]; d.ttl.textContent=tt[0]; d.sub.textContent=tt[1];
   setTimeout(()=>{ if(CIN.on){ d.ttl.style.opacity=1; d.ttl.style.transform='none'; d.sub.style.opacity=1; } },350);
   if(kind==='convoy'){ cinPortal().visible=true; CIN.portal.position.set(0,0,CIN_PZ); CIN.cars=c.cars.map(q=>({q,t:q.t,x:q.t.x,z:q.t.z,side:q.t.x>=px?1:-1})); CIN.cars.forEach(o=>{ o.t.g.visible=false; }); }
@@ -5314,8 +5318,14 @@ function mpStartRun(){
   loadoutOpen=false; $('loadout').classList.remove('show');
   try{ startRun(); } finally { for(const k in eq) PU.equipped[k]=eq[k]; }
   if(MP.mode==='battle') timeLeft=MP_BATTLE_SECS;
-  MP.stage='play'; $('mpHud').classList.add('show');
+  MP.stage='play'; $('mpHud').classList.add('show'); mpEvInit(); EV.cool=0;
 }
+/* shared event schedule: a PRNG seeded from the room code gives both clients the same sequence of (time, kind). Times are wall-clock seconds since the match
+   started, so a laggy client's game clock can't drift the schedule. No server support needed. */
+function mpRng(seed){ let a=seed>>>0; return ()=>{ a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
+const MP_EV_KINDS=['police','convoy','plane','train','balloon','street'];
+function mpEvInit(){ let h=2166136261; const s=(MP.code||'')+MP.mode; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } MP.evR=mpRng(h); MP.evT0=performance.now(); MP.evAt=0; MP.evN=0; MP.evKind=''; mpEvNext(); }
+function mpEvNext(){ const r=MP.evR; MP.evN++; MP.evAt+=MP.evN===1?70+r()*40:150+r()*90; MP.evKind=MP_EV_KINDS[(r()*MP_EV_KINDS.length)|0]; }
 /* ---- per-frame: stream my state, draw their car, HUD ---- */
 function mpRemoveCar(){ if(MP.rc){ if(MP.rc.g.parent) MP.rc.g.parent.remove(MP.rc.g); MP.rc=null; MP.rcId=''; } }
 function mpNameTag(txt){
@@ -5388,7 +5398,7 @@ $('mpResBack').addEventListener('click',()=>{ mpReset(); showTitle(); });
 /* ---- rules inside a match ---- */
 { const _sx=startExit; startExit=function(E){ if(MP.on&&MP.mode==='battle'){ if(!MP._noExit||performance.now()-MP._noExit>4000){ MP._noExit=performance.now(); popup('NO EXITS IN BATTLE','bad'); } return; } return _sx.apply(this,arguments); }; }
 { const _rr=recordRun; recordRun=function(){ if(MP.on) return []; return _rr.apply(this,arguments); }; }   // multiplayer runs don't touch the solo score / miles records
-{ const _ep=evPick; evPick=function(){ return MP.on?null:_ep.apply(this,arguments); }; }              // no random events in multiplayer (they freeze the world and pay big bonuses)
+{ const _ep=evPick; evPick=function(){ return MP.on?null:_ep.apply(this,arguments); }; }              // no INDEPENDENT random events in multiplayer: they come from the shared schedule (mpEvInit) so both drivers get the same one
 addEventListener('keydown',e=>{ if(e.code==='Escape'&&MP.on&&state==='run'){ e.stopImmediatePropagation(); e.preventDefault(); if(confirm('Quit the match? It counts as a forfeit in Battle.')) endRun('esc'); } },true);
 addEventListener('beforeunload',()=>{ if(MP.ws) try{ MP.ws.close(); }catch(e){} });
 
