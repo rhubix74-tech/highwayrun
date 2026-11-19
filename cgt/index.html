@@ -2556,7 +2556,7 @@ lazyCar('xkr','2009_jaguar_xkr_5.0_supercharged_speed_pack.glb',gltf=>{
   model.updateMatrixWorld(true);
   { const gr=[]; model.traverse(o=>{ if(o.isMesh&&o.userData.mn==='grille') gr.push(o); }); const b=new THREE.Box3(); gr.forEach(o=>b.expandByObject(o)); if(gr.length&&b.getCenter(new THREE.Vector3()).z<0) model.rotation.y=Math.PI; }   // nose to +Z
   model.updateMatrixWorld(true);
-  const tyres=[], rims=[], cals=[]; model.traverse(o=>{ if(!o.isMesh) return; const mn=o.userData.mn; if(mn==='tire') tyres.push(o); else if(mn==='disk') rims.push(o); else if(mn==='calipers') cals.push(o); });
+  const tyres=[], rims=[], cals=[], hubs=[];   // hubs: spokes / caps / centre badges ('phong15', 'Baadges'): only those next to a tyre spin model.traverse(o=>{ if(!o.isMesh) return; const mn=o.userData.mn; if(mn==='tire') tyres.push(o); else if(mn==='disk') rims.push(o); else if(mn==='calipers') cals.push(o); else if(mn==='phong15'||mn==='Baadges') hubs.push(o); });
   const tc=tyres.map(o=>bx(o).getCenter(new THREE.Vector3()));
   let S=1; { const f=tc.filter(c=>c.z>0), r=tc.filter(c=>c.z<=0); if(f.length&&r.length){ const wb=f.reduce((a,c)=>a+c.z,0)/f.length-r.reduce((a,c)=>a+c.z,0)/r.length; if(wb>1e-6) S=2.75/wb; } }
   if(!isFinite(S)||S<=0) S=1; model.scale.multiplyScalar(S); model.updateMatrixWorld(true);
@@ -2566,7 +2566,8 @@ lazyCar('xkr','2009_jaguar_xkr_5.0_supercharged_speed_pack.glb',gltf=>{
   const all=bx(model); console.info('[XKR] scale',S.toFixed(4),'length m',(all.max.z-all.min.z).toFixed(3),'width m',(all.max.x-all.min.x).toFixed(3),'height m',(all.max.y-all.min.y).toFixed(3),'tyres',tyres.length,'rim parts',rims.length,'calipers',cals.length);
   const wheelsC=tyres.map(o=>bx(o).getCenter(new THREE.Vector3())), partsBy=tyres.map(o=>[o]), calBy=tyres.map(()=>[]);
   const near=o=>{ const c=bx(o).getCenter(new THREE.Vector3()); let bi=0,bd=1e9; wheelsC.forEach((w,i)=>{ const d=c.distanceTo(w); if(d<bd){ bd=d; bi=i; } }); return bi; };
-  rims.forEach(o=>{ if(tyres.length) partsBy[near(o)].push(o); }); cals.forEach(o=>{ if(tyres.length) calBy[near(o)].push(o); });
+  rims.forEach(o=>{ if(tyres.length) partsBy[near(o)].push(o); });
+  hubs.forEach(o=>{ if(!tyres.length) return; const c=bx(o).getCenter(new THREE.Vector3()), i=near(o); if(c.distanceTo(wheelsC[i])<.3*S/.01) partsBy[i].push(o); }); cals.forEach(o=>{ if(tyres.length) calBy[near(o)].push(o); });
   tyres.forEach((t,i)=>{
     const parts=partsBy[i], box=bx(t), c=box.getCenter(new THREE.Vector3()), R=(box.max.y-box.min.y)/2; xkrRoot.worldToLocal(c);
     const steer=new THREE.Group(), spin=new THREE.Group(); steer.position.copy(c); xkrRoot.add(steer); steer.add(spin); xkrRoot.updateMatrixWorld(true);
@@ -3101,7 +3102,7 @@ function stockDef(){ const b={id:'stock',grp:'special',price:0};
   if(CS.sel==='fulvia') return Object.assign(b,{name:'Factory Default (Racing Red)',c:'#d6141c',fin:'gloss'});
   if(CS.sel==='prius') return Object.assign(b,{name:'Factory Default (Sea Glass Pearl)',c:'#8fa5a0',fin:'pearl'});
   if(CS.sel==='enzo') return Object.assign(b,{name:'Factory Default (Rosso Corsa)',c:'#c1121f',fin:'gloss'});
-  if(CS.sel==='xkr') return Object.assign(b,{name:'Factory Default (Light Blue)',c:'#8cc4ee',fin:'gloss'});
+  if(CS.sel==='xkr') return Object.assign(b,{name:'Factory Default (Azure Blue)',c:'#1c8fe0',fin:'gloss'});
   if(CS.sel==='m3') return Object.assign(b,{name:'Factory Default (Brilliant Red)',c:'#d40000',fin:'gloss'});
   if(CS.sel==='chiron') return Object.assign(b,{name:'Factory Default (Bugatti Blue)',c:'#0035cd',fin:'gloss'});
   if(CS.sel==='aero') return Object.assign(b,{name:'Factory Default (Grey & Black Stripe)',c:'#8a9098',fin:'metal',stripe:2});
