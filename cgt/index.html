@@ -2577,8 +2577,11 @@ lazyCar('xkr','2009_jaguar_xkr_5.0_supercharged_speed_pack.glb',gltf=>{
   const all=bx(model); console.info('[XKR] build D (decal lift) · scale',S.toFixed(4),'length m',(all.max.z-all.min.z).toFixed(3),'width m',(all.max.x-all.min.x).toFixed(3),'height m',(all.max.y-all.min.y).toFixed(3),'tyres',tyres.length,'rim parts',rims.length,'calipers',cals.length);
   const wheelsC=tyres.map(o=>bx(o).getCenter(new THREE.Vector3())), partsBy=tyres.map(o=>[o]), calBy=tyres.map(()=>[]);
   const near=o=>{ const c=bx(o).getCenter(new THREE.Vector3()); let bi=0,bd=1e9; wheelsC.forEach((w,i)=>{ const d=c.distanceTo(w); if(d<bd){ bd=d; bi=i; } }); return bi; };
-  rims.forEach(o=>{ if(tyres.length) partsBy[near(o)].push(o); });
-  hubs.forEach(o=>{ if(!tyres.length) return; const c=bx(o).getCenter(new THREE.Vector3()), i=near(o); if(c.distanceTo(wheelsC[i])<.3*S/.01) partsBy[i].push(o); }); cals.forEach(o=>{ if(tyres.length) calBy[near(o)].push(o); });
+  /* Only parts that really sit on a wheel may spin with it. The old test compared the distance in metres with .3*S/.01, which is ~3000 m here (S is ~100, not .01), so EVERY 'Baadges'/'phong15'
+     piece (rear lettering, the bonnet leaper, side-vent badges, trim) was attached to the nearest wheel and spun/steered with it: that is why the badges slid off the car and jittered while driving. */
+  const wd=o=>{ const c=bx(o).getCenter(new THREE.Vector3()); return c.distanceTo(wheelsC[near(o)]); };
+  rims.forEach(o=>{ if(tyres.length&&wd(o)<.45) partsBy[near(o)].push(o); });
+  hubs.forEach(o=>{ if(!tyres.length) return; if(wd(o)<.3) partsBy[near(o)].push(o); }); cals.forEach(o=>{ if(tyres.length) calBy[near(o)].push(o); });
   tyres.forEach((t,i)=>{
     const parts=partsBy[i], box=bx(t), c=box.getCenter(new THREE.Vector3()), R=(box.max.y-box.min.y)/2; xkrRoot.worldToLocal(c);
     const steer=new THREE.Group(), spin=new THREE.Group(); steer.position.copy(c); xkrRoot.add(steer); steer.add(spin); xkrRoot.updateMatrixWorld(true);
@@ -3255,7 +3258,7 @@ function crash(label,rel){
 function gainTime(base){ if(isBetaCar()) return 0; if(MP.on&&MP.mode==='battle'){ tStreak++; return 0; } tStreak++; let g=base+.3*Math.min(8,tStreak-1); if(CS.sel==='prius'||CS.sel==='fulvia') g*=1.5; if(CS.sel==='daytona'&&Math.random()<.1){ g*=2; popup('LUCKY · TIME BONUS DOUBLED','good'); } timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+g); return g; }
 function threadGap(r){
   if(isBetaCar()) return;
-  const ch=lastGap>=0&&r.gap!==lastGap; weave=ch?Math.min(8,weave+1):1; lastGap=r.gap;
+  const ch=lastGap>=0&&r.gap!==lastGap; weave=ch?Math.min(9,weave+1):1;   // cap is 9 so the 'Maximum Weave' challenge (WEAVE x9) is reachable lastGap=r.gap;
   const b=Math.round(400*mult*(runPU.double?2:1)*weave*speedK()); score+=b;
   if(CH.active){ CH.st.th++; CH.st.wm=Math.max(CH.st.wm,weave); } const ts=gainTime(1.3); popup((weave>1?'WEAVE x'+weave:'THREAD THE GAP')+'  +'+b.toLocaleString()+(ts>0?'  ·  +'+ts.toFixed(1)+'s':''),'good');
 }
