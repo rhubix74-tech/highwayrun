@@ -2570,7 +2570,7 @@ lazyCar('xkr','2009_jaguar_xkr_5.0_supercharged_speed_pack.glb',gltf=>{
   { const g=new THREE.Box3(); tyres.forEach(o=>g.union(bx(o))); const cz=tyres.length?tyres.map(o=>bx(o).getCenter(new THREE.Vector3()).z).reduce((a,b)=>a+b,0)/tyres.length:0;
     model.position.set(0,isFinite(g.min.y)?-g.min.y:0,-cz); }
   xkrRoot.updateMatrixWorld(true);
-  const all=bx(model); console.info('[XKR] scale',S.toFixed(4),'length m',(all.max.z-all.min.z).toFixed(3),'width m',(all.max.x-all.min.x).toFixed(3),'height m',(all.max.y-all.min.y).toFixed(3),'tyres',tyres.length,'rim parts',rims.length,'calipers',cals.length);
+  const all=bx(model); console.info('[XKR] build C (part detection by material or node name) · scale',S.toFixed(4),'length m',(all.max.z-all.min.z).toFixed(3),'width m',(all.max.x-all.min.x).toFixed(3),'height m',(all.max.y-all.min.y).toFixed(3),'tyres',tyres.length,'rim parts',rims.length,'calipers',cals.length);
   const wheelsC=tyres.map(o=>bx(o).getCenter(new THREE.Vector3())), partsBy=tyres.map(o=>[o]), calBy=tyres.map(()=>[]);
   const near=o=>{ const c=bx(o).getCenter(new THREE.Vector3()); let bi=0,bd=1e9; wheelsC.forEach((w,i)=>{ const d=c.distanceTo(w); if(d<bd){ bd=d; bi=i; } }); return bi; };
   rims.forEach(o=>{ if(tyres.length) partsBy[near(o)].push(o); });
