@@ -2536,11 +2536,14 @@ lazyCar('m3','1988_bmw_m3_evolution_ii_e30.glb',gltf=>{
 const XKR_LAMP=mkLamp(0,[0,0,0],[1,1,1],[0,0,0],[1,1,1]); XKR_LAMP.tri.value=1;
 const xkrPatch=makePaintPatch(XKR_LAMP), xkrPaintMats=[], xkrHeadMats=[], xkrTailMats=[];
 function syncXkrPaint(){ for(const m of xkrPaintMats){ m.copy(M.paint); m.map=null; m.normalMap=null; m.clearcoatNormalMap=null; m.needsUpdate=true; } }
+const XKR_MATS=['light_glass','orange_glass','red_glass','glass_surr','body_Chrome','grille_2','Baadges','calipers','CarPaint','internal','chassis','phong15','plastic','material','mirror','grille','chrome','glass','light','plate','tire','disk'];   // longest-first
+/* material name of a mesh: the glTF material name, or (if the loader dropped/renamed it) taken from the node name, which the exporter built as '<object>_<material>_0' */
+function xkrMat(o,src){ const n=(src&&src.name)||''; if(XKR_MATS.includes(n)) return n; const on=o.name||''; for(const k of XKR_MATS) if(on.endsWith('_'+k+'_0')) return k; return n; }
 lazyCar('xkr','2009_jaguar_xkr_5.0_supercharged_speed_pack.glb',gltf=>{
   const model=gltf.scene; xkrRoot.add(model);
   const cache=new Map(), glassM=new THREE.MeshStandardMaterial({color:0x05070a,metalness:.6,roughness:.12}); let paintM=null;
   model.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; o.receiveShadow=true;
-    const src=o.material, nm=(src&&src.name)||''; o.userData.mn=nm;
+    const src=o.material, nm=xkrMat(o,src); o.userData.mn=nm;
     if(nm==='CarPaint'){
       if(!paintM){ paintM=new THREE.MeshPhysicalMaterial(); paintM.copy(M.paint); paintM.map=null; paintM.name='XKR_Paint'; paintM.envMapIntensity=.65; paintM.userData.e0=.65; envMats.push(paintM); xkrPaintMats.push(paintM); paintM.onBeforeCompile=xkrPatch; paintM.customProgramCacheKey=PAINT_KEY; }
       o.material=paintM; return; }
@@ -2559,6 +2562,7 @@ lazyCar('xkr','2009_jaguar_xkr_5.0_supercharged_speed_pack.glb',gltf=>{
   const tyres=[], rims=[], cals=[], hubs=[];
   /* hubs: spokes / caps / centre badges ('phong15', 'Baadges'): only those next to a tyre spin */
   model.traverse(o=>{ if(!o.isMesh) return; const mn=o.userData.mn; if(mn==='tire') tyres.push(o); else if(mn==='disk') rims.push(o); else if(mn==='calipers') cals.push(o); else if(mn==='phong15'||mn==='Baadges') hubs.push(o); });
+  if(tyres.length!==4){ const smp=[]; model.traverse(o=>{ if(o.isMesh&&smp.length<8) smp.push(o.name+' | '+o.userData.mn); }); console.warn('[XKR] expected 4 tyres, found',tyres.length,'· sample meshes:',smp.join(' ; ')); }
   const tc=tyres.map(o=>bx(o).getCenter(new THREE.Vector3()));
   let S=1; { const f=tc.filter(c=>c.z>0), r=tc.filter(c=>c.z<=0); if(f.length&&r.length){ const wb=f.reduce((a,c)=>a+c.z,0)/f.length-r.reduce((a,c)=>a+c.z,0)/r.length; if(wb>1e-6) S=2.75/wb; } }
   { const L0=bx(model); const len=L0.max.z-L0.min.z; if(isFinite(len)&&len>1e-6){ const S2=4.79/len; if(!(S>0)||Math.abs(Math.log(S2/S))>.15) S=S2; } }   // the real XKR is 4.79 m long: if the wheelbase-based scale disagrees by more than ~15%, trust the overall length
