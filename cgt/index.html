@@ -2550,6 +2550,7 @@ lazyCar('xkr','2009_jaguar_xkr_5.0_supercharged_speed_pack.glb',gltf=>{
     if(nm==='glass'){ o.material=glassM; return; }
     let m=cache.get(src); if(!m){ m=src.clone(); if(m.transmission) m.transmission=0; m.envMapIntensity=.65; m.userData.e0=.65; envMats.push(m); cache.set(src,m);
       if(nm==='internal'||nm==='grille'||nm==='grille_2'){ m.transparent=false; m.alphaTest=nm==='internal'?0:.4; }
+      if(nm==='Baadges'||nm==='plate'){ m.transparent=false; m.alphaTest=nm==='plate'?0:.5; m.depthWrite=true; m.polygonOffset=true; m.polygonOffsetFactor=-4; m.polygonOffsetUnits=-4; }   // badges/plate sit flush on the body: pull them toward the camera so they stop z-fighting (the jitter), and use a cut-out instead of blending so sorting can't flicker
       if(nm==='light'){ m.emissive=new THREE.Color(0xffffff); m.emissiveMap=m.map||null; m.emissiveIntensity=0; xkrHeadMats.push(m); }
       if(nm==='red_glass'){ m.emissive=new THREE.Color(0xff1608); m.emissiveIntensity=0; xkrTailMats.push(m); }
       if(nm==='material'){ m.emissive=new THREE.Color(0xff2a10); m.emissiveIntensity=0; xkrTailMats.push(m); } }   // 'material' is the rear reflector strip
