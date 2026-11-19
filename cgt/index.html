@@ -1184,7 +1184,7 @@ const rampGroup=new THREE.Group(); rampGroup.visible=false; scene.add(rampGroup)
   const gm=new THREE.Mesh(new THREE.PlaneGeometry(1.8,48),new THREE.MeshBasicMaterial({map:gc,transparent:true,depthWrite:false,fog:true,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}));
   gm.rotation.x=-Math.PI/2; gm.position.set(-8.1,.03,-26); rampGroup.add(gm);
 }
-function setExitMi(){ jagEv=(typeof CS!=='undefined'&&CS.sel==='xkr')?1:0; m3Calm=(typeof CS!=='undefined'&&CS.sel==='m3')?1:0; aeroDens=(typeof CS!=='undefined'&&CS.sel==='aero')?1:0; EXIT_MI=(CH.active&&CH.def&&CH.def.exitMi)||((typeof CS!=='undefined'&&CS.sel==='zonda')?5:10); EX=EXIT_MI*1609.34; }
+function setExitMi(){ chDens=(typeof CH!=='undefined'&&CH.active&&CH.def&&CH.def.dens)||0; jagEv=(typeof CS!=='undefined'&&CS.sel==='xkr')?1:0; m3Calm=(typeof CS!=='undefined'&&CS.sel==='m3')?1:0; aeroDens=(typeof CS!=='undefined'&&CS.sel==='aero')?1:0; EXIT_MI=(CH.active&&CH.def&&CH.def.exitMi)||((typeof CS!=='undefined'&&CS.sel==='zonda')?5:10); EX=EXIT_MI*1609.34; }
 function exitK(){ return Math.max(1,Math.round(runDist/EX)); }
 function updateSigns(){
   const kA=Math.max(0,Math.round((runDist-SIGN_START)/EX)), zA=kA*EX+SIGN_START-runDist;
@@ -1524,7 +1524,7 @@ for(let i=0;i<4;i++){const t=makeTraffic(true);respawn(t,true);trafficCars.push(
    Early on most rows are empty or a single car; by DIFF=1 every row is two cars + a gap and walls appear at full rate. */
 let DIFF=0, brkAssist=0, adminDifficulty=1, adminInfiniteClock=false; const DIFF_MILES=4;
 var m3Calm=0, jagEv=0;   // jagEv: 1 while the XKR is selected (twice as many random events)   // 1 while the M3 is selected: no reckless drivers
-var aeroDens=0;   // 1 while the Aero is selected (var: layoutRow runs before CS exists)
+var aeroDens=0, chDens=0;   // chDens: challenge-only traffic boost (the Train in Vain challenge)   // 1 while the Aero is selected (var: layoutRow runs before CS exists)
 const wallChance=()=>(aeroDens?.6:1)*.16*Math.min(1,Math.max(0,(DIFF-.2)/.6))*(1+1.2*HARD);   // walls get ~2x as common by mile 20
 let VT=22, HARD=0; const ROW_GAP=90, NROWS=5, rows=[];
 function nextGap(g){ if(Math.random()<.25) return g; const o=g===1?[0,2]:[1]; return o[(Math.random()*o.length)|0]; }
@@ -1541,8 +1541,8 @@ function layoutRow(r,chain,wall){
   r.chain=chain; r.wall=!!wall; r.gap=wall?-1:chain; r.hit=false; r.done=false;
   let lanes=wall?_L3:(_LX[chain]||_L3);   // [alloc] was allocating [0,1,2] + filter result per row
   if(!wall){
-    if(Math.random()>.45+.55*DIFF-aeroDens*.22) lanes=_L0;                                    // quiet stretch: nobody in this row
-    else if(Math.random()<.7*(1-DIFF)+aeroDens*.3) { _L1[0]=lanes[(Math.random()*lanes.length)|0]; lanes=_L1; }   // a lone car  [alloc] was allocating a 1-element array
+    if(Math.random()>.45+.55*DIFF-aeroDens*.22+chDens*.06) lanes=_L0;                                    // quiet stretch: nobody in this row
+    else if(Math.random()<.7*(1-DIFF)+aeroDens*.3-chDens*.08) { _L1[0]=lanes[(Math.random()*lanes.length)|0]; lanes=_L1; }   // a lone car  [alloc] was allocating a 1-element array
     if(evQuiet) lanes=_L0;
     if(lanes.length<2) r.done=true;                                              // only a real two-car row with a gap scores
   }
@@ -3320,7 +3320,7 @@ function physics(dt){
     while(false){    // +10 s every 100k pts; each bonus earned within BONUS_WIN s of the last one makes the next gap 40% bigger (up to x3.4), and it cools off again when you slow down
       const gap=runT-lastBT; bHeat=gap<BONUS_WIN?Math.min(6,bHeat+1):Math.max(0,bHeat-Math.floor(gap/BONUS_WIN)); lastBT=runT;
       nextBonus+=Math.round(100000*(1+.4*bHeat)); timeLeft+=0; popup('+10 SECONDS'+(bHeat>0?'  ·  next +'+Math.round(100000*(1+.4*bHeat)/1000)+'k':''),'good'); }
-    runT+=dt; if(!adminInfiniteClock) timeLeft-=dt; timeLeft=Math.min(timeLeft,TIME_CAP+startBonus()); if(!adminInfiniteClock&&timeLeft<=0){ timeLeft=0; endRun('time'); }
+    runT+=dt; if(!adminInfiniteClock&&!(CH.active&&CH.def&&CH.def.race)) timeLeft-=dt; timeLeft=Math.min(timeLeft,TIME_CAP+startBonus()); if(!adminInfiniteClock&&timeLeft<=0){ timeLeft=0; endRun('time'); }
   }
 }
 let _hudAt=0;
@@ -3493,8 +3493,15 @@ const CHALLENGES_B=[
  {id:'B24',tier:5,name:'Underdog',          car:'fiesta', song:'audio13.mp3',time:130,g:{score:80000,noCrash:true}},
  {id:'B25',tier:5,name:'The Grand Finale',  car:'chiron', song:'audio14.mp3',time:130,exitMi:5, g:{noCrash:true,score:300000,exit:{frac:.6}}}
 ];
-const chArr=k=>k==='B'?CHALLENGES_B:CHALLENGES, CH_B_GATE=18;
+const chArr=k=>k==='C'?CHALLENGES_C:k==='B'?CHALLENGES_B:CHALLENGES, CH_B_GATE=18;
 CHALLENGES_B.forEach(c=>{ c.list='B'; c.pen=[0,5,8,10,15,20][c.tier]; });
+/* ---------------- AUXILIARY LIST (C): showcase races. The car races the cargo plane / freight train over 7 miles against a tougher version of the event AI (see evStart/evRace: hard).
+   The challenge clock is held while the race runs (a 7-mile race can't fit the 135 s clock cap); each crash still costs time. 'dens' nudges traffic density up slightly. $50 per first clear. */
+const CHALLENGES_C=[
+ {id:'C1',tier:3,name:'Storm Chaser',car:'xkr',   song:null,time:120,exitMi:12,g:{race:true},race:{k:'plane',mi:7,hard:true}},
+ {id:'C2',tier:3,name:'Train in Vain',car:'fulvia',song:null,time:120,exitMi:12,dens:1,g:{race:true},race:{k:'train',mi:7,hard:true}}
+];
+CHALLENGES_C.forEach(c=>{ c.list='C'; c.pen=10; });
 
 let CHS={done:{},paidAll:false,paidAllB:false};
 try{ const j=JSON.parse(localStorage.getItem('cgt_ch')||'null'); if(j&&j.done) CHS={done:j.done,paidAll:!!j.paidAll,paidAllB:!!j.paidAllB}; }catch(e){}
@@ -3515,6 +3522,7 @@ function simTopMph(id){                      // terminal speed of the car's real
 function chGoal(d){ const g=Object.assign({},d.g); if(g.top){ const simulated=simTopMph(d.car); const rated=CAR_STATS[d.car]&&CAR_STATS[d.car].topSpeedMph; const achievable=Math.min(simulated,Number.isFinite(rated)&&rated>0?rated:simulated); g.speed=Math.floor(achievable*g.top); } return g; }
 function chText(d){
   const g=chGoal(d), p=[], ex=g.exit;
+  if(g.race) return 'Beat the '+(d.race.k==='plane'?'cargo plane':'freight train')+' to the finish over '+d.race.mi+' miles · tougher AI · the clock holds during the race · each crash −'+d.pen+' s';
   if(ex){ const em=d.exitMi||(d.car==='zonda'?5:10); let t='Take the exit '+em+' mi ahead';
     if(ex.frac) t+=' with '+Math.round(ex.frac*100)+'% of your time left'; if(ex.min) t+=' with '+ex.min+' s left'; if(ex.gain) t+=' with more time than you started with'; p.push(t); }
   if(g.speed) p.push('Reach '+g.speed+' mph'+(g.top?' ('+Math.round(g.top*100)+'% of its real top speed)':''));
@@ -3548,7 +3556,7 @@ function chTick(dt){                         // called every frame of a challeng
   if(mph>st.mx) st.mx=mph; if(mult>st.mm) st.mm=mult; if(tStreak>st.ts) st.ts=tStreak; if(timeLeft>st.tl) st.tl=timeLeft;
   if(g.noBrake&&runT>1.5&&brkS>.2){ chFinish(false,'You touched the brake - this one needs a brake-free run.'); return true; }
   if(g.hold){ if(mph>=g.hold[0]){ st.hold+=dt; if(st.hold>st.hb) st.hb=st.hold; } else st.hold=0; }
-  if(!g.exit&&!chUnmet(g).length){ chFinish(true); return true; }
+  if(!g.exit&&!g.race&&!chUnmet(g).length){ chFinish(true); return true; }   // race challenges are decided by the race itself (evRace)
   return false;
 }
 function chCrash(){ CH.st.cr++; if(CH.goal.noCrash){ chFinish(false,'You crashed - this one needs a clean run.'); return true; } return false; }
@@ -3563,22 +3571,22 @@ function chFinish(win,msg){
   let title,html,hasNext=false;
   if(win){
     const first=!CHS.done[d.id]; CHS.done[d.id]=true; let pay='';
-    if(first){ addCash(L==='B'?3000:2000); pay=L==='B'?'+$30.00':'+$20.00'; }
+    const prize=L==='C'?5000:L==='B'?3000:2000; if(first){ addCash(prize); pay='+$'+(prize/100).toFixed(2); }
     let all=''; if(L==='B'){ if(arr.every(c=>CHS.done[c.id])&&!CHS.paidAllB){ CHS.paidAllB=true; addCash(250000); all='<div class="nb" style="color:#ffd76a">ALL 25 LIST B CHALLENGES COMPLETE · +$2,500.00</div>'; } }
-    else if(arr.every(c=>CHS.done[c.id])&&!CHS.paidAll){ CHS.paidAll=true; addCash(100000); all='<div class="nb" style="color:#ffd76a">ALL 25 CHALLENGES COMPLETE · +$1,000.00</div>'; }
+    else if(L==='A'&&arr.every(c=>CHS.done[c.id])&&!CHS.paidAll){ CHS.paidAll=true; addCash(100000); all='<div class="nb" style="color:#ffd76a">ALL 25 CHALLENGES COMPLETE · +$1,000.00</div>'; }
     if(L==='A'&&chDoneN('A')===CH_B_GATE&&first) all+='<div class="nb" style="color:#7dffb0">CHALLENGE LIST B UNLOCKED</div>';
     saveCh(); updateChBadge();
     title='Challenge complete!'; hasNext=!!arr[i+1]&&chUnlocked(i+1,L);
-    html='<b>'+(pay||'Cleared again')+'</b><div class="nb">#'+d.id+' '+d.name+(msg?' · '+msg:'')+'</div>'+(first?'':'<div class="nb">The bonus pays on your first clear only</div>')+all+'<div class="nb">'+chDoneN(L)+' / 25 cleared'+(L==='B'?' (List B)':'')+'</div>';
+    html='<b>'+(pay||'Cleared again')+'</b><div class="nb">#'+d.id+' '+d.name+(msg?' · '+msg:'')+'</div>'+(first?'':'<div class="nb">The bonus pays on your first clear only</div>')+all+'<div class="nb">'+chDoneN(L)+' / '+arr.length+' cleared'+(L==='B'?' (List B)':L==='C'?' (Auxiliary)':'')+'</div>';
   } else { title='Challenge failed'; html='<div class="nb">#'+d.id+' '+d.name+'</div><div class="nb" style="color:#ff9b8f">'+(msg||'')+'</div><div class="nb">'+chText(d)+'</div>'; }
   chRestore(); showOver(title,html,false);
   CH.ovMode=true; CH.nextI=(win&&hasNext)?i+1:i; CH.nextL=L; $('goBtn').textContent=(win&&hasNext)?'Next challenge':'Retry challenge';
 }
 function startChallenge(i,L){
-  L=L==='B'?'B':'A'; const d=chArr(L)[i]; if(!d||state==='run'||state==='exit'||loadoutOpen||!chUnlocked(i,L)) return;
+  L=(L==='B'||L==='C')?L:'A'; const d=chArr(L)[i]; if(!d||state==='run'||state==='exit'||loadoutOpen||!chUnlocked(i,L)) return;
   setChMenu(false);
   if(!CH.active) CH.saved=CS.sel;
-  CH.active=true; CH.i=i; CH.L=L; CH.def=d; CH.goal=chGoal(d); CH.st={mx:0,mm:0,cp:0,th:0,wm:0,cr:0,hold:0,hb:0,ts:0,tl:0};
+  CH.active=true; CH.raced=false; CH.i=i; CH.L=L; CH.def=d; CH.goal=chGoal(d); CH.st={mx:0,mm:0,cp:0,th:0,wm:0,cr:0,hold:0,hb:0,ts:0,tl:0};
   CS.sel=d.car; applyCar(); physId=null;                    // preset car (no ownership needed, never saved)
   const eq=Object.assign({},PU.equipped); for(const k in PU.equipped) PU.equipped[k]=false;   // no power-ups in challenges
   startRun(); Object.assign(PU.equipped,eq); savePU();
@@ -3602,28 +3610,29 @@ function chHudUpdate(){
   if(g.streak){ goals.push('Chain '+g.streak+' time bonuses'); progress.push('Chain '+st.ts+' / '+g.streak+' (now '+tStreak+')'); }
   if(g.clock){ goals.push('Clock up to '+g.clock+' s'); progress.push('Clock '+Math.ceil(timeLeft)+' / '+g.clock+' s'); }
   if(g.noBrake) goals.push('No braking');
+  if(g.race){ const rc=CH.def.race, ev=EV.cur&&EV.cur.hard?EV.cur:null; goals.push('Beat the '+(rc.k==='plane'?'cargo plane':'freight train')+' over '+rc.mi+' miles'); progress.push(ev?(ev.Q>runDist-ev.P0?'Behind by '+Math.round(ev.Q-(runDist-ev.P0))+' m':'Ahead by '+Math.round((runDist-ev.P0)-ev.Q)+' m'):'Race starts in a few seconds'); }
   if(g.noCrash){ goals.push('No crashes'); progress.push(st.cr?'CRASHED':'No crashes'); } else progress.push('Crash penalty −'+CH.def.pen+' s');
   const h='<b>#'+CH.def.id+' · '+CH.def.name+'</b><div class="chHudGoal"><strong>GOAL</strong> '+goals.join(' · ')+'</div><div class="chHudProgress"><strong>PROGRESS</strong> '+progress.join(' · ')+'</div>';
   const el=$('chHud'); if(el._h!==h){ el.innerHTML=h; el._h=h; }
 }
-function updateChBadge(){ const el=$('tChalV'); if(el) el.textContent=chDoneN('A')+' / 25'+(chBOpen()?' · B '+chDoneN('B')+' / 25':''); }
+function updateChBadge(){ const el=$('tChalV'); if(el) el.textContent=chDoneN('A')+' / 25'+(chBOpen()?' · B '+chDoneN('B')+' / 25':'')+(chDoneN('C')?' · Aux '+chDoneN('C')+' / '+CHALLENGES_C.length:''); }
 let chMenuOpen=false;
 let chMenuL='A';
 function renderChMenu(){
-  const A=chMenuL==='A', arr=chArr(chMenuL), open=A||chBOpen(), tab=(k,t)=>'<button type="button" data-tab="'+k+'" style="margin:0 6px 8px 0;padding:6px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.25);font:inherit;font-weight:600;cursor:pointer;background:'+(chMenuL===k?'#e8edf7':'transparent')+';color:'+(chMenuL===k?'#0b0f16':'inherit')+'">'+t+'</button>';
-  $('chSub').innerHTML='<div>'+tab('A','List A')+tab('B','List B'+(chBOpen()?'':' 🔒'))+'</div>'+(A?chDoneN('A')+' / 25 cleared · $20 for each first clear · $1,000 when all 25 are done'+(CHS.paidAll?' (paid)':'')
-    :(open?chDoneN('B')+' / 25 cleared · $30 for each first clear · $2,500 when all 25 are done'+(CHS.paidAllB?' (paid)':''):'Locked · clear '+CH_B_GATE+' of the 25 List A challenges to open List B ('+chDoneN('A')+' / '+CH_B_GATE+')'))+'<br>Cars and songs are preset, and you don\'t need to own the car.'+(A?'':'<br>List B uses the cars and songs List A leaves out.');
+  const A=chMenuL==='A', C=chMenuL==='C', arr=chArr(chMenuL), open=A||C||chBOpen(), tab=(k,t)=>'<button type="button" data-tab="'+k+'" style="margin:0 6px 8px 0;padding:6px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.25);font:inherit;font-weight:600;cursor:pointer;background:'+(chMenuL===k?'#e8edf7':'transparent')+';color:'+(chMenuL===k?'#0b0f16':'inherit')+'">'+t+'</button>';
+  $('chSub').innerHTML='<div>'+tab('A','List A')+tab('B','List B'+(chBOpen()?'':' 🔒'))+tab('C','Auxiliary')+'</div>'+(C?chDoneN('C')+' / '+arr.length+' cleared · $50 for each first clear · 7-mile showcase races against a tougher plane and train':A?chDoneN('A')+' / 25 cleared · $20 for each first clear · $1,000 when all 25 are done'+(CHS.paidAll?' (paid)':'')
+    :(open?chDoneN('B')+' / 25 cleared · $30 for each first clear · $2,500 when all 25 are done'+(CHS.paidAllB?' (paid)':''):'Locked · clear '+CH_B_GATE+' of the 25 List A challenges to open List B ('+chDoneN('A')+' / '+CH_B_GATE+')'))+'<br>Cars and songs are preset, and you don\'t need to own the car.'+(A||C?'':'<br>List B uses the cars and songs List A leaves out.');
   let h='',tier=0;
   if(open) arr.forEach((c,i)=>{
-    if(c.tier!==tier){ tier=c.tier; h+='<div class="cht0">'+CH_TIERS[tier]+'</div>'; }
+    if(!C&&c.tier!==tier){ tier=c.tier; h+='<div class="cht0">'+CH_TIERS[tier]+'</div>'; }
     const dn=CHS.done[c.id], lk=!chUnlocked(i,chMenuL), car=chCar(c.car), so=chSong(c.song);
-    h+='<button type="button" class="chc'+(dn?' done':'')+(lk?' lock':'')+'" data-i="'+i+'"'+(lk?' disabled':'')+'><span class="chn">'+(A?c.id:c.id.slice(1))+'</span><span class="cht"><b>'+c.name+'</b><small>'+chText(c)+'</small><small>'+(car?car.name:c.car)+(so?' · ♪ '+so.t:'')+'</small></span><span class="chr">'+(dn?'✓ Cleared':lk?'Locked':(A?'$20':'$30'))+'</span></button>';
+    h+='<button type="button" class="chc'+(dn?' done':'')+(lk?' lock':'')+'" data-i="'+i+'"'+(lk?' disabled':'')+'><span class="chn">'+(A?c.id:c.id.slice(1))+'</span><span class="cht"><b>'+c.name+'</b><small>'+chText(c)+'</small><small>'+(car?car.name:c.car)+(so?' · ♪ '+so.t:'')+'</small></span><span class="chr">'+(dn?'✓ Cleared':lk?'Locked':(C?'$50':A?'$20':'$30'))+'</span></button>';
   });
   $('chList').innerHTML=h; updateChBadge();
 }
 function setChMenu(on){ chMenuOpen=on; $('chMenu').classList.toggle('show',on); if(on) renderChMenu(); }
 $('chList').addEventListener('click',e=>{ const b=e.target.closest('.chc'); if(b&&!b.disabled) startChallenge(+b.dataset.i,chMenuL); });
-$('chSub').addEventListener('click',e=>{ const b=e.target.closest('[data-tab]'); if(b){ chMenuL=b.dataset.tab==='B'?'B':'A'; renderChMenu(); } });
+$('chSub').addEventListener('click',e=>{ const b=e.target.closest('[data-tab]'); if(b){ chMenuL=b.dataset.tab==='B'?'B':b.dataset.tab==='C'?'C':'A'; renderChMenu(); } });
 $('tChal').addEventListener('click',()=>setChMenu(true)); $('chBtn').addEventListener('click',()=>setChMenu(true)); $('chClose').addEventListener('click',()=>setChMenu(false));
 addEventListener('keydown',e=>{ if(chMenuOpen){ if(e.code==='Escape') setChMenu(false); e.stopImmediatePropagation(); e.preventDefault(); } },true);
 updateChBadge();
@@ -4591,9 +4600,10 @@ function evStart(kind){
     const o=air?EV.plane:EV.train, top=((CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].topSpeedMph)||150)/MPH;
     const reach=Math.min(top,evThrMs()*1.15);
     // Per-car rated minimum: the plane holds a little more pace than the train.
-    const vMin=top*(air?.72:.68), vTarget=Math.max(vMin,reach*(air?1.0:.95));   // balance: opponents were too slow, so the player won too often
-    EV.cur={k:kind,t:0,wx:air?'rain':'clear',P0:runDist,Q:0,v0:speed,vt:vTarget,vMin,aiV:speed,o,R:EVC.raceMi*1609.34}; o.visible=true; if(!air) o.userData.track.visible=true;
-    popup('SHOWCASE RACE · '+(air?'CARGO PLANE':'FREIGHT TRAIN')+' · '+EVC.raceMi+' MILES','good'); cinBegin(kind);
+    const rc=(CH.active&&CH.def&&CH.def.race)||null, hard=!!(rc&&rc.hard), rmi=rc?rc.mi:EVC.raceMi;
+    const vMin=top*(air?.72:.68), vTarget=Math.max(vMin,reach*(air?1.0:.95))*(hard?1.03:1);   // balance: opponents were too slow, so the player won too often
+    EV.cur={k:kind,t:0,wx:air?'rain':'clear',P0:runDist,Q:0,v0:speed,vt:vTarget,vMin,aiV:speed,o,R:rmi*1609.34,mi:rmi,hard,topMs:top}; o.visible=true; if(!air) o.userData.track.visible=true;
+    popup((hard?'CHALLENGE RACE · ':'SHOWCASE RACE · ')+(air?'CARGO PLANE':'FREIGHT TRAIN')+' · '+rmi+' MILES','good'); cinBegin(kind);
     { const sg=RADIO.find(t=>t.t===(air?'Hydra':'Train in Vain')); evPlayTheme(sg); }   // temporary showcase theme; restore the previous radio state at event end
     return true; }
   if(kind==='arcade'){
@@ -4635,7 +4645,7 @@ function evPick(){
   return opts.length?opts[(Math.random()*opts.length)|0]:null;
 }
 function evTick(dt){
-  const on=state==='run'&&!CH.active&&!isBetaCar()&&!adminTrafficDisabled&&!paintView;
+  const on=state==='run'&&(!CH.active||(CH.def&&CH.def.race))&&!isBetaCar()&&!adminTrafficDisabled&&!paintView;
   if(!on){ if(EV.cur||EV.pending) evEnd(true); return; }
   const mph=speed*MPH;
   if(EV.pending){
@@ -4646,6 +4656,7 @@ function evTick(dt){
   }
   const c=EV.cur;
   if(!c){
+    if(CH.active){ if(!CH.raced&&runT>6){ CH.raced=true; evStart(CH.def.race.k); } EV.wasT=!!tunnelActive; return; }   // race challenge: only the scripted race, no random events
     if(!EV.pol&&!EV.polReq&&(tunnelGroup.visible||runT>12)) evBuildPolice();   // get the cruiser model ready well before it can be needed (it used to start loading only near a tunnel, so a chase 'dispatched' then waited on the download)
     if(MP.on){   // multiplayer: events are scheduled from the room code, so BOTH drivers get the same event (same kind, same moment) and freeze for the same cinematic
       EV.cool-=dt;
@@ -4732,7 +4743,7 @@ function cinEnd(){
 }
 function cinTick(dt){
   const C=CIN, c=EV.cur;
-  if(state!=='run'||CH.active||paintView||!c){ cinEnd(); if(EV.cur||EV.pending) evEnd(true); return; }
+  if(state!=='run'||(CH.active&&!(CH.def&&CH.def.race))||paintView||!c){ cinEnd(); if(EV.cur||EV.pending) evEnd(true); return; }
   C.t+=dt; const t=C.t, u=Math.min(1,t/C.dur), k=C.k;
   if(k==='balloon'){
     const first=EV.balloonPool[0], z=first&&first.visible?first.position.z:105;
@@ -4893,7 +4904,7 @@ function evStreetRace(c,dt,H){
 function evRace(c,dt,H){
   const air=c.k==='plane', P=runDist-c.P0, ramp=Math.min(1,c.t/10);
   // Keep a modest late-race fade so the finish remains contestable without giving away the race.
-  const fade=c.Q<=3.5*1609.34?0:Math.min(1,(c.Q-3.5*1609.34)/500), f=1.07-.06*fade*fade*(3-2*fade);
+  const raceMi=c.mi||EVC.raceMi, fs=(raceMi-1.5)*1609.34, fade=c.Q<=fs?0:Math.min(1,(c.Q-fs)/500), f=c.hard?1.09-.13*fade*fade*(3-2*fade):1.07-.06*fade*fade*(3-2*fade);   // hard (challenge) AI: a bit quicker on the way, but it tires to 96% in the last 1.5 mi so a clean run can always take it
   if(fade>0&&!c.faded){ c.faded=true; popup((air?'THE CARGO PLANE':'THE FREIGHT TRAIN')+' IS FADING · FINAL MILE!','good'); }
 
   // Gap assistance is deliberately restrained and smoothed through AI acceleration.
@@ -4908,13 +4919,14 @@ function evRace(c,dt,H){
   if(c.slowT>0){ c.slowT-=dt; sf=1-.30*Math.min(1,c.slowT/.8); }
 
   let targetV=Math.max(c.vMin,(c.v0+(c.vt*f-c.v0)*ramp)*paceFactor*sf*(1+.02*Math.sin(c.t*.45)));
+  if(c.hard) targetV=Math.min(targetV,c.topMs*.965);   // winnability: the hard AI never out-paces what the car itself can do
   // Comeback rules, both ways, so a bad stretch is never the end of the race and a good one is never a free win:
   // - more than 120 m behind: the opponent stops pulling away (it holds at or below your speed), so you can close the gap by driving faster
   // - more than 80 m ahead of the opponent: it chases at a little above your speed, harder the further you are ahead
   if(gapQ>120) targetV=Math.min(targetV,Math.max(c.vMin*.6,speed*(1-Math.min(.12,(gapQ-120)/800))));
-  else if(gapQ<-80){ chase=true; targetV=Math.max(targetV,speed*(1.02+Math.min(.2,(-gapQ-80)/400))); }
+  else if(gapQ<-80){ chase=true; targetV=Math.max(targetV,speed*((c.hard?1.035:1.02)+Math.min(.2,(-gapQ-80)/400))); }
   if(!Number.isFinite(c.aiV)) c.aiV=Math.max(0,c.v0);
-  const accel=(air?1.65:1.45)*(chase?1.6:1), decel=air?2.25:2.0; // m/s²: gradual pickup, slightly quicker lift-off
+  const accel=(air?1.65:1.45)*(chase?1.6:1)*(c.hard?1.15:1), decel=air?2.25:2.0; // m/s²: gradual pickup, slightly quicker lift-off
   const dv=targetV-c.aiV;
   c.aiV+=Math.max(-decel*dt,Math.min(accel*dt,dv));
   const v=Math.max(0,c.aiV);
@@ -4934,10 +4946,12 @@ function evRace(c,dt,H){
     o.rotation.set(-Math.atan(roadSlopeAt(dz)),0,0);
     o.userData.track.position.set(-24,0,0);
   }
+  if(P>=c.R&&CH.active){ popup('YOU WON THE RACE','good'); const lead=Math.round(P-c.Q); evEnd(true); chFinish(true,'Beat the '+(air?'cargo plane':'freight train')+' by '+lead+' m'); return; }
+  if(c.Q>=c.R&&CH.active){ popup((air?'THE CARGO PLANE':'THE FREIGHT TRAIN')+' BEAT YOU TO THE FINISH','bad'); const lead=Math.round(c.Q-P); evEnd(true); chFinish(false,'The '+(air?'cargo plane':'freight train')+' beat you to the finish by '+lead+' m.'); return; }
   if(P>=c.R){ const b=Math.max(10000,Math.round(score*.25)); score+=b; timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+10); popup('YOU WON THE RACE  +'+b.toLocaleString()+'  ·  +10s','good'); evEnd(); return; }
   if(c.Q>=c.R){ popup((air?'THE CARGO PLANE':'THE FREIGHT TRAIN')+' BEAT YOU TO THE FINISH','bad'); evEnd(); return; }
-  const lead=P-c.Q, mi=Math.min(EVC.raceMi,P/1609.34);
-  if(H)H.push('<b style="color:#ffd76a">RACE · '+(air?'CARGO PLANE':'FREIGHT TRAIN')+'</b>',mi.toFixed(2)+' / '+EVC.raceMi+' mi · '+(lead>=0?'<span style="color:#8fe3a2">you lead by '+Math.round(lead)+' m</span>':'<span style="color:#ff9b8f">'+(air?'plane':'train')+' leads by '+Math.round(-lead)+' m</span>'));
+  const lead=P-c.Q, mi=Math.min(c.mi||EVC.raceMi,P/1609.34);
+  if(H)H.push('<b style="color:#ffd76a">RACE · '+(air?'CARGO PLANE':'FREIGHT TRAIN')+'</b>',mi.toFixed(2)+' / '+(c.mi||EVC.raceMi)+' mi · '+(lead>=0?'<span style="color:#8fe3a2">you lead by '+Math.round(lead)+' m</span>':'<span style="color:#ff9b8f">'+(air?'plane':'train')+' leads by '+Math.round(-lead)+' m</span>'));
 }
 
 const _setEm=(a,v)=>{ for(let i=0;i<a.length;i++) a[i].emissiveIntensity=v; };   // [alloc] shared by the per-frame tail-light update (no per-call closures)
