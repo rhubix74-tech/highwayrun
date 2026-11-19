@@ -261,6 +261,18 @@
   .admb{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:999px;font:inherit;font-size:13px;font-weight:600;padding:7px 14px;cursor:pointer}
   #title{position:fixed;inset:0;z-index:7;background:#d9d4c8 url(title.png) center/cover no-repeat;display:flex;align-items:flex-end}
   #title.hide{display:none}
+  /* cinematic title: the live 3D scene shows through (the static image is the fallback, see Settings) */
+  #title.cine{background:transparent}
+  body.tcOn #game,body.tcOn #hud,body.tcOn #gauge,body.tcOn #ui,body.tcOn #touch,body.tcOn #pops,body.tcOn #ov{display:none}   /* no HUD over the cinematic */
+  #title.cine::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.62),rgba(0,0,0,.18) 42%,transparent 62%),linear-gradient(0deg,rgba(0,0,0,.45),transparent 34%),linear-gradient(180deg,rgba(0,0,0,.3),transparent 22%);pointer-events:none}
+  #title #tmenu{position:relative;z-index:2}
+  #tcFade{position:absolute;inset:0;background:#000;opacity:0;transition:opacity .5s ease;pointer-events:none;z-index:1;display:none}
+  #title.cine #tcFade{display:block}
+  #tcLogo{display:none;position:absolute;right:4.5vw;bottom:9vh;z-index:2;pointer-events:none;text-align:right;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-style:italic;font-weight:800;text-transform:uppercase;transform:skewX(-10deg)}
+  #title.cine #tcLogo{display:block}
+  #tcLogo .l1{display:inline-block;background:rgba(10,10,12,.82);color:#fff;letter-spacing:.14em;font-size:clamp(11px,1.5vw,19px);padding:.5em 1.4em .5em 1.1em}
+  #tcLogo .l2{display:block;margin-top:.2em;background:linear-gradient(180deg,#ff3b3b,#c40d1e);color:#fff;font-size:clamp(26px,5vw,66px);line-height:1;padding:.12em .35em .1em .3em;letter-spacing:.01em;box-shadow:0 8px 26px rgba(0,0,0,.4)}
+  #tcLogo .l3{display:block;margin-top:.55em;color:#fff;font-size:clamp(10px,1.4vw,18px);letter-spacing:.08em;text-shadow:0 2px 8px rgba(0,0,0,.6)}
   #assetLoad{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;background:rgba(5,8,14,.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
   #assetLoad.done{background:rgba(5,8,14,.82)}
   #assetLoad .loadCard{width:min(420px,calc(100% - 44px));padding:28px 26px;border:1px solid rgba(255,255,255,.16);border-radius:18px;background:rgba(17,22,32,.94);box-shadow:0 18px 70px rgba(0,0,0,.45);text-align:center}
@@ -333,7 +345,7 @@
   <div class="best">Clean streak <span id="nextB">0</span></div>
   <div class="ex">EXIT in <span id="gExit">10.00</span> mi · cash out <span id="gCash">$0.00</span></div>
   <div class="best">Best <span id="bestP">0</span> pts · <span id="bestM">0.0</span> mi</div></div>
-<div id="title"><div id="tmenu"><button class="tb" id="tStart"><span>Start run</span></button><button class="tb alt" id="tChal"><span>Challenges<small id="tChalV"></small></span></button><button class="tb alt" id="tShop"><span>Shop<small id="tWal">$0.00</small></span></button><button class="tb alt" id="tGarage"><span>Garage</span></button><button class="tb alt" id="tShow"><span>Showroom</span></button><button class="tb alt" id="tGfx"><span>Settings<small id="tGfxV"></small></span></button><button class="tb alt" id="tLb"><span>Leaderboards<small id="tLbV"></small></span></button><button class="tb alt" id="tHelp"><span>Scores &amp; help</span></button></div></div>
+<div id="title"><div id="tcFade"></div><div id="tcLogo"><span class="l1">Carrera GT</span><span class="l2">Highway Run</span><span class="l3">Press start</span></div><div id="tmenu"><button class="tb" id="tStart"><span>Start run</span></button><button class="tb alt" id="tChal"><span>Challenges<small id="tChalV"></small></span></button><button class="tb alt" id="tShop"><span>Shop<small id="tWal">$0.00</small></span></button><button class="tb alt" id="tGarage"><span>Garage</span></button><button class="tb alt" id="tShow"><span>Showroom</span></button><button class="tb alt" id="tGfx"><span>Settings<small id="tGfxV"></small></span></button><button class="tb alt" id="tLb"><span>Leaderboards<small id="tLbV"></small></span></button><button class="tb alt" id="tHelp"><span>Scores &amp; help</span></button></div></div>
 <div id="cine"><div class="bar top"></div><div class="bar bot"></div><div class="cap" id="cineCap"></div></div>
 <button id="admBtn" hidden>ADMIN</button>
 <div id="adm"><div class="card"><h1>Admin</h1><p>Edit wallet · nothing is saved while admin mode is on</p><div id="admW" class="nb"></div>
@@ -403,6 +415,7 @@
   <div class="sec">Traffic</div>
   <label class="gchk"><input type="checkbox" id="sNoOnc"> Hide oncoming traffic (left side)</label>
   <label class="gchk"><input type="checkbox" id="sCvTraf"> Convoy uses simple traffic cars (better performance)</label>
+  <label class="gchk"><input type="checkbox" id="sClassicTitle"> Classic title screen (static image, better performance)</label>
   <button type="button" class="sbtn" id="sAdd">+ Add your own songs</button>
   <div class="sec">Save data</div>
   <button type="button" class="sbtn danger" id="rstOpen">Reset save data…</button>
@@ -2946,6 +2959,7 @@ function dropsTick(){
 /* ---------------- game state, input, scoring */
 const VIEWS2={chase:{p:[0,1.9,-7.4],t:[0,.8,9]},side:{p:[-5.6,.85,.6],t:[0,.55,.8]},front:{p:[2.6,1.0,7.2],t:[0,.6,.2]}};
 let view='chase', speedTarget=0, speed=20, dist=0, px=0, yaw=0, vl=0, steer=0, thrS=0, brkS=0, shake=0, inv=0, yr=0, ayS=0, accS=0, fwd=0;
+var TC={on:false,park:false,fovNow:34,fade:0};
 let tStreak=0, weave=0, lastGap=-1, wasOff=false, nextBonus=100000, runT=0, bHeat=0, lastBT=-999, shopOpen=false, bmOpen=false, paintView=false, pvA=.6, titleOn=true, exZone=false, exitCash=0, camFrom=null;
 var MP={on:false,mode:'',link:false};   // multiplayer state (filled in by the multiplayer block near the end of the script)
 let state='menu', score=0, miles=0, mult=1, clean=0, timeLeft=180, soundAsked=false;
@@ -3279,7 +3293,7 @@ function physics(dt){
   if(run){
     thr=(k.KeyW||k.ArrowUp||tch.g)?1:0; br=(k.KeyS||k.ArrowDown||tch.b)?1:0;
     st=((k.KeyA||k.ArrowLeft||tch.l)?1:0)-((k.KeyD||k.ArrowRight||tch.r)?1:0); hb=k.Space?1:0;
-  }else if(paintView){ br=1; }   // showroom: park the car
+  }else if(paintView||TC.park){ br=1; }   // showroom / title cinematic parked shot: park the car
   else if(state==='menu'){ thr=speed<33?.7:.12; } else if(state==='exit'){ if(speed>14) br=.5; else thr=.2; } else br=.35;
   const gp=navigator.getGamepads&&navigator.getGamepads()[0];
   if(gp){
@@ -4253,7 +4267,7 @@ function showTitle(){          // back to the title screen from the results / sc
   state='menu'; titleOn=true; CH.ovMode=false; $('ov').classList.add('hide'); $('title').classList.remove('hide');
   setRadio(false); setSound(false); syncMenuMusic(); renderWallet();
 }
-function leaveTitle(){ titleOn=false; $('title').classList.add('hide'); stopTitle(); syncMenuMusic(); }
+function leaveTitle(){ try{ tcStop(); }catch(e){} titleOn=false; $('title').classList.add('hide'); stopTitle(); syncMenuMusic(); }
 $('tStart').addEventListener('click',()=>requestStartRun());
 $('tShop').addEventListener('click',()=>setShop(true));
 $('tHelp').addEventListener('click',()=>{ $('title').classList.add('hide'); $('ovt').textContent='Carrera GT'; $('ovb').innerHTML=''; $('goBtn').textContent='Start run'; $('ov').classList.remove('hide'); });
@@ -5124,15 +5138,16 @@ function frame(){
     _cl.set(px+V.t[0]*c+V.t[2]*s,V.t[1]+jh+yAt(zt),zt); }
   const k=firstCam?1:1-Math.exp(-9*dt); firstCam=false;
   if(state==='exit') cineCam(); else{ camera.position.lerp(_cp,k); _lk.lerp(_cl,k); }
+  if(TC.on||titleOn){ try{ tcFrame(rdt); }catch(e){ console.error('[title cinematic]',e); TC.on=false; } }
   if(paintView){ if(SR.on) showroomCam(dt); else{ pvA+=dt*.3; { const jh=CS.sel==='jet'?JET_H:0; camera.position.set(px+Math.sin(pvA)*6.4,1.4+jh+.25*Math.sin(pvA*.7),Math.cos(pvA)*6.4); _lk.set(px,.55+jh,0); } } }   // garage/paint orbit (SR.on = the title-screen Showroom has its own free camera)
   if(CIN.on) cinCam(); else if(camera.up.y<.9999) camera.up.set(0,1,0);
   if(shake>0){ camera.position.x+=(Math.random()-.5)*shake*.4; camera.position.y+=(Math.random()-.5)*shake*.3; }
   camera.lookAt(_lk);
-  const fov=CIN.on?CIN.fovNow:state==='exit'?cineFov:38+14*gauss(speed,0,90); if(Math.abs(fov-camera.fov)>.01){ camera.fov=fov; camera.updateProjectionMatrix(); }
+  const fov=TC.on?TC.fovNow:CIN.on?CIN.fovNow:state==='exit'?cineFov:38+14*gauss(speed,0,90); if(Math.abs(fov-camera.fov)>.01){ camera.fov=fov; camera.updateProjectionMatrix(); }
   sky.position.copy(camera.position);
   snowU.uCam.value.copy(camera.position); snowU.uT.value=time%1500; snowU.uD.value=dist%90; snowU.uPx.value=renderer.getPixelRatio();
   gaugeTick(); updateHud();
-  if(!titleOn||paintView){ renderer.render(scene,camera); perfTick(dt); }
+  if(!titleOn||paintView||TC.on){ renderer.render(scene,camera); perfTick(dt); }
 }
 /* ---------------- curves: every scene material is bent sideways in the vertex shader by a road-offset table.
    The car stays on the road's tangent at z=0; yaw is relative to the road. */
@@ -5243,7 +5258,7 @@ var noOncoming=!!SET.noOnc;   // [setting] 'Hide oncoming traffic' (Settings): o
 eng.manualOff=!SET.eng; radio.manualOff=!SET.radio;       // startRun() only switches engine / radio on when these allow it
 function saveSet(){ store.set(SET_KEY,JSON.stringify(SET)); }
 function renderSet(){
-  $('sEng').checked=SET.eng; $('sRad').checked=SET.radio; $('sNoOnc').checked=!!SET.noOnc; $('sCvTraf').checked=!!SET.cvTraf;
+  $('sEng').checked=SET.eng; $('sRad').checked=SET.radio; $('sNoOnc').checked=!!SET.noOnc; $('sCvTraf').checked=!!SET.cvTraf; $('sClassicTitle').checked=!!SET.classicTitle;
   $('rstOpen').disabled=ADMIN; $('rstOpen').textContent=ADMIN?'Reset unavailable in admin mode':'Reset save data…';
   if(ADMIN) $('rstBox').hidden=true;
 }
@@ -5251,7 +5266,76 @@ $('sEng').addEventListener('change',e=>{ SET.eng=e.target.checked; eng.manualOff
 $('sRad').addEventListener('change',e=>{ SET.radio=e.target.checked; radio.manualOff=!SET.radio; saveSet(); });
 $('sNoOnc').addEventListener('change',e=>{ SET.noOnc=e.target.checked; noOncoming=SET.noOnc; if(!noOncoming){ for(let i=0;i<trafficCars.length;i++){ const t=trafficCars[i]; if(t.oncoming&&!adminTrafficDisabled){ respawn(t,true); t.g.visible=true; } } } saveSet(); });
 $('sCvTraf').addEventListener('change',e=>{ SET.cvTraf=e.target.checked; saveSet(); });
+$('sClassicTitle').addEventListener('change',e=>{ SET.classicTitle=e.target.checked; saveSet(); });   // the title cinematic notices on the next frame
 $('sAdd').addEventListener('click',()=>$('addf').click());
+
+/* ---------------- Title-screen cinematic (replaces the static title image; Settings > "Classic title screen" brings the image back) ----------------
+   While the title is up, the real game scene is rendered with a slow director: every ~7 s it fades through black to a new shot of one of your cars in a different biome, time of day
+   and weather (golden-hour coast, desert sunset, snowy forest, night city, rainy scrapyard...), parked or rolling, with a low, slow camera move like a car-reveal trailer.
+   It borrows the world (forced biome / time / rain, no traffic) and puts everything back the moment you leave the title (any menu that covers it, or starting a run). */
+const TC_SHOTS=[
+  {bi:1,tod:18.6,rain:0,mv:'park',a:[-4.8,.55,-6.6],b:[-3.5,.75,-5.5],la:[0,.62,.4],lb:[0,.62,.2],f:[32,28]},        // coastal cliffs, golden hour: low rear three-quarter
+  {bi:5,tod:17.3,rain:0,mv:'roll',a:[3.8,.5,6.2],b:[3.0,.55,4.9],la:[0,.55,.3],lb:[0,.55,.3],f:[36,31]},             // desert sunset: low front three-quarter, tracking
+  {bi:2,tod:15.6,rain:0,mv:'park',a:[7.6,1.0,3.4],b:[7.6,1.1,-2.0],la:[0,.65,0],lb:[0,.65,-.3],f:[26,26]},           // snowy forest: slow side dolly
+  {bi:3,tod:22.2,rain:0,mv:'park',a:[-1.7,.8,-3.6],b:[-.6,.9,-3.0],la:[-.5,.72,-2.3],lb:[-.4,.72,-2.3],f:[26,24]},    // metro city at night: tail-light close-up
+  {bi:0,tod:8.4,rain:0,mv:'roll',a:[-1.3,.85,-7.6],b:[1.8,1.15,-6.7],la:[0,.7,1],lb:[0,.7,1.2],f:[38,34]},           // open highway, morning: rolling chase
+  {bi:4,tod:19.7,rain:0,mv:'park',a:[3.5,.5,4.8],b:[2.5,.62,4.1],la:[0,.55,.3],lb:[0,.55,.2],f:[30,27]},             // coastal city at dusk: headlight front
+  {bi:6,tod:16.4,rain:0,mv:'roll',a:[-5.6,3.7,-6.6],b:[-3.0,2.4,-8.2],la:[0,.5,1.5],lb:[0,.5,2.0],f:[40,36]},         // suburbs: rolling crane shot
+  {bi:7,tod:13.4,rain:1,mv:'park',a:[4.6,.5,2.4],b:[4.3,.55,-.2],la:[0,.45,0],lb:[0,.5,-.2],f:[30,28]},              // scrapyard in the rain: low side pass
+  {bi:1,tod:21.4,rain:1,mv:'park',a:[-3.6,1.3,-6.8],b:[-2.6,1.2,-5.2],la:[0,.6,.4],lb:[0,.6,.3],f:[34,30]}           // coast, rainy night
+];
+const TC_BLOCK=['chMenu','garage','shop','bm','loadout','mpm','mpRes','showroom','tutorial'];
+let _tcBlk=null;
+function tcBlocked(){ if(!_tcBlk) _tcBlk=TC_BLOCK.map(id=>document.getElementById(id)).filter(Boolean); for(let i=0;i<_tcBlk.length;i++) if(_tcBlk[i].classList.contains('show')) return true; return false; }
+function tcWant(){
+  if(!titleOn||state!=='menu'||SET.classicTitle||paintView||shopOpen||bmOpen||loadoutOpen||SR.on) return false;
+  const ov=document.getElementById('assetLoad'); if(ov&&ov.style.display!=='none') return false;   // wait for the "Preparing your drive" screen to be dismissed
+  return !tcBlocked();
+}
+function tcCars(){ const ids=CARS.filter(c=>CS.owned.includes(c.id)&&c.id!=='jet'&&c.id!=='beta'&&(!LAZY[c.id]||LAZY[c.id].st>=2||c.id===TC.saved.sel)).map(c=>c.id); return ids.length?ids:[TC.saved.sel]; }
+function tcStart(){
+  TC.saved={sel:CS.sel,tod:window.__todLock,night:window.__nightLock,rain:window.__rainLock,bi:adminBiomeOverride,atd:adminTrafficDisabled,vis:trafficCars.map(t=>t.g.visible),speed:speed};
+  TC.on=true; TC.i=-1; TC.t=0; TC.ph=0; TC.queue=[]; TC.carI=-1; TC.hero=true;
+  adminTrafficDisabled=true; trafficCars.forEach(t=>{ t.g.visible=false; });
+  $('title').classList.add('cine'); document.body.classList.add('tcOn'); TC.fadeV=1; $('tcFade').style.transition='none'; $('tcFade').style.opacity=1; void $('tcFade').offsetWidth; $('tcFade').style.transition='';
+  tcNext(true);
+}
+function tcStop(){
+  if(!TC.on) return; TC.on=false; TC.park=false; const s=TC.saved; $('title').classList.remove('cine'); document.body.classList.remove('tcOn'); $('tcFade').style.opacity=0;
+  if(s){ window.__todLock=s.tod; window.__nightLock=s.night; window.__rainLock=s.rain; adminBiomeOverride=s.bi; _lastBi=-1; adminTrafficDisabled=s.atd; trafficCars.forEach((t,i)=>{ t.g.visible=s.vis[i]!==false; });
+    if(CS.sel!==s.sel){ CS.sel=s.sel; applyCar(); }
+    nightDirty=true; }
+  camera.position.set(0,3,-8); TC.saved=null;
+}
+function tcNext(first){
+  if(!TC.queue.length){ TC.queue=TC_SHOTS.map((_,i)=>i).sort(()=>Math.random()-.5); if(TC.hero) { const h=TC.queue.indexOf(0); if(h>0){ TC.queue.splice(h,1); TC.queue.unshift(0); } } }
+  const sh=TC_SHOTS[TC.queue.shift()]; TC.shot=sh; TC.t=0; TC.dur=7.2; TC.park=sh.mv==='park';
+  const cars=tcCars(); let id;
+  if(TC.hero){ id=TC.saved.sel; TC.hero=false; } else { TC.carI=(TC.carI+1)%cars.length; id=cars[TC.carI]; if(id===CS.sel&&cars.length>1){ TC.carI=(TC.carI+1)%cars.length; id=cars[TC.carI]; } }
+  if(CS.sel!==id){ CS.sel=id; applyCar(); }
+  adminBiomeOverride=sh.bi; _lastBi=-1; window.__todLock=sh.tod; window.__nightLock=undefined; window.__rainLock=sh.rain; nightDirty=true; try{ updateBend(); }catch(e){}
+  if(!sh.rain&&sh.bi!==2) window.__rainLock=0;
+}
+const _tcA=new THREE.Vector3(), _tcB=new THREE.Vector3();
+function tcFrame(dt){
+  const want=tcWant();
+  if(want&&!TC.on){ tcStart(); } else if(!want&&TC.on){ tcStop(); }
+  if(!TC.on) return;
+  const sh=TC.shot; TC.t+=dt;
+  // fade: black at the cut, open again just after (the new biome / car need a moment to appear)
+  const f=TC.t<.9?1-Math.min(1,Math.max(0,(TC.t-.35)/.5)):(TC.t>TC.dur-.55?Math.min(1,(TC.t-(TC.dur-.55))/.5):0);
+  if(f!==TC.fadeV){ TC.fadeV=f; $('tcFade').style.opacity=f; }
+  if(TC.t>=TC.dur) tcNext();
+  const u=Math.min(1,TC.t/TC.dur), e=u*u*(3-2*u)*.6+u*.4;   // ease, mostly smooth
+  const jh=CS.sel==='jet'?JET_H:0;
+  camera.position.set(px+sh.a[0]+(sh.b[0]-sh.a[0])*e, sh.a[1]+(sh.b[1]-sh.a[1])*e+jh, sh.a[2]+(sh.b[2]-sh.a[2])*e);
+  _lk.set(px+sh.la[0]+(sh.lb[0]-sh.la[0])*e, sh.la[1]+(sh.lb[1]-sh.la[1])*e+jh, sh.la[2]+(sh.lb[2]-sh.la[2])*e);
+  TC.fovNow=sh.f[0]+(sh.f[1]-sh.f[0])*e;
+}
+// opening a menu that needs the real scene (or starting a run) must see the player's own car / weather first
+['tStart','tChal','tShop','tGarage','tShow','tMp'].forEach(id=>{ const b=document.getElementById(id); if(b) b.addEventListener('click',()=>{ if(TC.on) tcStop(); },true); });
+const _rsrTC=requestStartRun; requestStartRun=function(){ if(TC.on) tcStop(); return _rsrTC.apply(this,arguments); };
+
 const _sg=setGfxUI; setGfxUI=function(on){ _sg(on); if(on){ renderSet(); $('rstBox').hidden=true; $('rstIn').value=''; $('rstGo').disabled=true; } };
 $('rstOpen').addEventListener('click',()=>{ $('rstBox').hidden=false; $('rstOpen').hidden=true; $('rstIn').value=''; $('rstGo').disabled=true; $('rstIn').focus(); });
 $('rstNo').addEventListener('click',()=>{ $('rstBox').hidden=true; $('rstOpen').hidden=false; });
