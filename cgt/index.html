@@ -1526,7 +1526,9 @@ let DIFF=0, brkAssist=0, adminDifficulty=1, adminInfiniteClock=false; const DIFF
 var m3Calm=0, jagEv=0;   // jagEv: 1 while the XKR is selected (twice as many random events)   // 1 while the M3 is selected: no reckless drivers
 var aeroDens=0, chDens=0;   // chDens: challenge-only traffic boost (the Train in Vain challenge)   // 1 while the Aero is selected (var: layoutRow runs before CS exists)
 const wallChance=()=>(aeroDens?.6:1)*.16*Math.min(1,Math.max(0,(DIFF-.2)/.6))*(1+1.2*HARD);   // walls get ~2x as common by mile 20
-let VT=22, HARD=0; const ROW_GAP=90, NROWS=5, rows=[];
+let VT=22, HARD=0; let ROW_GAP=90; const NROWS=5, rows=[];
+/* Slower cars (Prius, Fulvia...) get tighter traffic rows so a run keeps a similar density of gaps per second: the 90 m spacing shrinks with the square root of how far the car's top speed is under the average of the scoring cars (never wider than 90 m, never under 60%). */
+function rowGapFor(id){ try{ const v=Object.values(CAR_STATS).filter(c=>c.points&&c.topSpeedMph>0).map(c=>c.topSpeedMph), avg=v.reduce((a,b)=>a+b,0)/v.length, t=(CAR_STATS[id]||{}).topSpeedMph; if(!(t>0)||!(avg>0)) return 90; return 90*Math.min(1,Math.max(.6,Math.sqrt(t/avg))); }catch(e){ return 90; } }
 function nextGap(g){ if(Math.random()<.25) return g; const o=g===1?[0,2]:[1]; return o[(Math.random()*o.length)|0]; }
 /* wall rows (occasional): all three lanes blocked. Each car has its own speed (+-2.5 m/s) and they only start to
    spread out once the row is near you, so braking behind a wall makes the cars string out and open a lane. */
@@ -3195,7 +3197,7 @@ function startRun(){ if(typeof arcReset==='function') arcReset();
   biomeBase=dist; biomeSeed=Math.random(); _bc=[0]; _lastBi=-1;      // biomes restart: open highway first, then a fresh random order
   leaveTitle(); goView('chase'); if(window.__rainLock===undefined) rainPlan(); state='run'; syncMenuMusic(); score=0; miles=0; mult=1; clean=0; timeLeft=Math.min(RUN_T,TIME_CAP)+startBonus(); speed=20; yaw=0; px=0; vl=0; steer=0; inv=2.5;
   runDist=0; exitT=0; $('cine').classList.remove('on'); $('cineCap').classList.remove('in'); firstCam=true;
-  trafficCars.forEach(t=>{ if(t.oncoming){ respawn(t,true); t.g.visible=true; } }); resetRows(); weave=0; tStreak=0; lastGap=-1; nextBonus=100000; runT=0; bHeat=0; lastBT=-999; evReset(); fixGear(); $('ov').classList.add('hide');
+  trafficCars.forEach(t=>{ if(t.oncoming){ respawn(t,true); t.g.visible=true; } }); ROW_GAP=rowGapFor(CS.sel); resetRows(); weave=0; tStreak=0; lastGap=-1; nextBonus=100000; runT=0; bHeat=0; lastBT=-999; evReset(); fixGear(); $('ov').classList.add('hide');
   if(!eng.on&&!eng.manualOff) setSound(true);
   if(!radio.manualOff){ if(!radio.on) setRadio(true); else if(radio.a.paused) radio.a.play().catch(()=>{}); }
 }
