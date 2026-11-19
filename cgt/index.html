@@ -2536,6 +2536,7 @@ lazyCar('m3','1988_bmw_m3_evolution_ii_e30.glb',gltf=>{
 const XKR_LAMP=mkLamp(0,[0,0,0],[1,1,1],[0,0,0],[1,1,1]); XKR_LAMP.tri.value=1;
 const xkrPatch=makePaintPatch(XKR_LAMP), xkrPaintMats=[], xkrHeadMats=[], xkrTailMats=[];
 function syncXkrPaint(){ for(const m of xkrPaintMats){ m.copy(M.paint); m.map=null; m.normalMap=null; m.clearcoatNormalMap=null; m.needsUpdate=true; } }
+const xkrOff={value:.5};   // local units; set from the real scale once the model is sized
 const XKR_MATS=['light_glass','orange_glass','red_glass','glass_surr','body_Chrome','grille_2','Baadges','calipers','CarPaint','internal','chassis','phong15','plastic','material','mirror','grille','chrome','glass','light','plate','tire','disk'];   // longest-first
 /* material name of a mesh: the glTF material name, or (if the loader dropped/renamed it) taken from the node name, which the exporter built as '<object>_<material>_0' */
 function xkrMat(o,src){ const n=(src&&src.name)||''; if(XKR_MATS.includes(n)) return n; const on=o.name||''; for(const k of XKR_MATS) if(on.endsWith('_'+k+'_0')) return k; return n; }
@@ -2550,6 +2551,7 @@ lazyCar('xkr','2009_jaguar_xkr_5.0_supercharged_speed_pack.glb',gltf=>{
     if(nm==='glass'){ o.material=glassM; return; }
     let m=cache.get(src); if(!m){ m=src.clone(); if(m.transmission) m.transmission=0; m.envMapIntensity=.65; m.userData.e0=.65; envMats.push(m); cache.set(src,m);
       if(nm==='internal'||nm==='grille'||nm==='grille_2'){ m.transparent=false; m.alphaTest=nm==='internal'?0:.4; }
+      if(nm==='Baadges'||nm==='plate'||nm==='chrome'){ m.onBeforeCompile=sh=>{ sh.uniforms.xkrOff=xkrOff; sh.vertexShader='uniform float xkrOff;\n'+sh.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\n  transformed+=normalize(objectNormal)*xkrOff;'); }; }   // lift flush decals (wordmark, model name, plate, thin trim) ~5 mm off the surface along their normals: the depth buffer can't separate them from the paint at distance, which is what made them shimmer
       if(nm==='Baadges'||nm==='plate'){ m.transparent=false; m.alphaTest=nm==='plate'?0:.5; m.depthWrite=true; m.polygonOffset=true; m.polygonOffsetFactor=-4; m.polygonOffsetUnits=-4; }   // badges/plate sit flush on the body: pull them toward the camera so they stop z-fighting (the jitter), and use a cut-out instead of blending so sorting can't flicker
       if(nm==='light'){ m.emissive=new THREE.Color(0xffffff); m.emissiveMap=m.map||null; m.emissiveIntensity=0; xkrHeadMats.push(m); }
       if(nm==='red_glass'){ m.emissive=new THREE.Color(0xff1608); m.emissiveIntensity=0; xkrTailMats.push(m); }
@@ -2571,7 +2573,8 @@ lazyCar('xkr','2009_jaguar_xkr_5.0_supercharged_speed_pack.glb',gltf=>{
   { const g=new THREE.Box3(); tyres.forEach(o=>g.union(bx(o))); const cz=tyres.length?tyres.map(o=>bx(o).getCenter(new THREE.Vector3()).z).reduce((a,b)=>a+b,0)/tyres.length:0;
     model.position.set(0,isFinite(g.min.y)?-g.min.y:0,-cz); }
   xkrRoot.updateMatrixWorld(true);
-  const all=bx(model); console.info('[XKR] build C (part detection by material or node name) · scale',S.toFixed(4),'length m',(all.max.z-all.min.z).toFixed(3),'width m',(all.max.x-all.min.x).toFixed(3),'height m',(all.max.y-all.min.y).toFixed(3),'tyres',tyres.length,'rim parts',rims.length,'calipers',cals.length);
+  { const ws=new THREE.Vector3(); model.getObjectByProperty('isMesh',true).getWorldScale(ws); xkrOff.value=ws.x>0?.005/ws.x:.5; }   // 5 mm in a mesh's own units
+  const all=bx(model); console.info('[XKR] build D (decal lift) · scale',S.toFixed(4),'length m',(all.max.z-all.min.z).toFixed(3),'width m',(all.max.x-all.min.x).toFixed(3),'height m',(all.max.y-all.min.y).toFixed(3),'tyres',tyres.length,'rim parts',rims.length,'calipers',cals.length);
   const wheelsC=tyres.map(o=>bx(o).getCenter(new THREE.Vector3())), partsBy=tyres.map(o=>[o]), calBy=tyres.map(()=>[]);
   const near=o=>{ const c=bx(o).getCenter(new THREE.Vector3()); let bi=0,bd=1e9; wheelsC.forEach((w,i)=>{ const d=c.distanceTo(w); if(d<bd){ bd=d; bi=i; } }); return bi; };
   rims.forEach(o=>{ if(tyres.length) partsBy[near(o)].push(o); });
