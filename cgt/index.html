@@ -4562,18 +4562,18 @@ function evMakePlane(){
 function evMakeTrain(){
   const g=new THREE.Group(), loco=new THREE.Mesh(new THREE.BoxGeometry(3.4,3.8,20,1,1,6),evMat(0xc2371b,.5,.3)), cab=new THREE.Mesh(new THREE.BoxGeometry(3.4,1.2,6,1,1,2),evMat(0x1a1c20)); loco.position.set(0,2.6,0); cab.position.set(0,4.9,-6); g.add(loco,cab);
   const cols=[0x3b6ea5,0xb5b8bd,0x9a6b2f,0x2e7d4f,0xd6a227,0x6b4a8a,0x3b6ea5];
-  const wagons=[]; cols.forEach((c,i)=>{ const w=new THREE.Mesh(new THREE.BoxGeometry(3.3,3.6,14,1,1,5),evMat(c,.6,.1)); w.position.set(0,2.5,-18-i*15.5); g.add(w); wagons.push(w); });
+  const wagons=[]; cols.forEach((c,i)=>{ const w=new THREE.Mesh(new THREE.BoxGeometry(3.3,3.6,14,1,1,5),evMat(c,.6,.1)); w.position.set(0,2.5,-21-i*15.5); g.add(w); wagons.push(w); /* 3 m further back: room for the full-length engine */ });
   /* wheels: the engine model only has one wheel and the wagon boxes hover .15 above the rails, so every vehicle gets axle pairs (shared geometry/material) running on the rails */
   { const wg=new THREE.CylinderGeometry(1,1,.14,14).rotateZ(Math.PI/2), wm=evMat(0x15171a,.5,.6);
     const axle=(z,r,y)=>{ for(const sx of [-.72,.72]){ const w=new THREE.Mesh(wg,wm); w.scale.set(1,r,r); w.position.set(sx,y,z); g.add(w); } };
-    [7.5,5.8,4.1,.6,-1.1,-4.4,-6.1,-7.8].forEach(z=>axle(z,.5,1.05));
+    [8,6.3,4.6,.4,-1.3,-6.8,-8.5,-10.2].forEach(z=>axle(z,.6,1.15));   // same radius/height as the engine model's own wheel
     wagons.forEach(w=>{ axle(w.position.z+4.5,.36,.91); axle(w.position.z-4.5,.36,.91); }); }
   g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; scene.add(g);
   /* the locomotive: trainhead.glb replaces the box engine once it has loaded (the boxes stay as a fallback if the file is missing).
      Raw model: nose toward +X, ~22.3 long x 6.2 wide; turned so the nose points +Z, nose kept at z=+10 */
   console.info('[train] requesting trainhead.glb from',new URL('trainhead.glb',document.baseURI).href);
   new THREE.GLTFLoader().load('trainhead.glb',gltf=>{ console.info('[train] trainhead.glb loaded: engine model in use');
-    const m=gltf.scene, S=.6, SL=.88; m.scale.set(SL,S,S); m.rotation.y=-Math.PI/2; m.position.set(0,.9,10-10.978*SL);   // length x.88 (~20 m like the old engine), height/width x.6; chassis bottom ~1.0 sits on the axle pairs
+    const m=gltf.scene, S=.6, SL=1; m.scale.set(SL,S,S); m.rotation.y=-Math.PI/2; m.position.set(0,.55+S,10-10.978*SL);   // true length (22.3 m, nose at z=+10, tail at about -12.3), height/width x.6; the model's wheel bottom (raw y=-1) sits exactly on the rail head (y=.55)
     const mm=new Map(); m.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; let x=mm.get(o.material); if(!x){ x=o.material.clone(); bendMat(x); mm.set(o.material,x); } o.material=x; });
     g.add(m); loco.visible=false; cab.visible=false;
   },undefined,e=>{ console.warn('[train] trainhead.glb FAILED to load (missing from the repo, or a stale jsDelivr 404?) - using the box engine',e); });
@@ -4985,7 +4985,7 @@ function cinTick(dt){
     _rw(px-10,9,-24,_cP); _rw(first?first.position.x-bendXAt(z):px,31,z,_cL); C.fov=54-8*_sm(0,4.5,t); C.roll=0;
   } else if(k==='train'){
     const o=EV.train, zl=-96+90*(1-Math.pow(1-u,2.2));   // arrives alongside you (where the race starts: nose level with your bumper)
-    o.position.set(-24,0,zl); o.rotation.set(-Math.atan(roadSlopeAt(zl)),0,0); o.userData.track.position.set(-24,0,0);
+    o.position.set(-24,0,zl); o.rotation.set(0,0,0); o.userData.track.position.set(-24,0,0);   // no grade tilt: evMat/bendMat already lift every vertex onto the road, like the track; tilting on top double-counted the grade
     _rw(-12.5+Math.sin(t*1.3)*.06,1.7,18-t*.6,_cP); _rw(-24,2.9,zl+6,_cL); C.fov=46-6*_sm(0,3.6,t); C.roll=0;
     if(shake<.15&&zl>-40&&zl<10) shake=.15;
   } else if(k==='plane'){
@@ -5189,7 +5189,7 @@ function evRace(c,dt,H){
     o.rotation.set(0,0,Math.sin(c.t*.4)*.04);
   } else {
     o.position.set(-24,0,dz);
-    o.rotation.set(-Math.atan(roadSlopeAt(dz)),0,0);
+    o.rotation.set(0,0,0);   // see the cinematic: the bend shader already conforms the train to the road, a tilt lifted the nose / sank the tail against the flat track
     o.userData.track.position.set(-24,0,0);
   }
   if(P>=c.R&&CH.active){ popup('YOU WON THE RACE','good'); const lead=Math.round(P-c.Q); evEnd(true); chFinish(true,'Beat the '+(air?'cargo plane':'freight train')+' by '+lead+' m'); return; }
