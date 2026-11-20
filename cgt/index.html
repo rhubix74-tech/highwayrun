@@ -355,7 +355,7 @@
     <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-bottom:8px">Challenges</div>
     <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:12px"><button class="admb" id="admListB" type="button">Unlock Challenge List B</button><button class="admb" id="admAllCh" type="button">Unlock All Challenges</button></div>
     <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-bottom:8px">Road events</div>
-    <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:12px"><button class="admb" data-ev="police" type="button">Police Chase</button><button class="admb" data-ev="convoy" type="button">Convoy</button><button class="admb" data-ev="street" type="button">Street Race</button><button class="admb" data-ev="plane" type="button">Race: Cargo Plane</button><button class="admb" data-ev="train" type="button">Race: Train</button><button class="admb" data-ev="balloon" type="button">Race: Balloons</button><button class="admb" data-ev="arcade" type="button">Arcade</button><button class="admb" data-ev="end" type="button">End Event</button></div>
+    <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:12px"><button class="admb" data-ev="police" type="button">Police Chase</button><button class="admb" data-ev="convoy" type="button">Convoy</button><button class="admb" data-ev="street" type="button">Street Race</button><button class="admb" data-ev="boss" type="button">Boss: Tank</button><button class="admb" data-ev="plane" type="button">Race: Cargo Plane</button><button class="admb" data-ev="train" type="button">Race: Train</button><button class="admb" data-ev="balloon" type="button">Race: Balloons</button><button class="admb" data-ev="arcade" type="button">Arcade</button><button class="admb" data-ev="end" type="button">End Event</button></div>
     <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-bottom:8px">World controls</div>
     <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap">
       <button class="admb" id="admDay" type="button">Force Day</button>
@@ -3348,7 +3348,7 @@ function physics(dt){
   const run=state==='run', k=keys; let thr=0,br=0,st=0,hb=0;
   if(run){
     thr=(k.KeyW||k.ArrowUp||tch.g)?1:0; br=(k.KeyS||k.ArrowDown||tch.b)?1:0;
-    st=((k.KeyA||k.ArrowLeft||tch.l)?1:0)-((k.KeyD||k.ArrowRight||tch.r)?1:0); hb=k.Space?1:0;
+    st=((k.KeyA||k.ArrowLeft||tch.l)?1:0)-((k.KeyD||k.ArrowRight||tch.r)?1:0); hb=(k.Space&&!(EV.cur&&EV.cur.k==='boss'&&EV.cur.ph==='fight'))?1:0;   // during the boss fight Space fires the blaster instead of the handbrake
   }else if(paintView||TC.park){ br=1; }   // showroom / title cinematic parked shot: park the car
   else if(state==='menu'){ thr=speed<33?.7:.12; } else if(state==='exit'){ if(speed>14) br=.5; else thr=.2; } else br=.35;
   const gp=navigator.getGamepads&&navigator.getGamepads()[0];
@@ -3395,7 +3395,7 @@ function physics(dt){
     while(false){    // +10 s every 100k pts; each bonus earned within BONUS_WIN s of the last one makes the next gap 40% bigger (up to x3.4), and it cools off again when you slow down
       const gap=runT-lastBT; bHeat=gap<BONUS_WIN?Math.min(6,bHeat+1):Math.max(0,bHeat-Math.floor(gap/BONUS_WIN)); lastBT=runT;
       nextBonus+=Math.round(100000*(1+.4*bHeat)); timeLeft+=0; popup('+10 SECONDS'+(bHeat>0?'  ·  next +'+Math.round(100000*(1+.4*bHeat)/1000)+'k':''),'good'); }
-    runT+=dt; if(!adminInfiniteClock&&!(CH.active&&CH.def&&CH.def.race)) timeLeft-=dt; timeLeft=Math.min(timeLeft,TIME_CAP+startBonus()); if(!adminInfiniteClock&&timeLeft<=0){ timeLeft=0; endRun('time'); }
+    runT+=dt; if(!adminInfiniteClock&&!(CH.active&&CH.def&&CH.def.race)&&!(EV.cur&&(EV.cur.k==='street'||EV.cur.k==='convoy'||EV.cur.k==='boss'))) timeLeft-=dt;   // the clock stands still for the whole street race / convoy and resumes the moment the event ends timeLeft=Math.min(timeLeft,TIME_CAP+startBonus()); if(!adminInfiniteClock&&timeLeft<=0){ timeLeft=0; endRun('time'); }
   }
 }
 let _hudAt=0;
@@ -4666,7 +4666,7 @@ function evRestoreTheme(){
 }
 function evEnd(silent){
   cinEnd(); evRestoreTheme(); const c=EV.cur; EV.cur=null; EV.pending=null; evQuiet=false; evSiren(false);
-  if(EV.pol) EV.pol.g.visible=false; if(EV.plane) EV.plane.visible=false; if(EV.train){ EV.train.visible=false; EV.train.userData.track.visible=false; } EV.balloonPool.forEach(g=>{g.visible=false;g.userData.balloonIndex=-1;}); EV.balloons.length=0;
+  if(EV.pol) EV.pol.g.visible=false; if(EV.plane) EV.plane.visible=false; if(EV.train){ EV.train.visible=false; EV.train.userData.track.visible=false; } EV.balloonPool.forEach(g=>{g.visible=false;g.userData.balloonIndex=-1;}); EV.balloons.length=0; bossHide();
   EV.pool.forEach(t=>{ t.g.visible=false; if(!t.isTraf&&t.g.parent) t.g.parent.remove(t.g); }); EV.pool=[]; if(EV.hud) EV.hud.style.display='none'; if(EV.flash) EV.flash.style.opacity=0; EV._hs=EV._fo=EV._fp=null; EV._ht=0;
   if(c&&(c.k==='convoy'||c.k==='street')){ clearTimeout(_lzEvT); _lzEvT=setTimeout(lazyEvict,3000); }   // [leak] lazyEvict() only ran from applyCar()'s one-shot timer and skips while a convoy is active, so the GPU geometry/textures the convoy members drew (shared with the garage cars) were never released afterwards; the members are off the scene now, so free them (three re-uploads on demand)
   if(c&&c.k==='arcade') arcStop();   // hide the ramps and coins (a jump already in the air finishes normally)
@@ -4680,6 +4680,7 @@ function evStart(kind){
     if(!EV.pol){ evBuildPolice(); EV.pending='police'; popup('POLICE DISPATCHED · CHASE STARTING','bad'); return true; }
     const thr=evThrMs(); EV.cur={k:'police',t:0,gap:60,pv:Math.max(thr*.97,speed*.93),x:px,thr,P0:runDist,R:EVC.policeMi*1609.34}; EV.pol.g.visible=true; EV.pol.g.position.set(px,0,-75);
     popup('POLICE CHASE · STAY ABOVE '+Math.round(thr*MPH)+' MPH · OUTRUN THEM FOR '+EVC.policeMi+' MILES','bad'); cinBegin('police'); return true; }
+  if(kind==='boss'){ EV.cur={k:'boss',ph:'form',t:0}; evQuiet=true; evBossLoad(); popup('BOSS BATTLE · A TANK BLOCKS THE ROAD · ROAD CLEARING','bad'); return true; }
   if(kind==='street'){ const ids=CV_IDS.filter(id=>id!==CS.sel).sort(()=>Math.random()-.5).slice(0,4); ids.forEach(id=>lazyEnsure(id)); EV.cur={k:'street',ph:'form',t:0,ids,cars:[],P0:runDist,R:EVC.streetMi*1609.34,avgV:Math.max(12,speed),finished:0,skill:streetSkill}; evQuiet=true; popup('STREET RACE · 5 MILES · FOUR RIVALS','good'); return true; }
   if(kind==='convoy'){ const ids=SET.cvTraf?[]:CV_IDS.slice().sort(()=>Math.random()-.5).slice(0,3); ids.forEach(id=>lazyEnsure(id));   // start fetching the three shop cars now; they join after the road clears
     EV.cur={k:'convoy',ph:'form',t:0,bonus:0,cars:[],ids}; evQuiet=true; popup('CONVOY AHEAD · ROAD CLEARING','good'); return true; }
@@ -4730,6 +4731,7 @@ function evPick(){
   if(left>EVC.streetMi*1609.34+700) opts.push('street');
   if(left>EVC.raceMi*1609.34+700) opts.push('plane','train','balloon');
   if(left>EVC.arcadeMi*1609.34+700&&!isBetaCar()&&CS.sel!=='jet') opts.push('arcade');
+  if(left>4300&&!isBetaCar()&&CS.sel!=='jet') opts.push('boss');   // boss battle: the clock is paused for it, so it only starts with plenty of road before the next exit
   return opts.length?opts[(Math.random()*opts.length)|0]:null;
 }
 function evTick(dt){
@@ -4758,9 +4760,91 @@ function evTick(dt){
   c.t+=dt;
   // [alloc] was building a new H array + HTML strings + innerHTML every frame: now ~11 Hz, reusing one array, DOM written only when the text changes
   const doH=((EV._ht=(EV._ht||0)-dt)<=0); let H=null; if(doH){ EV._ht=.09; H=_evH; H.length=0; }
-  if(c.k==='police') evPolice(c,dt,H); else if(c.k==='convoy') evConvoy(c,dt,H); else if(c.k==='street') evStreetRace(c,dt,H); else if(c.k==='balloon') evBalloon(c,dt,H); else if(c.k==='arcade') evArcade(c,dt,H); else evRace(c,dt,H);
+  if(c.k==='police') evPolice(c,dt,H); else if(c.k==='convoy') evConvoy(c,dt,H); else if(c.k==='street') evStreetRace(c,dt,H); else if(c.k==='balloon') evBalloon(c,dt,H); else if(c.k==='boss') evBoss(c,dt,H); else if(c.k==='arcade') evArcade(c,dt,H); else evRace(c,dt,H);
   if(CIN.on) return;   // an event that just began opened with its cinematic: keep the HUD hidden
   if(H&&EV.cur&&EV.hud){ const hs=H.length?H.join('<br>'):''; if(hs!==EV._hs){ EV._hs=hs; EV.hud.style.display=H.length?'block':'none'; EV.hud.innerHTML=hs; } }
+}
+
+/* ================= BOSS BATTLE: TANK =================
+   The road clears, you are temporarily fitted with a twin blaster (Space = fire, replaces the handbrake) and a T-62 blocks the road ahead.
+   The clock is paused. The tank marks a lane (red strip) then fires a shell down it: be in a different lane when it lands. Each hit on you costs 20% of
+   your boss-fight health bar; each bolt that lands costs the tank 1 of 40. Win = the showcase reward (25% of your score, min 10,000). Lose or retreat = nothing.
+   Either way the event just ends: the round continues and traffic comes back. */
+const BOSS={tankHp:40,pHp:5,shellV:80,boltV:170};
+function bossDom(){
+  if(EV.bd) return EV.bd;
+  const d=document.createElement('div'); d.style.cssText='position:fixed;left:50%;bottom:92px;transform:translateX(-50%);width:min(380px,80vw);z-index:31;pointer-events:none;display:none;font:700 11px system-ui,sans-serif;letter-spacing:.12em;color:#fff;text-shadow:0 1px 4px #000';
+  const bar=(id,g)=>'<div style="height:10px;background:rgba(255,255,255,.2);border-radius:6px;overflow:hidden;margin:3px 0 8px"><i id="'+id+'" style="display:block;height:100%;width:100%;background:'+g+'"></i></div>';
+  d.innerHTML='<div>YOUR HEALTH</div>'+bar('bbP','linear-gradient(90deg,#3ddc84,#9cff6b)')+'<div>TANK</div>'+bar('bbT','linear-gradient(90deg,#ff3b30,#ff8a3d)');
+  document.body.appendChild(d); return EV.bd={d,p:d.querySelector('#bbP'),t:d.querySelector('#bbT'),lp:-1,lt:-1};
+}
+function bossHide(){
+  if(!EV.tank) return;
+  EV.tank.visible=false; EV.gun.visible=false; if(EV.bd) EV.bd.d.style.display='none';
+  for(let i=0;i<EV.sh.length;i++){ EV.sh[i].m.visible=false; EV.sh[i].on=false; } for(let i=0;i<EV.bo.length;i++){ EV.bo[i].m.visible=false; EV.bo[i].on=false; } for(let i=0;i<3;i++) EV.tm[i].visible=false;
+}
+function evBossLoad(){
+  if(EV.tank||EV.tankReq) return; EV.tankReq=true;
+  new THREE.GLTFLoader().load('low_poly_t-62.glb',gltf=>{
+    // raw model: Y-up (its root node already stands it up), barrel toward -Z (= toward the player here), hull centre at (-0.23, -0.31 ground, -0.38), ~8 m long without the gun
+    const model=gltf.scene, g=new THREE.Group(), S=.85; model.scale.setScalar(S); model.position.set(.23*S,.31*S,.38*S); g.add(model);
+    const mm=new Map(); model.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; let m=mm.get(o.material); if(!m){ m=o.material.clone(); bendMat(m); mm.set(o.material,m); } o.material=m; });
+    g.visible=false; scene.add(g); EV.tank=g;
+    // pre-built pools (no allocation during the fight)
+    const mk=(geo,col,op)=>{ const m=new THREE.MeshBasicMaterial({color:col,transparent:op<1,opacity:op,depthWrite:false}); bendMat(m); const o=new THREE.Mesh(geo,m); o.frustumCulled=false; o.visible=false; scene.add(o); return o; };
+    EV.sh=[]; for(let i=0;i<6;i++) EV.sh.push({m:mk(new THREE.SphereGeometry(.6,10,8),0xff7a1a,1),on:false,x:0,z:0});
+    EV.bo=[]; for(let i=0;i<12;i++) EV.bo.push({m:mk(new THREE.CylinderGeometry(.09,.09,2.2,6).rotateX(Math.PI/2),0x66f6ff,1),on:false,x:0,z:0});
+    EV.tm=[]; for(let i=0;i<3;i++){ const t=mk(new THREE.PlaneGeometry(3,34,1,8).rotateX(-Math.PI/2),0xff2a1a,.35); EV.tm.push(t); }
+    EV.gun=new THREE.Group(); const gm=new THREE.MeshBasicMaterial({color:0x66f6ff});
+    for(const sx of [-.55,.55]){ const b=new THREE.Mesh(new THREE.BoxGeometry(.12,.12,.8),gm); b.position.set(sx,.85,1.5); EV.gun.add(b); }
+    EV.gun.visible=false; car.add(EV.gun);
+    g.userData.ready=true;
+  },undefined,e=>{ EV.tankReq=false; EV.tankTry=(EV.tankTry||0)+1; if(EV.tankTry>=3) EV.tankErr=true; else setTimeout(evBossLoad,1500); });
+}
+function evBoss(c,dt,H){
+  if(c.ph==='form'){
+    if(H) H.push('<b style="color:#ff6b5e">BOSS BATTLE</b> · road clearing…');
+    if(!EV.tank&&!EV.tankErr) evBossLoad();
+    if(c.t>=5){
+      if(EV.tank&&EV.tank.userData.ready){
+        rows.forEach(r=>{ if(r.z>-12) r.cars.forEach(q=>{ q.g.visible=false; q.gone=true; }); });
+        c.ph='fight'; c.t=0; c.thp=BOSS.tankHp; c.php=BOSS.pHp; c.tl=1; c.tx=LANES[1]; c.mt=3; c.fireT=2.4; c.wind=0; c.cd=0; c.side=1; c.tg0=1; c.tg1=-1;
+        EV.tank.visible=true; EV.gun.visible=true; const b=bossDom(); b.d.style.display='block'; b.lp=b.lt=-1;
+        popup('TANK ENGAGED · SPACE TO FIRE · DODGE THE RED LANE','bad');
+      } else if(EV.tankErr||c.t>20){ popup('TANK UNAVAILABLE','bad'); evEnd(true); }
+    }
+    return;
+  }
+  const T=EV.tank, tz=72+Math.sin(c.t*.6)*5, frac=c.thp/BOSS.tankHp;
+  if(evExitLeft()<600||c.t>60){ popup('THE TANK RETREATS · NO REWARD','bad'); evEnd(); return; }
+  // tank: slides between lanes, favouring yours so you can always get a shot, but never for long
+  c.mt-=dt; if(c.mt<=0){ c.mt=3.4+Math.random()*2; c.tl=Math.random()<.55?Math.min(2,Math.max(0,Math.round((px+3.6)/3.6))):((Math.random()*3)|0); }
+  c.tx+=Math.max(-2.8*dt,Math.min(2.8*dt,LANES[c.tl]-c.tx));
+  T.position.set(c.tx+bendXAt(tz),yAt(tz),tz); T.rotation.set(-Math.atan(roadSlopeAt(tz)),0,0);
+  // shells: mark a lane, wait, fire (below half health it marks two lanes and leaves one safe)
+  if(c.wind>0){
+    c.wind-=dt; const a=.22+.25*Math.sin(c.t*18);
+    for(let i=0;i<3;i++){ const m=EV.tm[i], on=i===c.tg0||i===c.tg1; m.visible=on; if(on){ m.material.opacity=a; m.position.set(LANES[i]+bendXAt(22),yAt(22)+.08,22); } }
+    if(c.wind<=0){ for(let i=0;i<3;i++) EV.tm[i].visible=false;
+      for(const lane of [c.tg0,c.tg1]){ if(lane<0) continue; for(let k=0;k<EV.sh.length;k++){ const s=EV.sh[k]; if(!s.on){ s.on=true; s.x=LANES[lane]; s.z=tz-5.5; s.m.visible=true; break; } } } }
+  } else { c.fireT-=dt; if(c.fireT<=0){ const pl=Math.min(2,Math.max(0,Math.round((px+3.6)/3.6))); c.tg0=pl; c.tg1=-1;
+      if(frac<.5){ let o=(Math.random()*2)|0; if(o>=pl) o++; c.tg1=o; }
+      c.wind=1.0; c.fireT=1.7+1.1*frac; } }
+  for(let i=0;i<EV.sh.length;i++){ const s=EV.sh[i]; if(!s.on) continue;
+    s.z-=BOSS.shellV*dt; s.m.position.set(s.x+bendXAt(s.z),yAt(s.z)+1.1,s.z);
+    if(s.z<=2&&s.z>-3&&Math.abs(s.x-px)<1.7){ s.on=false; s.m.visible=false; c.php--; shake=Math.max(shake,.9); $('flash').style.opacity=.45; setTimeout(()=>{$('flash').style.opacity=0},120); popup('HIT!  '+Math.max(0,c.php)+' / '+BOSS.pHp,'bad'); }
+    else if(s.z<-12){ s.on=false; s.m.visible=false; } }
+  // blaster
+  c.cd-=dt; if(keys.Space&&c.cd<=0){ c.cd=.2; c.side=-c.side; for(let k=0;k<EV.bo.length;k++){ const b=EV.bo[k]; if(!b.on){ b.on=true; b.x=px+.55*c.side; b.z=2.5; b.m.visible=true; break; } } }
+  for(let i=0;i<EV.bo.length;i++){ const b=EV.bo[i]; if(!b.on) continue;
+    b.z+=BOSS.boltV*dt; b.m.position.set(b.x+bendXAt(b.z),yAt(b.z)+.9,b.z);
+    if(b.z>=tz-4&&b.z<tz+4&&Math.abs(b.x-c.tx)<1.95){ b.on=false; b.m.visible=false; c.thp--; }
+    else if(b.z>tz+8){ b.on=false; b.m.visible=false; } }
+  const bd=EV.bd, pf=Math.max(0,c.php)/BOSS.pHp, tf=Math.max(0,c.thp)/BOSS.tankHp;
+  if(pf!==bd.lp){ bd.lp=pf; bd.p.style.width=(pf*100)+'%'; } if(tf!==bd.lt){ bd.lt=tf; bd.t.style.width=(tf*100)+'%'; }
+  if(H) H.push('<b style="color:#ff6b5e">BOSS BATTLE · TANK</b>','SPACE fires · dodge the marked lane · '+Math.max(0,c.thp)+' hits to go');
+  if(c.thp<=0){ const b=Math.max(10000,Math.round(score*.25)); score+=b; popup('TANK DESTROYED  +'+b.toLocaleString(),'good'); evEnd(); return; }
+  if(c.php<=0){ popup('BOSS BATTLE LOST · NO REWARD','bad'); evEnd(); return; }
 }
 
 /* ================= event cinematics =================
