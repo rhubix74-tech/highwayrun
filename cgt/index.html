@@ -4698,7 +4698,7 @@ function evStart(kind){
   if(kind==='arcade'){
     ensureArc(); ARC.on=true;
     EV.cur={k:'arcade',t:0,wx:'clear',sunny:true,P0:runDist,R:EVC.arcadeMi*1609.34,jumps:0,jscore:0,coins:0};
-    popup('ARCADE STYLE · RAMPS + BRONZE COINS · '+EVC.arcadeMi+' MILES','good');
+    popup('ARCADE STYLE · RAMPS + BRONZE COINS · '+EVC.arcadeMi+' MILES','good'); cinBegin('arcade');
     setTimeout(()=>{ if(EV.cur&&EV.cur.k==='arcade') popup('HIT A RAMP FAST · Z / X = BARREL ROLL IN THE AIR · LAND LEVEL','good'); },1800);
     return true;
   }
@@ -4770,7 +4770,29 @@ function evTick(dt){
    The clock is paused. The tank marks a lane (red strip) then fires a shell down it: be in a different lane when it lands. Each hit on you costs 20% of
    your boss-fight health bar; each bolt that lands costs the tank 1 of 40. Win = the showcase reward (25% of your score, min 10,000). Lose or retreat = nothing.
    Either way the event just ends: the round continues and traffic comes back. */
-const BOSS={tankHp:40,pHp:5,shellV:80,boltV:170};
+const BOSS={tankHp:160,pHp:5,shellV:80,boltV:170,S:3.3,tz:100};
+/* firing sounds (procedural): the player's twin blaster is a short bright 'pew', the tank's gun a low boom with a noise burst */
+let _nbuf=null;
+function bossSfx(kind){
+  try{ if(!A.ctx) return; const ctx=A.ctx, t=ctx.currentTime, g=ctx.createGain(); g.connect(A.master);
+    if(kind==='blaster'){ const o=ctx.createOscillator(); o.type='square'; o.frequency.setValueAtTime(1500,t); o.frequency.exponentialRampToValueAtTime(260,t+.11);
+      g.gain.setValueAtTime(.05,t); g.gain.exponentialRampToValueAtTime(.001,t+.12); o.connect(g); o.start(t); o.stop(t+.13); }
+    else { const o=ctx.createOscillator(); o.type='sawtooth'; o.frequency.setValueAtTime(95,t); o.frequency.exponentialRampToValueAtTime(32,t+.5);
+      g.gain.setValueAtTime(.22,t); g.gain.exponentialRampToValueAtTime(.001,t+.6); o.connect(g); o.start(t); o.stop(t+.62);
+      if(!_nbuf){ _nbuf=ctx.createBuffer(1,ctx.sampleRate*.4|0,ctx.sampleRate); const d=_nbuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*(1-i/d.length); }
+      const n=ctx.createBufferSource(), lp=ctx.createBiquadFilter(), ng=ctx.createGain(); n.buffer=_nbuf; lp.type='lowpass'; lp.frequency.value=900; ng.gain.value=.3; n.connect(lp); lp.connect(ng); ng.connect(A.master); n.start(t); }
+  }catch(e){}
+}
+/* on-screen fire button (touch devices), only visible during the fight */
+function bossFireBtn(show){
+  let b=EV.fb;
+  if(!b){ if(!show) return; b=document.createElement('button'); b.id='fireBtn'; b.textContent='FIRE'; b.style.cssText='position:fixed;right:18px;bottom:160px;width:92px;height:92px;border-radius:50%;z-index:32;touch-action:none;border:2px solid rgba(255,255,255,.5);background:rgba(255,59,48,.6);color:#fff;font:800 16px system-ui;letter-spacing:.08em;display:none;-webkit-user-select:none;user-select:none';
+    const on=v=>e=>{ e.preventDefault(); tch.f=v; b.style.background=v?'rgba(255,140,60,.85)':'rgba(255,59,48,.6)'; };
+    b.addEventListener('pointerdown',on(1)); ['pointerup','pointercancel','pointerleave'].forEach(n=>b.addEventListener(n,on(0)));
+    document.body.appendChild(b); EV.fb=b; }
+  const touch=(window.matchMedia&&matchMedia('(pointer:coarse)').matches)||('ontouchstart' in window);
+  b.style.display=(show&&touch)?'block':'none'; if(!show) tch.f=0;
+}
 function bossDom(){
   if(EV.bd) return EV.bd;
   const d=document.createElement('div'); d.style.cssText='position:fixed;left:50%;bottom:92px;transform:translateX(-50%);width:min(380px,80vw);z-index:31;pointer-events:none;display:none;font:700 11px system-ui,sans-serif;letter-spacing:.12em;color:#fff;text-shadow:0 1px 4px #000';
@@ -4780,21 +4802,21 @@ function bossDom(){
 }
 function bossHide(){
   if(!EV.tank) return;
-  EV.tank.visible=false; EV.gun.visible=false; if(EV.bd) EV.bd.d.style.display='none';
+  EV.tank.visible=false; EV.gun.visible=false; if(EV.bd) EV.bd.d.style.display='none'; bossFireBtn(false);
   for(let i=0;i<EV.sh.length;i++){ EV.sh[i].m.visible=false; EV.sh[i].on=false; } for(let i=0;i<EV.bo.length;i++){ EV.bo[i].m.visible=false; EV.bo[i].on=false; } for(let i=0;i<3;i++) EV.tm[i].visible=false;
 }
 function evBossLoad(){
   if(EV.tank||EV.tankReq) return; EV.tankReq=true;
   new THREE.GLTFLoader().load('low_poly_t-62.glb',gltf=>{
     // raw model: Y-up (its root node already stands it up), barrel toward -Z (= toward the player here), hull centre at (-0.23, -0.31 ground, -0.38), ~8 m long without the gun
-    const model=gltf.scene, g=new THREE.Group(), S=.85; model.scale.setScalar(S); model.position.set(.23*S,.31*S,.38*S); g.add(model);
+    const model=gltf.scene, g=new THREE.Group(), S=BOSS.S; model.scale.setScalar(S); model.position.set(.23*S,.31*S,.38*S); g.add(model);
     const mm=new Map(); model.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; let m=mm.get(o.material); if(!m){ m=o.material.clone(); bendMat(m); mm.set(o.material,m); } o.material=m; });
     g.visible=false; scene.add(g); EV.tank=g;
     // pre-built pools (no allocation during the fight)
     const mk=(geo,col,op)=>{ const m=new THREE.MeshBasicMaterial({color:col,transparent:op<1,opacity:op,depthWrite:false}); bendMat(m); const o=new THREE.Mesh(geo,m); o.frustumCulled=false; o.visible=false; scene.add(o); return o; };
-    EV.sh=[]; for(let i=0;i<6;i++) EV.sh.push({m:mk(new THREE.SphereGeometry(.6,10,8),0xff7a1a,1),on:false,x:0,z:0});
+    EV.sh=[]; for(let i=0;i<6;i++) { const o={m:mk(new THREE.SphereGeometry(.6,10,8),0xff7a1a,1),on:false,x:0,z:0}; o.m.scale.setScalar(1.7); EV.sh.push(o); }
     EV.bo=[]; for(let i=0;i<12;i++) EV.bo.push({m:mk(new THREE.CylinderGeometry(.09,.09,2.2,6).rotateX(Math.PI/2),0x66f6ff,1),on:false,x:0,z:0});
-    EV.tm=[]; for(let i=0;i<3;i++){ const t=mk(new THREE.PlaneGeometry(3,34,1,8).rotateX(-Math.PI/2),0xff2a1a,.35); EV.tm.push(t); }
+    EV.tm=[]; for(let i=0;i<3;i++){ const t=mk(new THREE.PlaneGeometry(3.2,60,1,12).rotateX(-Math.PI/2),0xff2a1a,.35); EV.tm.push(t); }
     EV.gun=new THREE.Group(); const gm=new THREE.MeshBasicMaterial({color:0x66f6ff});
     for(const sx of [-.55,.55]){ const b=new THREE.Mesh(new THREE.BoxGeometry(.12,.12,.8),gm); b.position.set(sx,.85,1.5); EV.gun.add(b); }
     EV.gun.visible=false; car.add(EV.gun);
@@ -4809,40 +4831,40 @@ function evBoss(c,dt,H){
       if(EV.tank&&EV.tank.userData.ready){
         rows.forEach(r=>{ if(r.z>-12) r.cars.forEach(q=>{ q.g.visible=false; q.gone=true; }); });
         c.ph='fight'; c.t=0; c.thp=BOSS.tankHp; c.php=BOSS.pHp; c.tl=1; c.tx=LANES[1]; c.mt=3; c.fireT=2.4; c.wind=0; c.cd=0; c.side=1; c.tg0=1; c.tg1=-1;
-        EV.tank.visible=true; EV.gun.visible=true; const b=bossDom(); b.d.style.display='block'; b.lp=b.lt=-1;
-        popup('TANK ENGAGED · SPACE TO FIRE · DODGE THE RED LANE','bad');
+        EV.tank.visible=true; EV.gun.visible=true; c.ui=false; bossDom().lp=bossDom().lt=-1;
+        popup('TANK ENGAGED · SPACE TO FIRE · DODGE THE RED LANE','bad'); cinBegin('boss');
       } else if(EV.tankErr||c.t>20){ popup('TANK UNAVAILABLE','bad'); evEnd(true); }
     }
     return;
   }
-  const T=EV.tank, tz=72+Math.sin(c.t*.6)*5, frac=c.thp/BOSS.tankHp;
-  if(evExitLeft()<600||c.t>60){ popup('THE TANK RETREATS · NO REWARD','bad'); evEnd(); return; }
-  // tank: slides between lanes, favouring yours so you can always get a shot, but never for long
-  c.mt-=dt; if(c.mt<=0){ c.mt=3.4+Math.random()*2; c.tl=Math.random()<.55?Math.min(2,Math.max(0,Math.round((px+3.6)/3.6))):((Math.random()*3)|0); }
-  c.tx+=Math.max(-2.8*dt,Math.min(2.8*dt,LANES[c.tl]-c.tx));
-  T.position.set(c.tx+bendXAt(tz),yAt(tz),tz); T.rotation.set(-Math.atan(roadSlopeAt(tz)),0,0);
+  if(CIN.on) return;   // intro cinematic drives the tank
+  if(!c.ui){ c.ui=true; bossDom().d.style.display='block'; bossFireBtn(true); }
+  const T=EV.tank, tz=BOSS.tz+Math.sin(c.t*.6)*4, frac=c.thp/BOSS.tankHp;
+  if(evExitLeft()<600||c.t>100){ popup('THE TANK RETREATS · NO REWARD','bad'); evEnd(); return; }
+  // the tank spans all three lanes and sits dead centre; its materials carry the road bend/hills, so it gets plain world coordinates
+  T.position.set(LANES[1],0,tz); T.rotation.set(0,0,0);
   // shells: mark a lane, wait, fire (below half health it marks two lanes and leaves one safe)
   if(c.wind>0){
     c.wind-=dt; const a=.22+.25*Math.sin(c.t*18);
-    for(let i=0;i<3;i++){ const m=EV.tm[i], on=i===c.tg0||i===c.tg1; m.visible=on; if(on){ m.material.opacity=a; m.position.set(LANES[i]+bendXAt(22),yAt(22)+.08,22); } }
+    for(let i=0;i<3;i++){ const m=EV.tm[i], on=i===c.tg0||i===c.tg1; m.visible=on; if(on){ m.material.opacity=a; m.position.set(LANES[i],.08,34); } }
     if(c.wind<=0){ for(let i=0;i<3;i++) EV.tm[i].visible=false;
-      for(const lane of [c.tg0,c.tg1]){ if(lane<0) continue; for(let k=0;k<EV.sh.length;k++){ const s=EV.sh[k]; if(!s.on){ s.on=true; s.x=LANES[lane]; s.z=tz-5.5; s.m.visible=true; break; } } } }
+      for(const lane of [c.tg0,c.tg1]){ if(lane<0) continue; for(let k=0;k<EV.sh.length;k++){ const s=EV.sh[k]; if(!s.on){ s.on=true; s.x=LANES[lane]; s.z=tz-22; s.m.visible=true; bossSfx('cannon'); break; } } } }
   } else { c.fireT-=dt; if(c.fireT<=0){ const pl=Math.min(2,Math.max(0,Math.round((px+3.6)/3.6))); c.tg0=pl; c.tg1=-1;
       if(frac<.5){ let o=(Math.random()*2)|0; if(o>=pl) o++; c.tg1=o; }
       c.wind=1.0; c.fireT=1.7+1.1*frac; } }
   for(let i=0;i<EV.sh.length;i++){ const s=EV.sh[i]; if(!s.on) continue;
-    s.z-=BOSS.shellV*dt; s.m.position.set(s.x+bendXAt(s.z),yAt(s.z)+1.1,s.z);
+    s.z-=BOSS.shellV*dt; s.m.position.set(s.x,1.3,s.z);
     if(s.z<=2&&s.z>-3&&Math.abs(s.x-px)<1.7){ s.on=false; s.m.visible=false; c.php--; shake=Math.max(shake,.9); $('flash').style.opacity=.45; setTimeout(()=>{$('flash').style.opacity=0},120); popup('HIT!  '+Math.max(0,c.php)+' / '+BOSS.pHp,'bad'); }
     else if(s.z<-12){ s.on=false; s.m.visible=false; } }
   // blaster
-  c.cd-=dt; if(keys.Space&&c.cd<=0){ c.cd=.2; c.side=-c.side; for(let k=0;k<EV.bo.length;k++){ const b=EV.bo[k]; if(!b.on){ b.on=true; b.x=px+.55*c.side; b.z=2.5; b.m.visible=true; break; } } }
+  c.cd-=dt; if((keys.Space||tch.f)&&c.cd<=0){ c.cd=.2; c.side=-c.side; bossSfx('blaster'); for(let k=0;k<EV.bo.length;k++){ const b=EV.bo[k]; if(!b.on){ b.on=true; b.x=px+.55*c.side; b.z=2.5; b.m.visible=true; break; } } }
   for(let i=0;i<EV.bo.length;i++){ const b=EV.bo[i]; if(!b.on) continue;
-    b.z+=BOSS.boltV*dt; b.m.position.set(b.x+bendXAt(b.z),yAt(b.z)+.9,b.z);
-    if(b.z>=tz-4&&b.z<tz+4&&Math.abs(b.x-c.tx)<1.95){ b.on=false; b.m.visible=false; c.thp--; }
-    else if(b.z>tz+8){ b.on=false; b.m.visible=false; } }
+    b.z+=BOSS.boltV*dt; b.m.position.set(b.x,.9,b.z);
+    if(b.z>=tz-20&&b.z<tz+16&&Math.abs(b.x-c.tx)<6){ b.on=false; b.m.visible=false; c.thp--; }
+    else if(b.z>tz+24){ b.on=false; b.m.visible=false; } }
   const bd=EV.bd, pf=Math.max(0,c.php)/BOSS.pHp, tf=Math.max(0,c.thp)/BOSS.tankHp;
   if(pf!==bd.lp){ bd.lp=pf; bd.p.style.width=(pf*100)+'%'; } if(tf!==bd.lt){ bd.lt=tf; bd.t.style.width=(tf*100)+'%'; }
-  if(H) H.push('<b style="color:#ff6b5e">BOSS BATTLE · TANK</b>','SPACE fires · dodge the marked lane · '+Math.max(0,c.thp)+' hits to go');
+  if(H) H.push('<b style="color:#ff6b5e">BOSS BATTLE · TANK</b>',(('ontouchstart' in window)?'FIRE button':'SPACE')+' fires · dodge the marked lane · '+Math.max(0,c.thp)+' hits to go');
   if(c.thp<=0){ const b=Math.max(10000,Math.round(score*.25)); score+=b; popup('TANK DESTROYED  +'+b.toLocaleString(),'good'); evEnd(); return; }
   if(c.php<=0){ popup('BOSS BATTLE LOST · NO REWARD','bad'); evEnd(); return; }
 }
@@ -4877,6 +4899,11 @@ function cinSfx(kind){
     } else if(kind==='plane'){
       const n=noise(6), bp=c.createBiquadFilter(), g=c.createGain(); bp.type='bandpass'; bp.Q.value=.8; bp.frequency.setValueAtTime(900,t0); bp.frequency.exponentialRampToValueAtTime(380,t0+3.6); bp.frequency.exponentialRampToValueAtTime(220,t0+6);
       g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(.55,t0+1.7); g.gain.linearRampToValueAtTime(.05,t0+6); n.connect(bp); bp.connect(g); g.connect(A.master); n.start(t0);
+    } else if(kind==='arcade'){
+      [523,659,784,1047,1319].forEach((f,i)=>{ const o=c.createOscillator(), g=c.createGain(); o.type='square'; o.frequency.value=f; g.gain.setValueAtTime(0,t0+.5+i*.28); g.gain.linearRampToValueAtTime(.03,t0+.52+i*.28); g.gain.exponentialRampToValueAtTime(.001,t0+.8+i*.28); o.connect(g); g.connect(A.master); o.start(t0+.5+i*.28); o.stop(t0+.85+i*.28); });
+    } else if(kind==='boss'){
+      const n=noise(5), lp=c.createBiquadFilter(), g=c.createGain(); lp.type='lowpass'; lp.frequency.value=110; g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(.8,t0+2.6); g.gain.linearRampToValueAtTime(0,t0+5); n.connect(lp); lp.connect(g); g.connect(A.master); n.start(t0);
+      [0,.7].forEach(d=>{ const o=c.createOscillator(), g2=c.createGain(); o.type='sawtooth'; o.frequency.setValueAtTime(110,t0+3.2+d); o.frequency.exponentialRampToValueAtTime(55,t0+3.7+d); g2.gain.setValueAtTime(.06,t0+3.2+d); g2.gain.exponentialRampToValueAtTime(.001,t0+3.9+d); o.connect(g2); g2.connect(A.master); o.start(t0+3.2+d); o.stop(t0+4+d); });
     } else if(kind==='convoy'){
       const n=noise(4.5), lp=c.createBiquadFilter(), g=c.createGain(); lp.type='lowpass'; lp.frequency.value=220; g.gain.setValueAtTime(0,t0+.3); g.gain.linearRampToValueAtTime(.4,t0+1.8); g.gain.linearRampToValueAtTime(0,t0+4.5); n.connect(lp); lp.connect(g); g.connect(A.master); n.start(t0);
       [0,.9,1.8].forEach(d=>{ const o=c.createOscillator(), g2=c.createGain(); o.type='square'; o.frequency.value=392; g2.gain.setValueAtTime(0,t0+1.2+d); g2.gain.linearRampToValueAtTime(.012,t0+1.25+d); g2.gain.linearRampToValueAtTime(0,t0+1.5+d); o.connect(g2); g2.connect(A.master); o.start(t0+1.2+d); o.stop(t0+1.6+d); });
@@ -4891,25 +4918,25 @@ function cinPortal(){
   add(5,10,9,-9.5,5,3); add(5,10,9,9.5,5,3); add(26,3.4,9,0,8.3,3); add(1.4,.5,9,-6.7,6.7,3); add(1.4,.5,9,6.7,6.7,3);
   g.add(hole); g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; scene.add(g); return CIN.portal=g;
 }
-const _cinTitles={train:['Freight Train','Race it '+'5 miles · beat it to the finish'],plane:['Cargo Plane','Race it 5 miles · beat it to the finish'],balloon:['Balloon Fleet','Overtake every balloon · beat the fleet to the finish'],police:['Police Pursuit','Stay above the speed limit to escape'],convoy:['Convoy','Drive with them · stay in formation']};
+const _cinTitles={train:['Freight Train','Race it '+'5 miles · beat it to the finish'],plane:['Cargo Plane','Race it 5 miles · beat it to the finish'],balloon:['Balloon Fleet','Overtake every balloon · beat the fleet to the finish'],police:['Police Pursuit','Stay above the speed limit to escape'],convoy:['Convoy','Drive with them · stay in formation'],street:['Street Race','5 miles · four rivals · first across the line wins'],arcade:['Arcade Style','Hit the ramps · grab the coins · land it clean'],boss:['Boss Battle','Destroy the tank · dodge the marked lane']};
 const CIN_PZ=88;   // distance of the convoy tunnel portal
 function cinBegin(kind){
   const d=cinDom(), c=EV.cur; if(!c||state!=='run') return;
   document.body.classList.add('cin'); CIN.on=true; CIN.k=kind; CIN.t=0; CIN.roll=0; CIN.fov=0; CIN.cars=null;
-  CIN.dur={train:6.4,plane:6.6,police:5.6,convoy:6.8,balloon:6.2}[kind]; CIN.bs=CIN.dur-2.1;
+  CIN.dur={train:6.4,plane:6.6,police:5.6,convoy:6.8,balloon:6.2,street:6.8,arcade:5.6,boss:6.6}[kind]; CIN.bs=CIN.dur-2.1;
   if(EV.hud){ EV.hud.style.display='none'; EV._hs=null; } evSiren(false);
   d.top.style.height=d.bot.style.height='11vh'; d.skip.style.opacity=MP.on?0:.85; d.skip.style.pointerEvents=MP.on?'none':'auto';   // no skipping in multiplayer: both drivers sit through the same cinematic
   const tt=_cinTitles[kind]; d.ttl.textContent=tt[0]; d.sub.textContent=tt[1];
   setTimeout(()=>{ if(CIN.on){ d.ttl.style.opacity=1; d.ttl.style.transform='none'; d.sub.style.opacity=1; } },350);
-  if(kind==='convoy'){ cinPortal().visible=true; CIN.portal.position.set(0,0,CIN_PZ); CIN.cars=c.cars.map(q=>({q,t:q.t,x:q.t.x,z:q.t.z,side:q.t.x>=px?1:-1})); CIN.cars.forEach(o=>{ o.t.g.visible=false; }); }
-  cinSfx(kind); cinTick(0);   // place the shot before the first frame is drawn
+  if(kind==='convoy'||kind==='street'){ cinPortal().visible=true; CIN.portal.position.set(0,0,CIN_PZ); CIN.cars=c.cars.map(q=>({q,t:q.t,x:q.t.x,z:q.t.z,side:q.t.x>=px?1:-1})); CIN.cars.forEach(o=>{ o.t.g.visible=false; }); }
+  cinSfx(kind==='street'?'convoy':kind); cinTick(0);   // place the shot before the first frame is drawn
 }
 function cinEnd(){
   if(!CIN.on&&!(CIN.dom&&CIN.dom.top.style.height!=='0px')) return;
   const was=CIN.on; CIN.on=false; document.body.classList.remove('cin');
   if(CIN.dom){ const d=CIN.dom; d.top.style.height=d.bot.style.height='0'; d.ttl.style.opacity=0; d.ttl.style.transform='translateX(-18px)'; d.sub.style.opacity=0; d.skip.style.opacity=0; }
   camera.up.set(0,1,0); if(CIN.portal) CIN.portal.visible=false;
-  if(was&&EV.cur&&CIN.k==='convoy'&&CIN.cars){ CIN.cars.forEach(o=>{ o.t.x=o.x; o.t.z=o.z; o.t.g.visible=true; }); EV.cur.t=0; }
+  if(was&&EV.cur&&(CIN.k==='convoy'||CIN.k==='street')&&CIN.cars){ CIN.cars.forEach(o=>{ o.t.x=o.x; o.t.z=o.z; o.t.g.visible=true; }); EV.cur.t=0; }
   evSiren(false); if(EV.flash) EV.flash.style.opacity=0;
   CIN.cars=null;
 }
@@ -4930,6 +4957,15 @@ function cinTick(dt){
     const x=bz(14,-2,36), y=bz(15,5,24), z=bz(-150,50,-6), tx=dz(14,-2,36), ty=dz(15,5,24), tz=dz(-150,50,-6);
     o.position.set(x,y,z); o.rotation.set(-Math.atan2(ty,Math.hypot(tx,tz)),Math.atan2(tx,tz),-tx*.012,'YXZ');
     _rw(px+3,.9,-22,_cP); _cL.set(x+bendXAt(z),y+yAt(z),z); C.fov=62-14*_sm(0,5,t); C.roll=.05;
+  } else if(k==='arcade'){
+    const a=.3+2.7*_sm(0,4.4,t);   // orbit from in front of the car, round the right side, to behind it
+    _rw(px+7.5*Math.sin(a),1.2+1.4*_sm(1.5,4.4,t),7.5*Math.cos(a),_cP); _rw(px,.9,0,_cL); C.fov=50-8*_sm(0,4,t); C.roll=.06*(1-_sm(2,4.4,t));
+  } else if(k==='boss'){
+    const o=EV.tank, e=_sm(.2,4.4,t), zt=BOSS.tz+(1-e)*260;
+    if(o){ o.visible=true; o.position.set(LANES[1],0,zt); o.rotation.set(0,0,0); }
+    if(zt<170&&shake<.2) shake=.2;
+    if(t<3.4){ _rw(px+5.5,1.1,-5+t*.6,_cP); _rw(LANES[1],3.2,Math.min(zt,BOSS.tz+90)-8,_cL); C.fov=40-4*_sm(0,3.4,t); C.roll=.04; }
+    else { _rw(px-3.5,3.4,-13,_cP); _rw(LANES[1],4.5,BOSS.tz-10,_cL); C.fov=46; C.roll=0; }
   } else if(k==='police'){
     const pol=EV.pol; let z,x;
     if(t<1.9) z=-95+91*(1-Math.pow(1-t/1.9,2)); else if(t<3.0) z=-4; else z=-4-56*_sm(3,5.4,t);
@@ -4940,7 +4976,7 @@ function cinTick(dt){
     evSiren(true,.7); if(EV.flash){ const ph=Math.floor(performance.now()/160)&1; EV.flash.style.opacity=.38; EV.flash.style.background=ph?_FL1:_FL2; }
     if(t<1.8){ _rw(px+3.4,.5,7.5-t*.8,_cP); _rw(x,.7,z,_cL); C.roll=.17; C.fov=52; }
     else { const v=t-1.8; _rw(px+7.5-v*.6,.9,-16+v*3,_cP); _rw(x,.75,z,_cL); C.roll=-.14; C.fov=44; }
-  } else if(k==='convoy'){
+  } else if(k==='convoy'||k==='street'){
     let ax=0,az=0;
     for(let i=0;i<C.cars.length;i++){ const o=C.cars[i], tt=o.t, v=Math.min(1,Math.max(0,(t-(.5+i*.95))/2.4)), e=1-Math.pow(1-v,2.4);
       const z=CIN_PZ+14+(o.z-(CIN_PZ+14))*e;
@@ -5033,10 +5069,11 @@ function evStreetRace(c,dt,H){
       }).filter(Boolean);
       if(c.cars.length<2){ popup('STREET RACE UNAVAILABLE · RIVALS STILL LOADING','bad'); evEnd(); return; }
       c.P0=runDist; c.ema=c.hi=c.avgV=Math.max(12,speed);
-      c.ph='race'; c.t=0; c.count=c.cars.length; popup('3 · 2 · 1 · STREET RACE!','good');
+      c.ph='race'; c.t=0; c.count=c.cars.length; popup('3 · 2 · 1 · STREET RACE!','good'); cinBegin('street');
     }
     return;
   }
+  if(CIN.on) return;   // intro cinematic: the cinematic places the rivals
   const P=Math.max(0,runDist-c.P0), playerV=Math.max(0,speed);
   // Pace is the player's actual average speed since the green flag, not their
   // instantaneous throttle speed. Opponents smoothly track this measured average.
