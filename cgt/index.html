@@ -3440,7 +3440,7 @@ function applyPaint(d){ const f=FIN[d.fin]||FIN.gloss, m=M.paint;
   const dual=d.id==='dualpaint', f2=dual?(FIN[d.fin2]||FIN.metal):f;
   PAINT_U.dualOn.value=dual?1:0; PAINT_U.dualColor.value.set(dual?d.c2:'#000000'); PAINT_U.dualRough.value=f2.r; PAINT_U.dualMetal.value=f2.m; PAINT_U.dualCC.value=Q.coat?f2.cc:0; PAINT_U.dualCCR.value=f2.ccr;
   if(dual&&m.clearcoat===0&&PAINT_U.dualCC.value>0) m.clearcoat=.001;   // keep the clearcoat code path compiled so the other side can use it
-  m.onBeforeCompile=paintPatchCarrera; m.customProgramCacheKey=PAINT_KEY; m.needsUpdate=true; syncEnzoPaint(); syncZondaPaint(); syncCobraPaint(); syncAeroPaint(); syncChironPaint(); syncM3Paint(); syncXkrPaint(); syncF360Paint(); syncCcxPaint(); syncR34Paint(); syncFulviaPaint(d); }
+  m.onBeforeCompile=paintPatchCarrera; m.customProgramCacheKey=PAINT_KEY; m.needsUpdate=true; syncEnzoPaint(); syncZondaPaint(); syncCobraPaint(); syncAeroPaint(); syncChironPaint(); syncM3Paint(); syncXkrPaint(); syncF360Paint(); syncCcxPaint(); syncR34Paint(); syncRaptorPaint(); syncFulviaPaint(d); }   // [fix] the Raptor was never re-synced here, so it kept its first colour whatever you picked
 const dotCss=d=>d.fin==='carbon'?'repeating-linear-gradient(45deg,#1b1d21 0 3px,#33363c 3px 6px)':d.id==='scoutpaint'?"repeating-linear-gradient(45deg,rgba(40,110,35,.25) 0 4px,transparent 4px 8px),#398b35":d.fin==='chrome'?'linear-gradient(135deg,#fff,#8f97a4 45%,#f6f8fb)':'radial-gradient(circle at 30% 28%,rgba(255,255,255,'+(d.fin==='matte'?.12:.5)+'),transparent 40%),'+d.c;
 function spend(c){ if(wallet<c) return false; wallet-=c; try{store.set('cgt_cash',String(wallet))}catch(e){} renderWallet(); return true; }
 function renderPaint(keepScroll){
