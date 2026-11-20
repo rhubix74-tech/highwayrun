@@ -3564,7 +3564,8 @@ CHALLENGES_B.forEach(c=>{ c.list='B'; c.pen=[0,5,8,10,15,20][c.tier]; });
    The challenge clock is held while the race runs (a 7-mile race can't fit the 135 s clock cap); each crash still costs time. 'dens' nudges traffic density up slightly. $50 per first clear. */
 const CHALLENGES_C=[
  {id:'C1',tier:3,name:'Storm Chaser',car:'xkr',   song:null,time:120,exitMi:12,g:{race:true},race:{k:'plane',mi:7,hard:true}},
- {id:'C2',tier:3,name:'Train in Vain',car:'fulvia',song:null,time:120,exitMi:12,dens:1,g:{race:true},race:{k:'train',mi:7,hard:true}}
+ {id:'C2',tier:3,name:'Train in Vain',car:'fulvia',song:null,time:120,exitMi:12,dens:1,g:{race:true},race:{k:'train',mi:7,hard:true}},
+ {id:'C3',tier:4,name:'37 Versus 037',car:'l037',song:null,time:120,exitMi:12,g:{race:true},race:{k:'balloon',mi:7,hard:true,n:37}}
 ];
 CHALLENGES_C.forEach(c=>{ c.list='C'; c.pen=10; });
 
@@ -3587,6 +3588,7 @@ function simTopMph(id){                      // terminal speed of the car's real
 function chGoal(d){ const g=Object.assign({},d.g); if(g.top){ const simulated=simTopMph(d.car); const rated=CAR_STATS[d.car]&&CAR_STATS[d.car].topSpeedMph; const achievable=Math.min(simulated,Number.isFinite(rated)&&rated>0?rated:simulated); g.speed=Math.floor(achievable*g.top); } return g; }
 function chText(d){
   const g=chGoal(d), p=[], ex=g.exit;
+  if(g.race&&d.race.k==='balloon') return 'Overtake all '+d.race.n+' balloons before any of them reaches the finish, over '+d.race.mi+' miles · spread-out fleet · smarter balloons that run when you close in · the clock holds during the race · each crash −'+d.pen+' s';
   if(g.race) return 'Beat the '+(d.race.k==='plane'?'cargo plane':'freight train')+' to the finish over '+d.race.mi+' miles · tougher AI · the clock holds during the race · each crash −'+d.pen+' s';
   if(ex){ const em=d.exitMi||(d.car==='zonda'?5:10); let t='Take the exit '+em+' mi ahead';
     if(ex.frac) t+=' with '+Math.round(ex.frac*100)+'% of your time left'; if(ex.min) t+=' with '+ex.min+' s left'; if(ex.gain) t+=' with more time than you started with'; p.push(t); }
@@ -3650,6 +3652,7 @@ function chFinish(win,msg){
 function startChallenge(i,L){
   L=(L==='B'||L==='C')?L:'A'; const d=chArr(L)[i]; if(!d||state==='run'||state==='exit'||loadoutOpen||!chUnlocked(i,L)) return;
   setChMenu(false);
+  try{ tcStop(); }catch(e){}   // end the title cinematic first: it would otherwise put the previously saved car back in the middle of startRun
   if(!CH.active) CH.saved=CS.sel;
   CH.active=true; CH.raced=false; CH.i=i; CH.L=L; CH.def=d; CH.goal=chGoal(d); CH.st={mx:0,mm:0,cp:0,th:0,wm:0,cr:0,hold:0,hb:0,ts:0,tl:0};
   CS.sel=d.car; applyCar(); physId=null;                    // preset car (no ownership needed, never saved)
@@ -3675,7 +3678,8 @@ function chHudUpdate(){
   if(g.streak){ goals.push('Chain '+g.streak+' time bonuses'); progress.push('Chain '+st.ts+' / '+g.streak+' (now '+tStreak+')'); }
   if(g.clock){ goals.push('Clock up to '+g.clock+' s'); progress.push('Clock '+Math.ceil(timeLeft)+' / '+g.clock+' s'); }
   if(g.noBrake) goals.push('No braking');
-  if(g.race){ const rc=CH.def.race, ev=EV.cur&&EV.cur.hard?EV.cur:null; goals.push('Beat the '+(rc.k==='plane'?'cargo plane':'freight train')+' over '+rc.mi+' miles'); progress.push(ev?(ev.Q>runDist-ev.P0?'Behind by '+Math.round(ev.Q-(runDist-ev.P0))+' m':'Ahead by '+Math.round((runDist-ev.P0)-ev.Q)+' m'):'Race starts in a few seconds'); }
+  if(g.race&&CH.def.race.k==='balloon'){ const rc=CH.def.race, ev=EV.cur&&EV.cur.k==='balloon'?EV.cur:null; goals.push('Overtake all '+rc.n+' balloons over '+rc.mi+' miles'); progress.push(ev?ev.passed+' / '+ev.n+' overtaken':'Race starts in a few seconds'); }
+  else if(g.race){ const rc=CH.def.race, ev=EV.cur&&EV.cur.hard?EV.cur:null; goals.push('Beat the '+(rc.k==='plane'?'cargo plane':'freight train')+' over '+rc.mi+' miles'); progress.push(ev?(ev.Q>runDist-ev.P0?'Behind by '+Math.round(ev.Q-(runDist-ev.P0))+' m':'Ahead by '+Math.round((runDist-ev.P0)-ev.Q)+' m'):'Race starts in a few seconds'); }
   if(g.noCrash){ goals.push('No crashes'); progress.push(st.cr?'CRASHED':'No crashes'); } else progress.push('Crash penalty −'+CH.def.pen+' s');
   const h='<b>#'+CH.def.id+' · '+CH.def.name+'</b><div class="chHudGoal"><strong>GOAL</strong> '+goals.join(' · ')+'</div><div class="chHudProgress"><strong>PROGRESS</strong> '+progress.join(' · ')+'</div>';
   const el=$('chHud'); if(el._h!==h){ el.innerHTML=h; el._h=h; }
@@ -4589,7 +4593,13 @@ function evBalloonUpdate(c,dt){
   for(let i=0;i<c.balloons.length;i++){
     const b=c.balloons[i];
     // Every participant advances every simulation tick, including balloons already overtaken.
-    b.q+=b.v*dt;
+    if(c.hard){   // smarter balloons: they spot the player coming, burn harder to run (more the closer you are) and all make a final dash for the line
+      const rel0=b.q-P; let k=1;
+      if(!b.passed&&rel0>0&&rel0<420){ const f=1-rel0/420; k+=Math.min(1.0,f*1.3)*(.7+.3*Math.min(1,(c.t/60))); }
+      if(b.q>c.R-1700) k*=1.2;
+      b.vNow=(b.vNow||b.v)+((Math.min(b.v*k,c.carTop*.45))-(b.vNow||b.v))*Math.min(1,dt*1.2);
+      b.q+=b.vNow*dt;
+    } else b.q+=b.v*dt;
     if(!b.passed&&P>=b.q) b.passed=true;
     if(b.q>=c.R) finished=true;
     if(b.passed){ passed++; continue; }
@@ -4605,7 +4615,7 @@ function evBalloonUpdate(c,dt){
   }
   c.passed=passed;
   // A finish is fatal unless the player has already overtaken the entire fleet.
-  if(finished&&passed<50){ popup('BALLOON FLEET REACHED THE FINISH · RACE LOST','bad'); evEnd(); return; }
+  if(finished&&passed<c.balloons.length){ popup('BALLOON FLEET REACHED THE FINISH · RACE LOST','bad'); if(CH.active){ const left=c.balloons.length-passed; evEnd(true); chFinish(false,'A balloon reached the finish with '+left+' still not overtaken.'); } else evEnd(); return; }
   // Reassign the six pooled groups from the six nearest active records every tick.
   // Unused slots are explicitly released, preventing stale or frozen models.
   for(let i=0;i<6;i++){
@@ -4619,9 +4629,10 @@ function evBalloonUpdate(c,dt){
 }
 function evBalloon(c,dt,H){
   evBalloonUpdate(c,dt); if(EV.cur!==c) return;
-  const P=runDist-c.P0, left=Math.max(0,c.R-P), remain=50-c.passed;
-  if(P>=c.R&&remain===0){ const reward=Math.max(10000,Math.round(score*.25)); popup('RACE: BALLOONS COMPLETE · ALL 50 OVERTAKEN  +'+reward.toLocaleString(),'good'); score+=reward; timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+10); evEnd(); return; }
-  if(H) H.push('<b style="color:#ffd76a">RACE: BALLOONS</b> · '+c.passed+' / 50 overtaken','5-mile stretch · '+remain+' remaining · '+(left/1609.34).toFixed(2)+' mi to finish');
+  const P=runDist-c.P0, left=Math.max(0,c.R-P), remain=c.balloons.length-c.passed;
+  if(P>=c.R&&remain===0){ const reward=Math.max(10000,Math.round(score*.25)); if(CH.active){ const nb=c.n; popup('ALL '+nb+' BALLOONS OVERTAKEN','good'); evEnd(true); chFinish(true,'Overtook all '+nb+' balloons'); return; }
+    popup('RACE: BALLOONS COMPLETE · ALL 50 OVERTAKEN  +'+reward.toLocaleString(),'good'); score+=reward; timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+10); evEnd(); return; }
+  if(H) H.push('<b style="color:#ffd76a">RACE: BALLOONS</b> · '+c.passed+' / '+c.balloons.length+' overtaken',(c.R/1609.34).toFixed(0)+'-mile stretch · '+remain+' remaining · '+(left/1609.34).toFixed(2)+' mi to finish');
 }
 /* ---- state machine ---- */
 function evPlayTheme(track){
@@ -4682,20 +4693,20 @@ function evStart(kind){
   }
   if(kind==='balloon'){
     evMakeBalloonPool();
-    const R=EVC.raceMi*1609.34, balloons=[];
+    const rcb=(CH.active&&CH.def&&CH.def.race)||null, hardB=!!(rcb&&rcb.hard), NB=hardB?(rcb.n||37):50, R=(rcb?rcb.mi:EVC.raceMi)*1609.34, balloons=[];
     const carTop=((CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].topSpeedMph)||150)/MPH;
     // Pace scales with this car's rated top speed. The field spans the road ahead;
     // the leader starts at 70% of race distance and runs at about 25% of rated top speed.
-    for(let i=0;i<50;i++){
-      const progress=i/49, q=110+progress*(R*.70-110);
-      const basePace=.19+.06*progress;
+    for(let i=0;i<NB;i++){
+      const progress=i/(NB-1), q=hardB?150+progress*(R*.50-150):110+progress*(R*.70-110);   // challenge: the fleet is spread over the first half of the stretch (~150 m apart, tuned in a headless sim: needs ~90 mph average to win) instead of packed
+      const basePace=hardB?.22+.08*progress:.19+.06*progress;
       const stagger=1+((((i*37)%9)-4)*.006);
       balloons.push({q,v:carTop*basePace*stagger,lane:i%3,phase:i*1.71,passed:false});
     }
     EV.balloons=balloons;
-    EV.cur={k:'balloon',t:0,wx:'clear',sunny:true,P0:runDist,R,balloons,passed:0};
+    EV.cur={k:'balloon',t:0,wx:'clear',sunny:true,P0:runDist,R,balloons,passed:0,n:NB,hard:hardB,carTop};
     evBalloonUpdate(EV.cur,0);
-    popup('RACE: BALLOONS · OVERTAKE ALL 50 · 5 MILES','good');
+    popup((hardB?'CHALLENGE RACE · BALLOONS · OVERTAKE ALL '+NB+' · ':'RACE: BALLOONS · OVERTAKE ALL 50 · ')+(R/1609.34).toFixed(0)+' MILES','good');
     cinBegin('balloon');
     { const sg=RADIO.find(t=>t.t==='Paddling Out'); evPlayTheme(sg); }
     return true;
@@ -4786,7 +4797,7 @@ function cinPortal(){
   add(5,10,9,-9.5,5,3); add(5,10,9,9.5,5,3); add(26,3.4,9,0,8.3,3); add(1.4,.5,9,-6.7,6.7,3); add(1.4,.5,9,6.7,6.7,3);
   g.add(hole); g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; scene.add(g); return CIN.portal=g;
 }
-const _cinTitles={train:['Freight Train','Race it '+'5 miles · beat it to the finish'],plane:['Cargo Plane','Race it 5 miles · beat it to the finish'],balloon:['Balloon Fleet','Overtake all 50 · 5 miles · beat the fleet to the finish'],police:['Police Pursuit','Stay above the speed limit to escape'],convoy:['Convoy','Drive with them · stay in formation']};
+const _cinTitles={train:['Freight Train','Race it '+'5 miles · beat it to the finish'],plane:['Cargo Plane','Race it 5 miles · beat it to the finish'],balloon:['Balloon Fleet','Overtake every balloon · beat the fleet to the finish'],police:['Police Pursuit','Stay above the speed limit to escape'],convoy:['Convoy','Drive with them · stay in formation']};
 const CIN_PZ=88;   // distance of the convoy tunnel portal
 function cinBegin(kind){
   const d=cinDom(), c=EV.cur; if(!c||state!=='run') return;
