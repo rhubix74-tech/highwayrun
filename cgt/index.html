@@ -3395,7 +3395,8 @@ function physics(dt){
     while(false){    // +10 s every 100k pts; each bonus earned within BONUS_WIN s of the last one makes the next gap 40% bigger (up to x3.4), and it cools off again when you slow down
       const gap=runT-lastBT; bHeat=gap<BONUS_WIN?Math.min(6,bHeat+1):Math.max(0,bHeat-Math.floor(gap/BONUS_WIN)); lastBT=runT;
       nextBonus+=Math.round(100000*(1+.4*bHeat)); timeLeft+=0; popup('+10 SECONDS'+(bHeat>0?'  ·  next +'+Math.round(100000*(1+.4*bHeat)/1000)+'k':''),'good'); }
-    runT+=dt; if(!adminInfiniteClock&&!(CH.active&&CH.def&&CH.def.race)&&!(EV.cur&&(EV.cur.k==='street'||EV.cur.k==='convoy'||EV.cur.k==='boss'))) timeLeft-=dt;   // the clock stands still for the whole street race / convoy and resumes the moment the event ends timeLeft=Math.min(timeLeft,TIME_CAP+startBonus()); if(!adminInfiniteClock&&timeLeft<=0){ timeLeft=0; endRun('time'); }
+    runT+=dt; if(!adminInfiniteClock&&!(CH.active&&CH.def&&CH.def.race)&&!(EV.cur&&(EV.cur.k==='street'||EV.cur.k==='convoy'||EV.cur.k==='boss'))) timeLeft-=dt;   // the clock stands still for the whole street race / convoy and resumes the moment the event ends
+    timeLeft=Math.min(timeLeft,TIME_CAP+startBonus()); if(!adminInfiniteClock&&timeLeft<=0){ timeLeft=0; endRun('time'); }
   }
 }
 let _hudAt=0;
