@@ -2806,9 +2806,15 @@ lazyCar('raptor','ford_f150_svt_raptor_r.glb',gltf=>{
   const GLASS=['Windscreenok0011Mtl','Doorrfok1Mtl','Windscreenok0021Mtl'], seenM=new Set();
   gltf.scene.traverse(o=>{ if(!o.isMesh||!o.material||seenM.has(o.material)) return; seenM.add(o.material); const m=o.material, n=m.name||'';
     if(m.transparent&&m.opacity>=.99&&!GLASS.includes(n)&&!/^Light/.test(n)){ m.transparent=false; m.depthWrite=true; m.alphaTest=0; } });
+  // [fix] the body was matched only by the exact names Paint1Mtl / Paint2Mtl; if the file's material names differ, nothing was ever classed as paint and the truck stayed silver
+  // whatever you picked. Now: any material with "paint" in its name, else the biggest non-wheel/glass/light material (the body shell). The choice is logged to the console.
+  const mc=new Map(); gltf.scene.traverse(o=>{ if(o.isMesh&&o.material){ const n=o.material.name||''; mc.set(n,(mc.get(n)||0)+(o.geometry.attributes.position?o.geometry.attributes.position.count:0)); } });
+  let paintNames=[...mc.keys()].filter(n=>/paint/i.test(n));
+  if(!paintNames.length){ const skip=/wheel|tyre|tire|hub|rim|glass|windscreen|windshield|light|lamp|chrome|interior|seat|rubber|brake|rotor|caliper|badge|logo|mirror|plate|black/i; let best='',bv=0; mc.forEach((v,n)=>{ if(!skip.test(n)&&!GLASS.includes(n)&&v>bv){ best=n; bv=v; } }); if(best) paintNames=[best]; }
+  console.info('[RAPTOR] paint materials:',paintNames.join(', ')||'NONE','| all materials:',[...mc.keys()].join(', '));
   gcLoad(gltf,{tag:'RAPTOR',root:raptorRoot,wheels:raptorWheels,paintMats:raptorPaintMats,patch:raptorPatch,sync:syncRaptorPaint,wb:3.69,len:5.9,
     kind:o=>{ const mn=o.userData.mn||'', nm=o.name||'';
-      if(mn==='Paint1Mtl'||mn==='Paint2Mtl') return 'paint';
+      if(paintNames.includes(mn)) return 'paint';
       if(mn==='Wheel0031Mtl') return 'tire';
       if(mn==='Wheel0021Mtl'||mn==='Wheel0011Mtl'||mn==='Hublf1Mtl') return 'rim';
       if(GLASS.includes(mn)) return 'window';
