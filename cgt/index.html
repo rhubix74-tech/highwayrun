@@ -2608,7 +2608,7 @@ lazyCar('xkr','2009_jaguar_xkr_5.0_supercharged_speed_pack.glb',gltf=>{
     xkrWheels.push({steer,spin,front,angle:0,r:R});
   });
   syncXkrPaint();
-  const k=S/.01, hx=.72*k, hy=.62*k, hz=1.95*k, tx=.62*k, ty=.68*k, tz=-2.3*k;
+  const hx=.72, hy=.62, hz=2.0, tx=.62, ty=.68, tz=-2.3;   // metres in the car's own frame (the old '*S/.01' put the lamps ~7 km away, which also blew up the showroom's bounding box so its info hotspots never appeared)
   addCarLights(xkrRoot,{h:[[hx,hy,hz,1.0]],t:[[tx,ty,tz-.05,.9,.95]],sp:[hx,hy,hz+.05],bm:[hx,hy,hz+.05],pl:[tx,ty,tz-.8]});
   xkrRoot.traverse(m=>{ m.castShadow=castsShadow(m); }); applyQuality();
 },undefined,err=>console.error('Could not load Jaguar XKR model',err));
@@ -2785,7 +2785,10 @@ lazyCar('l037','lancia_037.glb',gltf=>{
     const lists={FL:[],FR:[],RL:[],RR:[]};
     for(let i=0;i<idx.length;i+=3){ let x=0,z=0; const vs=[]; for(let k=0;k<3;k++){ v.fromBufferAttribute(pos,idx[i+k]).applyMatrix4(o.matrixWorld).applyMatrix4(inv2); x+=v.x/3; z+=v.z/3; vs.push(v.clone()); }
       const key=(z>cz?'F':'R')+(x>cx?'L':'R'); lists[key].push(idx[i],idx[i+1],idx[i+2]); if(kind==='spin') vs.forEach(p=>boxes[key].expandByPoint(p)); }
-    for(const q in lists){ if(!lists[q].length) continue; const ng=new THREE.BufferGeometry(); for(const a in g.attributes) ng.setAttribute(a,g.attributes[a]); ng.setIndex(new THREE.BufferAttribute(new Uint32Array(lists[q]),1));
+    for(const q in lists){ if(!lists[q].length) continue; const ng=new THREE.BufferGeometry(), remap=new Map(), L=lists[q], ni=new Uint32Array(L.length), used=[];   // compact copy: only this corner's vertices (a shared full attribute made every piece's bounding box span all four wheels)
+      for(let i=0;i<L.length;i++){ let r=remap.get(L[i]); if(r===undefined){ r=used.length; remap.set(L[i],r); used.push(L[i]); } ni[i]=r; }
+      for(const a in g.attributes){ const A=g.attributes[a], sz=A.itemSize, arr=new A.array.constructor(used.length*sz); for(let u=0;u<used.length;u++) for(let c=0;c<sz;c++) arr[u*sz+c]=A.array[used[u]*sz+c]; ng.setAttribute(a,new THREE.BufferAttribute(arr,sz,A.normalized)); }
+      ng.setIndex(new THREE.BufferAttribute(ni,1)); ng.computeBoundingBox(); ng.computeBoundingSphere();
       const m=new THREE.Mesh(ng,o.material); m.position.copy(o.position); m.quaternion.copy(o.quaternion); m.scale.copy(o.scale); m.frustumCulled=false; o.parent.add(m); (quad[kind][q]=quad[kind][q]||[]).push(m); }
     o.parent.remove(o);
   }
@@ -3932,7 +3935,7 @@ function srBuildRoom(){
   g.add(floor,wall,ceil,sh); g.visible=false; scene.add(g); SR.room=g; SR.shadow=sh;
 }
 function srBox(root){
-  const b=new THREE.Box3(), t=new THREE.Box3(); root.updateMatrixWorld(true);
+  const b=new THREE.Box3(), t=new THREE.Box3(); car.updateMatrixWorld(true); root.updateMatrixWorld(true);   // refresh the car group too: its stale world matrix (left over from the last frame's road tilt) skewed the box, so hotspots landed off the car
   root.traverse(o=>{ if(!o.isMesh||!o.geometry) return; if(carLights.beams&&carLights.beams.includes(o)) return;
     let p=o; while(p&&p!==root){ if(!p.visible) return; p=p.parent; }
     if(!o.geometry.boundingBox) o.geometry.computeBoundingBox(); t.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld); b.union(t); });
