@@ -2767,10 +2767,17 @@ lazyCar('fulvia','lancia_fulvia_rallye.glb',gltf=>{
 lazyCar('l037','lancia_037.glb',gltf=>{
   const model=gltf.scene; model.rotation.y=Math.PI/2; l037Root.add(model);
   const mname=o=>((o.material&&o.material.name)||''), seen=new Set(), spinM=['SsrFormulaSpf1Mtl','Brakes1Mtl'], fixM=['Brakes2Mtl'];
-  model.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; o.receiveShadow=true; const n=mname(o);
+  const partLog=[];
+  model.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; const n=mname(o), wheelPart=spinM.includes(n)||fixM.includes(n);
+    o.receiveShadow=n==='Meshpart3Mtl'||wheelPart;   // [flicker] thin double-sided parts (the mud flaps) shadow themselves ("shadow acne") and the pattern dances as the shadow map follows the car, so only the body shell and the wheel parts receive shadows
     if(n==='Meshpart3Mtl') o.material=M.paint;
-    else if(o.material&&!seen.has(o.material)){ seen.add(o.material); o.material.envMapIntensity=.6; o.material.side=THREE.DoubleSide; }
+    else if(o.material){ const m=o.material;
+      if(!seen.has(m)){ seen.add(m); m.envMapIntensity=.6; m.side=THREE.DoubleSide;
+        if(m.transparent&&!/glass|window|lens|light|lamp/i.test(n)){ m.transparent=false; m.depthWrite=true; if(m.map) m.alphaTest=Math.max(m.alphaTest||0,.5); }   // [flicker] alpha-blended parts re-sort against each other every frame; make them opaque/cut-out so the order can't change
+        if(!wheelPart){ m.polygonOffset=true; m.polygonOffsetFactor=-1; m.polygonOffsetUnits=-2; } }   // [flicker] thin parts lying on the body shell (flaps, trim) won't z-fight it
+      if(!wheelPart) partLog.push(n+' ('+(o.geometry&&o.geometry.index?o.geometry.index.count/3|0:0)+' tris)'); }
   });
+  console.info('[037] non-wheel parts (send these if a part still flickers):',partLog.join(' | '));
   model.updateMatrixWorld(true); const bb=new THREE.Box3(), tmp=new THREE.Box3(), inv=new THREE.Matrix4().copy(l037Root.matrixWorld).invert();
   model.traverse(o=>{ if(!o.isMesh||!o.geometry) return; if(!o.geometry.boundingBox) o.geometry.computeBoundingBox(); tmp.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld).applyMatrix4(inv); bb.union(tmp); });
   const S=3.915/(bb.max.z-bb.min.z); model.scale.setScalar(S);
