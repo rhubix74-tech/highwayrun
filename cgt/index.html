@@ -4770,7 +4770,7 @@ function evTick(dt){
    The clock is paused. The tank marks a lane (red strip) then fires a shell down it: be in a different lane when it lands. Each hit on you costs 20% of
    your boss-fight health bar; each bolt that lands costs the tank 1 of 40. Win = the showcase reward (25% of your score, min 10,000). Lose or retreat = nothing.
    Either way the event just ends: the round continues and traffic comes back. */
-const BOSS={tankHp:160,pHp:5,shellV:80,boltV:170,S:3.3,tz:100};
+const BOSS={tankHp:320,pHp:5,shellV:80,boltV:170,S:3.3,tz:100};
 /* firing sounds (procedural): the player's twin blaster is a short bright 'pew', the tank's gun a low boom with a noise burst */
 let _nbuf=null;
 function bossSfx(kind){
@@ -4811,6 +4811,16 @@ function evBossLoad(){
     // raw model: Y-up (its root node already stands it up), barrel toward -Z (= toward the player here), hull centre at (-0.23, -0.31 ground, -0.38), ~8 m long without the gun
     const model=gltf.scene, g=new THREE.Group(), S=BOSS.S; model.scale.setScalar(S); model.position.set(.23*S,.31*S,.38*S); g.add(model);
     const mm=new Map(); model.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; let m=mm.get(o.material); if(!m){ m=o.material.clone(); bendMat(m); mm.set(o.material,m); } o.material=m; });
+    // ---- treads: the road wheels / sprockets turn, and a loop of track-link cleats runs round each track (the model's tracks are static meshes)
+    // model space (before the scale): left track x=-2.0, right x=1.56, 0.88 wide; stadium path round the sprockets: centre height .285, radius .6, arc centres z=-3.475 / 2.855
+    model.updateMatrixWorld(true);
+    { const bx=new THREE.Box3(), cs=new THREE.Vector3(), sz=new THREE.Vector3(), list=[], wheels=[];
+      model.traverse(o=>{ if(!o.isMesh) return; const n=parseInt(String(o.name||'').replace('Object_',''),10); if(n>=13&&n<=68) list.push(o); });
+      for(let i=0;i<list.length;i++){ const o=list[i]; bx.setFromObject(o); bx.getCenter(cs); bx.getSize(sz); if(sz.y<.4) continue;
+        const pv=new THREE.Group(); pv.position.copy(model.worldToLocal(cs.clone())); model.add(pv); pv.updateMatrixWorld(true); pv.attach(o); wheels.push({pv,R:sz.y/2}); }
+      const cm=evMat(0x1d1f1d,.85,.3), cg=new THREE.BoxGeometry(.9,.07,.24), cleats=[], N=40;
+      for(let side=0;side<2;side++) for(let i=0;i<N;i++){ const m=new THREE.Mesh(cg,cm); m.frustumCulled=false; m.userData.x=side?1.56:-2.0; model.add(m); cleats.push(m); }
+      EV.tr={wheels,cleats,N,s:0,r:.6,yc:.285,zF:-3.475,zR:2.855}; }
     g.visible=false; scene.add(g); EV.tank=g;
     // pre-built pools (no allocation during the fight)
     const mk=(geo,col,op)=>{ const m=new THREE.MeshBasicMaterial({color:col,transparent:op<1,opacity:op,depthWrite:false}); bendMat(m); const o=new THREE.Mesh(geo,m); o.frustumCulled=false; o.visible=false; scene.add(o); return o; };
@@ -4822,6 +4832,18 @@ function evBossLoad(){
     EV.gun.visible=false; car.add(EV.gun);
     g.userData.ready=true;
   },undefined,e=>{ EV.tankReq=false; EV.tankTry=(EV.tankTry||0)+1; if(EV.tankTry>=3) EV.tankErr=true; else setTimeout(evBossLoad,1500); });
+}
+function bossTreads(dt,v){
+  const tr=EV.tr; if(!tr||!EV.tank||!EV.tank.visible) return;
+  const S=BOSS.S, r=tr.r, Ls=tr.zR-tr.zF, A=Math.PI*r, L=2*Ls+2*A, sp=L/tr.N;
+  tr.s=(tr.s+v/S*dt)%L;   // tank advancing: the bottom run moves back along the hull, the top run forward
+  for(let i=0;i<tr.cleats.length;i++){ const m=tr.cleats[i], u=(tr.s+(i%tr.N)*sp)%L; let y,z,a;
+    if(u<Ls){ y=tr.yc-r; z=tr.zF+u; a=0; }
+    else if(u<Ls+A){ const f=(u-Ls)/r; y=tr.yc-r*Math.cos(f); z=tr.zR+r*Math.sin(f); a=-f; }
+    else if(u<2*Ls+A){ y=tr.yc+r; z=tr.zR-(u-Ls-A); a=Math.PI; }
+    else { const f=(u-2*Ls-A)/r; y=tr.yc+r*Math.cos(f); z=tr.zF-r*Math.sin(f); a=Math.PI-f; }
+    m.position.set(m.userData.x,y,z); m.rotation.x=a; }
+  for(let i=0;i<tr.wheels.length;i++){ const w=tr.wheels[i]; w.pv.rotation.x-=v*dt/w.R; }
 }
 function evBoss(c,dt,H){
   if(c.ph==='form'){
@@ -4839,8 +4861,9 @@ function evBoss(c,dt,H){
   }
   if(CIN.on) return;   // intro cinematic drives the tank
   if(!c.ui){ c.ui=true; bossDom().d.style.display='block'; bossFireBtn(true); }
+  bossTreads(dt,Math.max(6,Math.min(22,speed)));
   const T=EV.tank, tz=BOSS.tz+Math.sin(c.t*.6)*4, frac=c.thp/BOSS.tankHp;
-  if(evExitLeft()<600||c.t>100){ popup('THE TANK RETREATS · NO REWARD','bad'); evEnd(); return; }
+  if(evExitLeft()<600||c.t>180){ popup('THE TANK RETREATS · NO REWARD','bad'); evEnd(); return; }
   // the tank spans all three lanes and sits dead centre; its materials carry the road bend/hills, so it gets plain world coordinates
   T.position.set(LANES[1],0,tz); T.rotation.set(0,0,0);
   // shells: mark a lane, wait, fire (below half health it marks two lanes and leaves one safe)
@@ -4964,6 +4987,7 @@ function cinTick(dt){
     const o=EV.tank, e=_sm(.2,4.4,t), zt=BOSS.tz+(1-e)*260;
     if(o){ o.visible=true; o.position.set(LANES[1],0,zt); o.rotation.set(0,0,0); }
     if(zt<170&&shake<.2) shake=.2;
+    bossTreads(dt,18);
     if(t<3.4){ _rw(px+5.5,1.1,-5+t*.6,_cP); _rw(LANES[1],3.2,Math.min(zt,BOSS.tz+90)-8,_cL); C.fov=40-4*_sm(0,3.4,t); C.roll=.04; }
     else { _rw(px-3.5,3.4,-13,_cP); _rw(LANES[1],4.5,BOSS.tz-10,_cL); C.fov=46; C.roll=0; }
   } else if(k==='police'){
