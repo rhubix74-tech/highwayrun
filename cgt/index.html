@@ -2707,7 +2707,9 @@ function gcSplit(o,model){   /* the R34's four tyres (and four rims) are ONE mes
   for(let i=0;i<pos.count;i++){ v.fromBufferAttribute(pos,i).applyMatrix4(rel); mn.min(v); mx.max(v); }
   const cx=(mn.x+mx.x)/2, cz=(mn.z+mx.z)/2, bk=[[],[],[],[]];
   for(let t=0;t<n;t+=3){ let sx=0,sz=0; const vi=[]; for(let k=0;k<3;k++){ const a=idx?idx[t+k]:t+k; vi.push(a); v.fromBufferAttribute(pos,a).applyMatrix4(rel); sx+=v.x; sz+=v.z; } bk[(sx/3>cx?1:0)+(sz/3>cz?2:0)].push(...vi); }
-  return bk.filter(b=>b.length).map(b=>{ const g2=g.clone(); g2.clearGroups(); g2.setIndex(b); const m=new THREE.Mesh(g2,o.material); m.name=o.name; m.position.copy(o.position); m.quaternion.copy(o.quaternion); m.scale.copy(o.scale); m.userData.mn=o.userData.mn; return m; });
+  return bk.filter(b=>b.length).map(b=>{ const map=new Map(), list=[], ni=b.map(a=>{ let q=map.get(a); if(q===undefined){ q=list.length; map.set(a,q); list.push(a); } return q; }), g2=new THREE.BufferGeometry();   /* compact copy: a clone would keep ALL vertices, so every wheel's bounding box was the whole car's */
+    for(const nm in g.attributes){ const at=g.attributes[nm], is=at.itemSize, arr=new Float32Array(list.length*is); for(let i=0;i<list.length;i++){ const a=list[i]; arr[i*is]=at.getX(a); if(is>1) arr[i*is+1]=at.getY(a); if(is>2) arr[i*is+2]=at.getZ(a); if(is>3) arr[i*is+3]=at.getW(a); } g2.setAttribute(nm,new THREE.BufferAttribute(arr,is)); }
+    g2.setIndex(ni); const m=new THREE.Mesh(g2,o.material); m.name=o.name; m.position.copy(o.position); m.quaternion.copy(o.quaternion); m.scale.copy(o.scale); m.userData.mn=o.userData.mn; return m; });
 }
 function gcLoad(gltf,cf){
   const root=cf.root, model=new THREE.Group(), sc=gltf.scene; model.add(sc); root.add(model);
@@ -2767,7 +2769,7 @@ lazyCar('ccx','koenigsegg_ccx_-_100_followers_special.glb',gltf=>{
     rotY:sc=>{ let ex=0,n=0; const b=new THREE.Box3(), inv=new THREE.Matrix4().copy(sc.matrixWorld).invert(); sc.traverse(o=>{ if(o.isMesh&&o.material&&o.material.name==='exhuast'){ o.geometry.computeBoundingBox(); b.copy(o.geometry.boundingBox).applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv,o.matrixWorld)); ex+=(b.min.x+b.max.x)/2; n++; } }); return (n&&ex<0)?-Math.PI/2:Math.PI/2; },   /* exhausts are at +X in the file, so the nose (-X) turns to +Z */
     kind:o=>{ const mn=o.userData.mn||'';
       if(mn==='tyre') return 'tire'; if(mn==='rims') return 'rim'; if(mn==='brake_dics') return 'rotor'; if(mn==='brake_calipers') return 'caliper';
-      if(mn==='glass'||mn==='mat_38') return 'window'; if(mn==='interior'||mn==='leather'||mn==='logos_interior') return 'interior';
+      if(mn==='glass') return 'window'; if(mn==='interior'||mn==='leather'||mn==='logos_interior'||mn==='mat_38'||mn==='mat_21') return 'interior';   /* mat_38/mat_21 are roof-panel layers lying flush under the paint and z-fought through it as black triangles */
       if(mn==='body_color'||mn==='mat_1') return 'paint'; if(mn==='badges'||mn==='logo') return 'badge'; return ''; },
     lamp:bb=>({hx:.62,hy:.52,hz:bb.max.z-.4,tx:.6,ty:.55,tz:bb.min.z+.12})});
 },undefined,err=>console.error('Could not load Koenigsegg CCX model',err));
