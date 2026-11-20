@@ -5081,6 +5081,7 @@ function cinEnd(){
   if(CIN.dom){ const d=CIN.dom; d.top.style.height=d.bot.style.height='0'; d.ttl.style.opacity=0; d.ttl.style.transform='translateX(-18px)'; d.sub.style.opacity=0; d.skip.style.opacity=0; }
   camera.up.set(0,1,0); if(CIN.portal) CIN.portal.visible=false;
   if(was&&EV.cur&&(CIN.k==='convoy'||CIN.k==='street')&&CIN.cars){ CIN.cars.forEach(o=>{ o.t.x=o.x; o.t.z=o.z; o.t.g.visible=true; }); EV.cur.t=0; }
+  if(was&&EV.cur&&(CIN.k==='plane'||CIN.k==='train')&&EV.cur.k===CIN.k&&!EV.cur.hard&&!EV.cur.hs){ EV.cur.hs=1; EV.cur.Q+=100; }   /* showcase plane/train: a 100 m head start the moment you regain control (challenge races, which have their own tuned AI, are left alone) */
   evSiren(false); if(EV.flash) EV.flash.style.opacity=0;
   CIN.cars=null;
 }
