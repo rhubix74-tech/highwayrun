@@ -3228,6 +3228,7 @@ function dropsTick(){
 }
 
 /* ---------------- game state, input, scoring */
+const CAM_TALL={ram:.75,raptor:.95};   // extra chase-camera height (metres) per tall vehicle; add any future truck / SUV id here
 const VIEWS2={chase:{p:[0,1.9,-7.4],t:[0,.8,9]},side:{p:[-5.6,.85,.6],t:[0,.55,.8]},front:{p:[2.6,1.0,7.2],t:[0,.6,.2]}};
 let view='chase', speedTarget=0, speed=20, dist=0, px=0, yaw=0, vl=0, steer=0, thrS=0, brkS=0, shake=0, inv=0, yr=0, ayS=0, accS=0, fwd=0;
 var TC={on:false,park:false,fovNow:34,fade:0};
@@ -5632,8 +5633,9 @@ function frame(){
   const V=VIEWS2[view], c=Math.cos(camYaw), s=Math.sin(camYaw);
   { const zp=-V.p[0]*s+V.p[2]*c, zt=-V.t[0]*s+V.t[2]*c;          // camera follows the road surface up and down hills
     const jh=CS.sel==='jet'?JET_H:0;   // follow the jet up to its hover height
-    _cp.set(px+V.p[0]*c+V.p[2]*s,V.p[1]+jh+yAt(zp),zp);
-    _cl.set(px+V.t[0]*c+V.t[2]*s,V.t[1]+jh+yAt(zt),zt); }
+    const tl=view==='chase'?(CAM_TALL[CS.sel]||0):0;   // trucks / SUVs sit taller, so the chase camera rides higher (and a touch further back) to see over the bed and tailgate
+    _cp.set(px+V.p[0]*c+(V.p[2]-tl*.55)*s,V.p[1]+jh+yAt(zp)+tl,zp-tl*.55*c);
+    _cl.set(px+V.t[0]*c+V.t[2]*s,V.t[1]+jh+yAt(zt)+tl*.3,zt); }
   const k=firstCam?1:1-Math.exp(-9*dt); firstCam=false;
   if(state==='exit') cineCam(); else{ camera.position.lerp(_cp,k); _lk.lerp(_cl,k); }
   if(TC.on||titleOn){ try{ tcFrame(rdt); }catch(e){ console.error('[title cinematic]',e); TC.on=false; } }
