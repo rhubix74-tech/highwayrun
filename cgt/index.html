@@ -2741,7 +2741,7 @@ function gcLoad(gltf,cf){
   { const g=new THREE.Box3(); tyres.forEach(o=>g.union(bx(o))); const n=tyres.length||1, cz=tyres.map(o=>ctr(o).z).reduce((a,b)=>a+b,0)/n, cx=tyres.map(o=>ctr(o).x).reduce((a,b)=>a+b,0)/n; model.position.set(isFinite(cx)?-cx:0,isFinite(g.min.y)?-g.min.y:0,isFinite(cz)?-cz:0); }
   root.updateMatrixWorld(true);
   { const ws=new THREE.Vector3(); (tyres[0]||model.getObjectByProperty('isMesh',true)).getWorldScale(ws); const u=ws.x>0?1/ws.x:100; offB.value=.005*u; offM.value=.0025*u; }
-  const all=bx(model); console.info('['+cf.tag+'] build A · scale',S.toFixed(4),'length m',(all.max.z-all.min.z).toFixed(3),'width m',(all.max.x-all.min.x).toFixed(3),'height m',(all.max.y-all.min.y).toFixed(3),'tyres',tyres.length,'rims',rims.length,'rotors',rotors.length,'calipers',cals.length);
+  const all=bx(model); console.info('['+cf.tag+'] build B · scale',S.toFixed(4),'length m',(all.max.z-all.min.z).toFixed(3),'width m',(all.max.x-all.min.x).toFixed(3),'height m',(all.max.y-all.min.y).toFixed(3),'tyres',tyres.length,'rims',rims.length,'rotors',rotors.length,'calipers',cals.length);
   if(tyres.length!==4){ const smp=[]; model.traverse(o=>{ if(o.isMesh&&smp.length<8) smp.push(o.name+' | '+o.userData.mn+' | '+o.userData.k); }); console.warn('['+cf.tag+'] expected 4 tyres, found',tyres.length,'· sample meshes:',smp.join(' ; ')); }
   const wc=tyres.map(ctr), parts=tyres.map(o=>[o]), cal=tyres.map(()=>[]);
   const near=o=>{ const c=ctr(o); let bi=0,bd=1e9; wc.forEach((w,i)=>{ const d=c.distanceTo(w); if(d<bd){ bd=d; bi=i; } }); return bi; };
@@ -2753,6 +2753,7 @@ function gcLoad(gltf,cf){
     const side=c.x>0?1:-1, hw=(box.max.x-box.min.x)/2, d=new THREE.Mesh(new THREE.CircleGeometry(R*.62,40),blurMat); d.geometry.rotateY(side>0?Math.PI/2:-Math.PI/2); d.position.set(side*(hw+.004),0,0); d.renderOrder=3; steer.add(d);
     cf.wheels.push({steer,spin,front,angle:0,r:R});
   });
+  console.info('['+cf.tag+'] wheels',cf.wheels.map(w=>w.steer.position.toArray().map(x=>+x.toFixed(2))+' r='+w.r.toFixed(3)+(w.front?' F':' R')).join(' | '));
   cf.sync();
   const bb=bx(model); root.worldToLocal(bb.min); root.worldToLocal(bb.max); const L=cf.lamp(bb);
   addCarLights(root,{h:[[L.hx,L.hy,L.hz,1.0]],t:[[L.tx,L.ty,L.tz,.9,.95]],sp:[L.hx,L.hy,L.hz+.05],bm:[L.hx,L.hy,L.hz+.05],pl:[L.tx,L.ty,L.tz-.8]});
