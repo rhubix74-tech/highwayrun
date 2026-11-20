@@ -3412,7 +3412,7 @@ function crash(label,rel){
 function gainTime(base){ if(isBetaCar()) return 0; if(MP.on&&MP.mode==='battle'){ tStreak++; return 0; } tStreak++; let g=base+.3*Math.min(8,tStreak-1); if(CS.sel==='prius'||CS.sel==='fulvia') g*=1.5; if(CS.sel==='daytona'&&Math.random()<.1){ g*=2; popup('LUCKY · TIME BONUS DOUBLED','good'); } timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+g); return g; }
 function threadGap(r){
   if(isBetaCar()) return;
-  const ch=lastGap>=0&&r.gap!==lastGap; weave=ch?Math.min(9,weave+1):1;   // cap is 9 so the 'Maximum Weave' challenge (WEAVE x9) is reachable lastGap=r.gap;
+  const ch=lastGap>=0&&r.gap!==lastGap; weave=ch?Math.min(9,weave+1):1; lastGap=r.gap;   // cap is 9 so the 'Maximum Weave' challenge (WEAVE x9) is reachable
   const b=Math.round(400*mult*(runPU.double?2:1)*weave*speedK()); score+=b;
   if(CH.active){ CH.st.th++; CH.st.wm=Math.max(CH.st.wm,weave); } const ts=gainTime(1.3); popup((weave>1?'WEAVE x'+weave:'THREAD THE GAP')+'  +'+b.toLocaleString()+(ts>0?'  ·  +'+ts.toFixed(1)+'s':''),'good');
 }
