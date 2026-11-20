@@ -3412,7 +3412,7 @@ function crash(label,rel){
 function gainTime(base){ if(isBetaCar()) return 0; if(MP.on&&MP.mode==='battle'){ tStreak++; return 0; } tStreak++; let g=base+.3*Math.min(8,tStreak-1); if(CS.sel==='prius'||CS.sel==='fulvia') g*=1.5; if(CS.sel==='daytona'&&Math.random()<.1){ g*=2; popup('LUCKY · TIME BONUS DOUBLED','good'); } timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+g); return g; }
 function threadGap(r){
   if(isBetaCar()) return;
-  const ch=lastGap>=0&&r.gap!==lastGap; weave=ch?Math.min(9,weave+1):1; lastGap=r.gap;   // cap is 9 so the 'Maximum Weave' challenge (WEAVE x9) is reachable
+  const ch=lastGap>=0&&r.gap!==lastGap; weave=ch?Math.min(9,weave+1):1;   // cap is 9 so the 'Maximum Weave' challenge (WEAVE x9) is reachable lastGap=r.gap;
   const b=Math.round(400*mult*(runPU.double?2:1)*weave*speedK()); score+=b;
   if(CH.active){ CH.st.th++; CH.st.wm=Math.max(CH.st.wm,weave); } const ts=gainTime(1.3); popup((weave>1?'WEAVE x'+weave:'THREAD THE GAP')+'  +'+b.toLocaleString()+(ts>0?'  ·  +'+ts.toFixed(1)+'s':''),'good');
 }
@@ -4648,17 +4648,23 @@ function evMakeTrain(){
   const g=new THREE.Group(), loco=new THREE.Mesh(new THREE.BoxGeometry(3.4,3.8,20,1,1,6),evMat(0xc2371b,.5,.3)), cab=new THREE.Mesh(new THREE.BoxGeometry(3.4,1.2,6,1,1,2),evMat(0x1a1c20)); loco.position.set(0,2.6,0); cab.position.set(0,4.9,-6); g.add(loco,cab);
   const cols=[0x3b6ea5,0xb5b8bd,0x9a6b2f,0x2e7d4f,0xd6a227,0x6b4a8a,0x3b6ea5];
   const wagons=[]; cols.forEach((c,i)=>{ const w=new THREE.Mesh(new THREE.BoxGeometry(3.3,3.6,14,1,1,5),evMat(c,.6,.1)); w.position.set(0,2.5,-21-i*15.5); g.add(w); wagons.push(w); /* 3 m further back: room for the full-length engine */ });
+  const lw=new THREE.Group(); g.add(lw);   /* axle wheels under the box-engine fallback only: hidden once trainhead.glb (which has no wheels any more) is in use */
   /* wheels: the engine model only has one wheel and the wagon boxes hover .15 above the rails, so every vehicle gets axle pairs (shared geometry/material) running on the rails */
   { const wg=new THREE.CylinderGeometry(1,1,.14,14).rotateZ(Math.PI/2), wm=evMat(0x15171a,.5,.6);
     const axle=(z,r,y)=>{ for(const sx of [-.72,.72]){ const w=new THREE.Mesh(wg,wm); w.scale.set(1,r,r); w.position.set(sx,y,z); g.add(w); } };
-    [8,6.3,4.6,.4,-1.3,-6.8,-8.5,-10.2].forEach(z=>axle(z,.6,1.15));   // same radius/height as the engine model's own wheel
+    [8,6.3,4.6,.4,-1.3,-6.8,-8.5,-10.2].forEach(z=>{ for(const sx of [-.72,.72]){ const w=new THREE.Mesh(wg,wm); w.scale.set(1,.6,.6); w.position.set(sx,1.15,z); lw.add(w); } });
     wagons.forEach(w=>{ axle(w.position.z+4.5,.36,.91); axle(w.position.z-4.5,.36,.91); }); }
   g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; scene.add(g);
   /* the locomotive: trainhead.glb replaces the box engine once it has loaded (the boxes stay as a fallback if the file is missing).
      Raw model: nose toward +X, ~22.3 long x 6.2 wide; turned so the nose points +Z, nose kept at z=+10 */
   console.info('[train] requesting trainhead.glb from',new URL('trainhead.glb',document.baseURI).href);
   new THREE.GLTFLoader().load('trainhead.glb',gltf=>{ console.info('[train] trainhead.glb loaded: engine model in use');
-    const m=gltf.scene, S=.6, SL=1; m.scale.set(SL,S,S); m.rotation.y=-Math.PI/2; m.position.set(0,.55+S,10-10.978*SL);   // true length (22.3 m, nose at z=+10, tail at about -12.3), height/width x.6; the model's wheel bottom (raw y=-1) sits exactly on the rail head (y=.55)
+    const m=gltf.scene, S=.6, SL=1;
+    /* the model's wheels are one mesh ('Cylinder', 1280 vertices): remove it (fallback: the only high-poly mesh) */
+    { const ms=[]; m.traverse(o=>{ if(o.isMesh) ms.push(o); }); let w=ms.find(o=>/^Cylinder/.test(o.name)); if(!w){ w=ms.reduce((a,b)=>(!a||b.geometry.attributes.position.count>a.geometry.attributes.position.count)?b:a,null); if(w&&w.geometry.attributes.position.count<1000) w=null; } if(w&&w.parent) w.parent.remove(w); else console.warn('[train] wheel mesh not found'); }
+    lw.visible=false;
+    /* raw model (wheels removed): nose +X at 10.978, tail at about -12.45, lowest vertex raw y=-0.631 (the underframe). It is turned to face +Z and set so that lowest point rests on the rail head (y=.55, 1 cm in so there is no sliver of light) */
+    m.scale.set(SL,S,S); m.rotation.y=-Math.PI/2; m.position.set(0,.54+.631*S,10-10.978*SL);
     const mm=new Map(); m.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; let x=mm.get(o.material); if(!x){ x=o.material.clone(); bendMat(x); mm.set(o.material,x); } o.material=x; });
     g.add(m); loco.visible=false; cab.visible=false;
   },undefined,e=>{ console.warn('[train] trainhead.glb FAILED to load (missing from the repo, or a stale jsDelivr 404?) - using the box engine',e); });
