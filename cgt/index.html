@@ -4562,8 +4562,16 @@ function evMakePlane(){
 function evMakeTrain(){
   const g=new THREE.Group(), loco=new THREE.Mesh(new THREE.BoxGeometry(3.4,3.8,20,1,1,6),evMat(0xc2371b,.5,.3)), cab=new THREE.Mesh(new THREE.BoxGeometry(3.4,1.2,6,1,1,2),evMat(0x1a1c20)); loco.position.set(0,2.6,0); cab.position.set(0,4.9,-6); g.add(loco,cab);
   const cols=[0x3b6ea5,0xb5b8bd,0x9a6b2f,0x2e7d4f,0xd6a227,0x6b4a8a,0x3b6ea5];
-  cols.forEach((c,i)=>{ const w=new THREE.Mesh(new THREE.BoxGeometry(3.3,3.6,14,1,1,5),evMat(c,.6,.1)); w.position.set(0,2.5,-18-i*15.5); g.add(w); });
+  const wagons=[]; cols.forEach((c,i)=>{ const w=new THREE.Mesh(new THREE.BoxGeometry(3.3,3.6,14,1,1,5),evMat(c,.6,.1)); w.position.set(0,2.5,-18-i*15.5); g.add(w); wagons.push(w); });
   g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; scene.add(g);
+  /* the locomotive: trainhead.glb replaces the box engine once it has loaded (the boxes stay as a fallback if the file is missing).
+     Raw model: nose toward +X, ~22.3 long x 6.2 wide, wheels' bottom at y=-1; scaled .6, turned so the nose points +Z, nose kept at z=+10, wheels on the rail tops (y=.55) */
+  new THREE.GLTFLoader().load('trainhead.glb',gltf=>{
+    const m=gltf.scene, S=.6; m.scale.setScalar(S); m.rotation.y=-Math.PI/2; m.position.set(0,.55+S*.996,10-10.978*S);
+    const mm=new Map(); m.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; let x=mm.get(o.material); if(!x){ x=o.material.clone(); bendMat(x); mm.set(o.material,x); } o.material=x; });
+    g.add(m); loco.visible=false; cab.visible=false;
+    for(let i=0;i<wagons.length;i++) wagons[i].position.z=-11.4-i*15.5;   // the engine is shorter than the box was: close the gap
+  },undefined,()=>{});
   const tr=new THREE.Group(), rm=evMat(0x6d6f72,.4,.8), bed=evMat(0x4a4540,.9,0), tie=evMat(0x3b2f26,.9,0);
   const ballast=new THREE.Mesh(new THREE.BoxGeometry(4.6,.35,900,1,1,225),bed); ballast.position.set(0,.18,20); tr.add(ballast);
   for(const sx of [-.72,.72]){ const r=new THREE.Mesh(new THREE.BoxGeometry(.12,.2,900,1,1,225),rm); r.position.set(sx,.45,20); tr.add(r); }
