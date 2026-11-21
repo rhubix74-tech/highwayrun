@@ -133,7 +133,6 @@
   #shop .card{max-width:480px;position:relative}
   #smile{position:absolute;top:8px;right:10px;width:14px;height:14px;padding:0;border:0;background:none;cursor:pointer;opacity:.5}
   #smile:hover{opacity:1}
-  #smile2{position:absolute;top:8px;right:10px;width:14px;height:14px;padding:0;border:0;background:none;cursor:pointer;opacity:.35}#smile2:hover{opacity:.9}#smile2 svg{display:block;width:100%;height:100%;shape-rendering:crispEdges}
   #smile svg{display:block;width:100%;height:100%;shape-rendering:crispEdges}
   #bm{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(6,9,15,.78);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);z-index:9}
   #bm.show{display:flex}
@@ -495,8 +494,8 @@
     <input id="rstIn" autocomplete="off" spellcheck="false" placeholder="RESET"><div class="rstrow"><button type="button" class="sbtn" id="rstNo">Cancel</button><button type="button" class="sbtn danger" id="rstGo" disabled>Erase everything</button></div></div>
   <button id="gClose" style="background:#e8edf7;color:#0b0f16;border:0;border-radius:999px;font:inherit;font-weight:600;padding:9px 24px;cursor:pointer;margin-top:12px">Back</button>
   <div class="how">* Anti-aliasing is chosen at launch, so it changes next time you open the game.<br>Resolution also adapts automatically if the frame rate drops.</div></div></div>
-<div id="bm"><div class="card"><button id="smile2" type="button" aria-label="secret"><svg viewBox="0 0 8 8"><path fill="#6b6b6b" d="M2 0h4v1H2zM1 1h6v1H1zM0 2h8v4H0zM1 6h6v1H1zM2 7h4v1H2z"/><path fill="#111" d="M2 2h1v2H2zM5 2h1v2H5zM2 5h4v1H2zM1 6h1v1H1zM6 6h1v1H6z"/></svg></button><h1 id="bmTitle">Black Market</h1><p id="bmSub">Cash only · stock is limited</p><div id="wal3" class="nb" style="font-size:18px"></div>
-  <div class="bmLayout"><div class="bmi" id="bmItems"></div><aside class="scoutBox"><img src="scout.png" alt="Scout" class="scoutImg" id="scoutImg"><div id="scoutLine" class="scoutLine"></div></aside></div>
+<div id="bm"><div class="card"><h1>Black Market</h1><p>Cash only · stock is limited</p><div id="wal3" class="nb" style="font-size:18px"></div>
+  <div class="bmLayout"><div class="bmi" id="bmItems"></div><aside class="scoutBox"><img src="scout.png" alt="Scout" class="scoutImg"><div id="scoutLine" class="scoutLine"></div></aside></div>
   <button id="bmClose" type="button" style="background:#e8edf7;color:#0b0f16;border:0;border-radius:999px;font:inherit;font-weight:600;padding:9px 24px;cursor:pointer">Back</button></div></div>
 <div id="shop"><div class="card"><button id="smile" type="button" aria-label="secret"><svg viewBox="0 0 8 8"><path fill="#ffd23f" d="M2 0h4v1H2zM1 1h6v1H1zM0 2h8v4H0zM1 6h6v1H1zM2 7h4v1H2z"/><path fill="#1a1a1a" d="M2 2h1v2H2zM5 2h1v2H5zM1 5h1v1H1zM6 5h1v1H6zM2 6h4v1H2z"/></svg></button><h1>Shop</h1><p>Spend your cash on upgrades</p><div id="wal2" class="nb" style="font-size:18px"></div>
   <div class="items"><button class="item on" id="itemPaint" type="button"><i>&#127912;</i>Paint<b id="paintSub">Seal Grey</b></button><button class="item on" id="itemPower" type="button"><i>⚡</i>Power Ups<b>Single-use items</b></button><button class="item on" id="itemCars" type="button"><i>🚘</i>Cars<b>Buy cars</b></button></div><div id="powerPanel"><div id="powerWallet" class="nb"></div><div id="powerRows"></div></div><div id="carsPanel"><div id="carShopRows"></div></div>
@@ -1841,7 +1840,7 @@ const enzoRoot=new THREE.Group(); car.add(enzoRoot); const enzoWheels=[];
 const viperRoot=new THREE.Group(); car.add(viperRoot); const viperWheels=[];
 const zondaRoot=new THREE.Group(); car.add(zondaRoot); const zondaWheels=[];
 const daytonaRoot=new THREE.Group(); car.add(daytonaRoot); const daytonaWheels=[];
-const tjetRoot=new THREE.Group(); car.add(tjetRoot); const aeroRoot=new THREE.Group(); car.add(aeroRoot); const aeroWheels=[]; const chironRoot=new THREE.Group(); car.add(chironRoot); const chironWheels=[]; const m3Root=new THREE.Group(); car.add(m3Root); const m3Wheels=[]; const xkrRoot=new THREE.Group(); car.add(xkrRoot); const xkrWheels=[]; const f360Root=new THREE.Group(); car.add(f360Root); const f360Wheels=[]; const ccxRoot=new THREE.Group(); car.add(ccxRoot); const ccxWheels=[]; const r34Root=new THREE.Group(); car.add(r34Root); const r34Wheels=[]; const raptorRoot=new THREE.Group(); car.add(raptorRoot); const raptorWheels=[]; const jetRoot=new THREE.Group(); car.add(jetRoot);
+const aeroRoot=new THREE.Group(); car.add(aeroRoot); const aeroWheels=[]; const chironRoot=new THREE.Group(); car.add(chironRoot); const chironWheels=[]; const m3Root=new THREE.Group(); car.add(m3Root); const m3Wheels=[]; const xkrRoot=new THREE.Group(); car.add(xkrRoot); const xkrWheels=[]; const f360Root=new THREE.Group(); car.add(f360Root); const f360Wheels=[]; const ccxRoot=new THREE.Group(); car.add(ccxRoot); const ccxWheels=[]; const r34Root=new THREE.Group(); car.add(r34Root); const r34Wheels=[]; const raptorRoot=new THREE.Group(); car.add(raptorRoot); const raptorWheels=[]; const jetRoot=new THREE.Group(); car.add(jetRoot);
 const chargerRoot=new THREE.Group(); car.add(chargerRoot); const chargerWheels=[]; const nsxRoot=new THREE.Group(); car.add(nsxRoot); const nsxWheels=[];
 const priusRoot=new THREE.Group(); car.add(priusRoot); const priusWheels=[];
 const dawnRoot=new THREE.Group(); car.add(dawnRoot); const dawnWheels=[];
@@ -1871,10 +1870,10 @@ const l037Root=new THREE.Group(); car.add(l037Root); const l037Wheels=[];
   betaRoot.traverse(m=>{ m.castShadow=castsShadow(m); });
 })();
 const fiestaRoot=new THREE.Group(), accordRoot=new THREE.Group(), ramRoot=new THREE.Group(); [fiestaRoot,accordRoot,ramRoot].forEach(r=>car.add(r));   // unlockable traffic cars, built from the traffic GLBs
-const CARS=[{id:'raptor',name:'2013 Ford F-150 SVT Raptor R',desc:'The off-road truck. Dirt trails are home turf.',root:raptorRoot},{id:'ccx',name:'2006 Koenigsegg CCX',desc:'806 hp Swedish hypercar. Your score is in the hands of fate.',root:ccxRoot},{id:'r34',name:'1999 Nissan Skyline GT-R (R34)',desc:'Godzilla. A crash costs a lot of clock, but never any points.',root:r34Root},{id:'f360',name:'1999 Ferrari 360 Modena',desc:'Mid-engine V8 berlinetta. Deal yourself the next event.',root:f360Root},{id:'xkr',name:'2009 Jaguar XKR',desc:'Supercharged British grand tourer. Things happen around it.',root:xkrRoot},{id:'m3',name:'1988 BMW M3 Evolution II',desc:'DTM homologation special. Keeps traffic honest.',root:m3Root},{id:'chiron',name:'Bugatti Chiron',desc:'1,479 hp. Keep it above 250.',root:chironRoot},{id:'aero',name:'SSC Ultimate Aero',desc:'Once the fastest production car on Earth.',root:aeroRoot},{id:'daytona',name:'Shelby Cobra Daytona',desc:'Le Mans-winning 1965 coupe in racing blue.',root:daytonaRoot},{id:'zonda',name:'Pagani Zonda R',desc:'Track-only V12 in bare carbon fibre.',root:zondaRoot},{id:'gt',name:'Porsche Carrera GT',desc:'The Star of this show.',root:gtRoot},{id:'beta',name:'Beta Car',desc:'Old traffic cars from testing builds!',root:betaRoot},{id:'enzo',name:'Ferrari Enzo',desc:'The V12 Red Baron!',root:enzoRoot},{id:'viper',name:'2013 SRT Viper GTS',desc:'American V10 muscle, venom included.',root:viperRoot},{id:'nsx',name:'2017 Acura NSX',desc:'Hybrid supercar. Pays you in gold.',root:nsxRoot},{id:'charger',name:'2013 Dodge Charger SRT8',desc:'Four doors. Zero apologies.',root:chargerRoot},{id:'fiesta',name:'Ford Fiesta Mk1',desc:'The 1976 supermini from the road, now behind the wheel.',root:fiestaRoot},{id:'accord',name:'Honda Accord',desc:'1996 family sedan. Dependable, and never a crash with its own.',root:accordRoot},{id:'jet',name:"Scout's Ship",desc:'Why is this even flying so low? Originally from roblox game Star Blox',root:jetRoot},{id:'tjet',name:"Toucs' Ship",desc:'A larger, bluer, much faster version of Scout\'s ship.',root:tjetRoot},{id:'ram',name:'Dodge Ram Rumble Bee',desc:'First-gen Ram with a Viper V10 shoved under the hood.',root:ramRoot},{id:'prius',name:'2012 Toyota Prius',desc:'Hypermiling hero. Cheap, calm and always prepared.',root:priusRoot},{id:'dawn',name:'2016 Rolls-Royce Dawn',desc:'Whispers past traffic. Pays double. Makes it rain.',root:dawnRoot},{id:'fulvia',name:'1971 Lancia Fulvia Rallye',desc:'Racing-red rally legend. Never loses grip in the rain.',root:fulviaRoot},{id:'l037',name:'1982 Lancia 037 Stradale',desc:'Mid-engined Group B homologation special. Sometimes the clock forgives a crash.',root:l037Root}];
+const CARS=[{id:'raptor',name:'2013 Ford F-150 SVT Raptor R',desc:'The off-road truck. Dirt trails are home turf.',root:raptorRoot},{id:'ccx',name:'2006 Koenigsegg CCX',desc:'806 hp Swedish hypercar. Your score is in the hands of fate.',root:ccxRoot},{id:'r34',name:'1999 Nissan Skyline GT-R (R34)',desc:'Godzilla. A crash costs a lot of clock, but never any points.',root:r34Root},{id:'f360',name:'1999 Ferrari 360 Modena',desc:'Mid-engine V8 berlinetta. Deal yourself the next event.',root:f360Root},{id:'xkr',name:'2009 Jaguar XKR',desc:'Supercharged British grand tourer. Things happen around it.',root:xkrRoot},{id:'m3',name:'1988 BMW M3 Evolution II',desc:'DTM homologation special. Keeps traffic honest.',root:m3Root},{id:'chiron',name:'Bugatti Chiron',desc:'1,479 hp. Keep it above 250.',root:chironRoot},{id:'aero',name:'SSC Ultimate Aero',desc:'Once the fastest production car on Earth.',root:aeroRoot},{id:'daytona',name:'Shelby Cobra Daytona',desc:'Le Mans-winning 1965 coupe in racing blue.',root:daytonaRoot},{id:'zonda',name:'Pagani Zonda R',desc:'Track-only V12 in bare carbon fibre.',root:zondaRoot},{id:'gt',name:'Porsche Carrera GT',desc:'The Star of this show.',root:gtRoot},{id:'beta',name:'Beta Car',desc:'Old traffic cars from testing builds!',root:betaRoot},{id:'enzo',name:'Ferrari Enzo',desc:'The V12 Red Baron!',root:enzoRoot},{id:'viper',name:'2013 SRT Viper GTS',desc:'American V10 muscle, venom included.',root:viperRoot},{id:'nsx',name:'2017 Acura NSX',desc:'Hybrid supercar. Pays you in gold.',root:nsxRoot},{id:'charger',name:'2013 Dodge Charger SRT8',desc:'Four doors. Zero apologies.',root:chargerRoot},{id:'fiesta',name:'Ford Fiesta Mk1',desc:'The 1976 supermini from the road, now behind the wheel.',root:fiestaRoot},{id:'accord',name:'Honda Accord',desc:'1996 family sedan. Dependable, and never a crash with its own.',root:accordRoot},{id:'jet',name:"Scout's Ship",desc:'Why is this even flying so low? Originally from roblox game Star Blox',root:jetRoot},{id:'ram',name:'Dodge Ram Rumble Bee',desc:'First-gen Ram with a Viper V10 shoved under the hood.',root:ramRoot},{id:'prius',name:'2012 Toyota Prius',desc:'Hypermiling hero. Cheap, calm and always prepared.',root:priusRoot},{id:'dawn',name:'2016 Rolls-Royce Dawn',desc:'Whispers past traffic. Pays double. Makes it rain.',root:dawnRoot},{id:'fulvia',name:'1971 Lancia Fulvia Rallye',desc:'Racing-red rally legend. Never loses grip in the rain.',root:fulviaRoot},{id:'l037',name:'1982 Lancia 037 Stradale',desc:'Mid-engined Group B homologation special. Sometimes the clock forgives a crash.',root:l037Root}];
 let CS={owned:['gt'],sel:'gt'};      // owned: car ids (the Carrera GT is always owned; the Beta Car is bought on the Black Market)
 try{ const j=JSON.parse(localStorage.getItem('cgt_cars','cgt_ch')||'null');
-  if(j&&Array.isArray(j.owned)){ CS.owned=['gt',...j.owned.filter(x=>x==='beta'||x==='enzo'||x==='viper'||x==='nsx'||x==='charger'||x==='zonda'||x==='daytona'||x==='aero'||x==='chiron'||x==='m3'||x==='xkr'||x==='f360'||x==='ccx'||x==='r34'||x==='raptor'||x==='fiesta'||x==='accord'||x==='ram'||x==='jet'||x==='tjet'||x==='prius'||x==='dawn'||x==='fulvia'||x==='l037')]; if(CS.owned.includes(j.sel)) CS.sel=j.sel; } }catch(e){}
+  if(j&&Array.isArray(j.owned)){ CS.owned=['gt',...j.owned.filter(x=>x==='beta'||x==='enzo'||x==='viper'||x==='nsx'||x==='charger'||x==='zonda'||x==='daytona'||x==='aero'||x==='chiron'||x==='m3'||x==='xkr'||x==='f360'||x==='ccx'||x==='r34'||x==='raptor'||x==='fiesta'||x==='accord'||x==='ram'||x==='jet'||x==='prius'||x==='dawn'||x==='fulvia'||x==='l037')]; if(CS.owned.includes(j.sel)) CS.sel=j.sel; } }catch(e){}
 // Independent handling/performance profiles. The Carrera GT profile remains the original simulation.
 const CAR_STATS={
   gt:{topSpeedMph:205,zeroTo60:3.9,points:true,leaderboard:true},
@@ -1900,8 +1899,7 @@ const CAR_STATS={
   fiesta:{topSpeedMph:120,zeroTo60:8.0,points:true,leaderboard:true},
   accord:{topSpeedMph:145,zeroTo60:6.5,points:true,leaderboard:true},
   ram:{topSpeedMph:165,zeroTo60:4.8,points:true,leaderboard:true},
-  jet:{topSpeedMph:800,zeroTo60:.5,points:false,leaderboard:false,impactImmunity:true},
-  tjet:{topSpeedMph:1600,zeroTo60:.5,points:false,leaderboard:false,impactImmunity:true}
+  jet:{topSpeedMph:800,zeroTo60:.5,points:false,leaderboard:false,impactImmunity:true}
 };
 // Future dealership entries have real-world reference specifications but deliberately have no model/root yet.
 // They stay unavailable until their 3D models are added; these values are not active game handling profiles.
@@ -1923,8 +1921,7 @@ const FUTURE_CAR_SPECS={
   fulvia:{name:'1971 Lancia Fulvia Rallye',year:1971,engine:'1.6L narrow-angle V4',powerHp:115,topSpeedMph:109,zeroTo60:9.3,available:true,price:20000},
   l037:{name:'1982 Lancia 037 Stradale',year:1982,engine:'2.0L supercharged Abarth I4',powerHp:205,topSpeedMph:134,zeroTo60:6.8,available:true,price:90000}
 };
-const isJet=()=>CS.sel==='jet'||CS.sel==='tjet';
-const isBetaCar=()=>CS.sel==='beta'||CS.sel==='jet'||CS.sel==='tjet';   // unranked specials: no points/cash/exit, immune to traffic (the Red Fighter Jet flies over it)
+const isBetaCar=()=>CS.sel==='beta'||CS.sel==='jet';   // unranked specials: no points/cash/exit, immune to traffic (the Red Fighter Jet flies over it)
 function renderCarShop(){
   const catalog=[
     {id:'gt',name:'Porsche Carrera GT',detail:'5.7L naturally aspirated V10 · 612 hp · 205 mph · 0–60 in 3.9 s',owned:true},
@@ -2913,17 +2910,6 @@ lazyCar('jet','sci_fi_jet.glb',gltf=>{
   addCarLights(jetRoot,{h:[[.35,.55,2.2,1.0]],t:[[.45,.75,-2.6,.9,.95]],sp:[.35,.55,2.2],bm:[.35,.55,2.2],pl:[.45,.7,-2.7]});
   jetRoot.traverse(m=>{ m.castShadow=castsShadow(m); }); applyQuality();
 },undefined,err=>console.error('Could not load the fighter jet model',err));
-lazyCar('tjet','sci_fi_jet.glb',gltf=>{
-  const inner=gltf.scene; inner.rotation.y=-Math.PI/2; const holder=new THREE.Group(); holder.add(inner); const tj=new THREE.Group(); tj.scale.setScalar(1.6); tj.position.y=JET_H-JET_H*1.6; tj.add(holder); tjetRoot.add(tj);
-  inner.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; o.receiveShadow=true;
-    const mm=(Array.isArray(o.material)?o.material:[o.material]).map(sm=>{ const m=sm.clone(); if(m.color){ m.color.setRGB(m.color.b,m.color.g,m.color.r); } if(m.emissive&&m.emissive.getHex()){ m.emissive.setRGB(m.emissive.b,m.emissive.g,m.emissive.r); } if(m.metalness!==undefined){ m.metalness=Math.min(.45,m.metalness); m.roughness=Math.max(.35,m.roughness); } m.envMapIntensity=.7; m.userData.e0=.7; envMats.push(m); return m; });
-    o.material=Array.isArray(o.material)?mm:mm[0]; });
-  holder.updateMatrixWorld(true);
-  const b=new THREE.Box3().setFromObject(inner), k=5.4/(b.max.z-b.min.z), c=b.getCenter(new THREE.Vector3());
-  holder.scale.setScalar(k); holder.position.set(-c.x*k,JET_H-b.min.y*k,-c.z*k);
-  addCarLights(tj,{h:[[.35,.55,2.2,1.0]],t:[[.45,.75,-2.6,.9,.95]],sp:[.35,.55,2.2],bm:[.35,.55,2.2],pl:[.45,.7,-2.7]});
-  tjetRoot.traverse(m=>{ m.castShadow=castsShadow(m); }); applyQuality();
-},undefined,err=>console.error('Could not load the fighter jet model',err));
 
 /* ---------------- 2012 Toyota Prius (real size 4.46 m long; 134 hp hybrid, 112 mph, 0-60 in ~10 s) ----------------
    The GLB has arbitrary units (19 units long) and its nose toward -Z once loaded, so it is turned around, scaled to real length and grounded on its
@@ -3307,7 +3293,7 @@ function dropsTick(){
 }
 
 /* ---------------- game state, input, scoring */
-const CAM_TALL={ram:.75,raptor:.95,tjet:.7};   // extra chase-camera height (metres) per tall vehicle; add any future truck / SUV id here
+const CAM_TALL={ram:.75,raptor:.95};   // extra chase-camera height (metres) per tall vehicle; add any future truck / SUV id here
 const VIEWS2={chase:{p:[0,1.9,-7.4],t:[0,.8,9]},side:{p:[-5.6,.85,.6],t:[0,.55,.8]},front:{p:[2.6,1.0,7.2],t:[0,.6,.2]}};
 let view='chase', speedTarget=0, speed=20, dist=0, px=0, yaw=0, vl=0, steer=0, thrS=0, brkS=0, shake=0, inv=0, yr=0, ayS=0, accS=0, fwd=0;
 var TC={on:false,park:false,fovNow:34,fade:0};
@@ -3366,10 +3352,9 @@ const POWERUPS=[
   {id:'nitrous',name:'Nitrous Oxide',icon:'💨',desc:'Press E for a 5-second speed burst. Traffic collisions cannot penalize you during the boost.',mode:'Press E'},
   {id:'double',name:'x2 Points',icon:'✖️',desc:'Doubles every points multiplier for the entire run.',mode:'Automatic'},
   {id:'ghost',name:'Ghost Chassis',icon:'👻',desc:'Press E to become translucent and invulnerable for 30 seconds, with a slight speed reduction.',mode:'Press E · 30 seconds'},
-  {id:'x4',name:'x4 Points',icon:'4️⃣',desc:'Quadruples every points multiplier for the entire run. Stacks over x2 Points (x4 wins, they do not multiply).',mode:'Automatic'},
   {id:'rocket',name:'RPG Power-up',icon:'🚀',desc:'Fire a rocket with E to blast nearby traffic out of your way. Reloads in 1:30. Unlimited uses.',mode:'Press E · 1:30 reload'}
 ];
-let PU={stock:{insurance:0,nitrous:0,double:0,ghost:0,rocket:0,x4:0},equipped:{insurance:false,nitrous:false,double:false,ghost:false,rocket:false,x4:false},ghostUnlocked:false,rocketUnlocked:false};
+let PU={stock:{insurance:0,nitrous:0,double:0,ghost:0,rocket:0},equipped:{insurance:false,nitrous:false,double:false,ghost:false,rocket:false},ghostUnlocked:false,rocketUnlocked:false};
 try{const q=JSON.parse(localStorage.getItem('cgt_powerups')||'null');if(q){PU.stock=Object.assign(PU.stock,q.stock||{});PU.equipped=Object.assign(PU.equipped,q.equipped||{});PU.ghostUnlocked=!!q.ghostUnlocked||((q.stock||{}).ghost||0)>0;PU.rocketUnlocked=!!q.rocketUnlocked;}}catch(e){}
 function savePU(){try{store.set('cgt_powerups',JSON.stringify(PU));}catch(e){}}
 let priusFree='nitrous'; try{ if(localStorage.getItem('cgt_prius_free')==='insurance') priusFree='insurance'; }catch(e){}   // Prius bonus: which free power-up to take each run
@@ -3383,7 +3368,7 @@ function ghostVisual(active){
 }
 function renderPowerups(){
   $('powerWallet').textContent='Wallet '+money(wallet)+' · $20.00 each';
-  $('powerRows').innerHTML=POWERUPS.filter(p=>p.id!=='ghost'&&p.id!=='x4'&&(p.id!=='rocket'||PU.rocketUnlocked)).map(p=>'<div class="pup"><span class="pi">'+p.icon+'</span><div class="pd"><b>'+p.name+'</b><small>'+p.desc+'</small><small>'+(p.id==='rocket'?'Unlimited stock · unlocked': 'In stock: '+(PU.stock[p.id]||0)+' · '+p.mode)+'</small></div>'+(p.id==='rocket'?'<span class="nb">UNLOCKED</span>':'<button type="button" data-buy-pu="'+p.id+'" '+(wallet<2000?'disabled':'')+'>Buy $20</button>')+'</div>').join('');
+  $('powerRows').innerHTML=POWERUPS.filter(p=>p.id!=='ghost'&&(p.id!=='rocket'||PU.rocketUnlocked)).map(p=>'<div class="pup"><span class="pi">'+p.icon+'</span><div class="pd"><b>'+p.name+'</b><small>'+p.desc+'</small><small>'+(p.id==='rocket'?'Unlimited stock · unlocked': 'In stock: '+(PU.stock[p.id]||0)+' · '+p.mode)+'</small></div>'+(p.id==='rocket'?'<span class="nb">UNLOCKED</span>':'<button type="button" data-buy-pu="'+p.id+'" '+(wallet<2000?'disabled':'')+'>Buy $20</button>')+'</div>').join('');
 }
 let carsView=false;
 function setPowerView(on){powerView=on;if(on){carsView=false;$('carsPanel').style.display='none';$('paintPanel').style.display='none';} $('powerPanel').style.display=on?'block':'none';$('itemPaint').style.opacity='1';$('itemPower').style.opacity='1';$('itemCars').style.opacity='1';}
@@ -3392,7 +3377,7 @@ $('itemPower').addEventListener('click',()=>{leavePaint();setCarsView(false);set
 $('itemPaint').addEventListener('click',()=>{setCarsView(false);setPowerView(false);enterPaint();});
 $('itemCars').addEventListener('click',()=>{leavePaint();setCarsView(true);});
 $('powerRows').addEventListener('click',e=>{const b=e.target.closest('[data-buy-pu]');if(!b)return;const id=b.dataset.buyPu;if(!POWERUPS.some(p=>p.id===id)||!spend(2000))return;PU.stock[id]=(PU.stock[id]||0)+1;savePU();renderPowerups();popup('POWER-UP PURCHASED','good');});
-function renderLoadout(){ $('loadRows').innerHTML=POWERUPS.filter(p=>(p.id!=='ghost'||PU.ghostUnlocked)&&(p.id!=='x4'||(PU.stock.x4||0)>0)&&(p.id!=='rocket'||PU.rocketUnlocked)).map(p=>{const n=PU.stock[p.id]||0,checked=p.id==='rocket'?!!PU.equipped.rocket:!!PU.equipped[p.id]&&n>0;return '<label class="loadrow"><span class="li">'+p.icon+'</span><span class="ld"><b>'+p.name+'</b><small>'+p.desc+' · '+(p.id==='rocket'?'Unlimited uses':('Owned: '+n+(p.id==='ghost'?' · Black Market good':'')))+'</small></span><input type="checkbox" data-equip-pu="'+p.id+'" '+(checked?'checked':'')+' '+(p.id==='rocket'?'':' '+(n<1?'disabled':''))+'></label>';}).join(''); }
+function renderLoadout(){ $('loadRows').innerHTML=POWERUPS.filter(p=>(p.id!=='ghost'||PU.ghostUnlocked)&&(p.id!=='rocket'||PU.rocketUnlocked)).map(p=>{const n=PU.stock[p.id]||0,checked=p.id==='rocket'?!!PU.equipped.rocket:!!PU.equipped[p.id]&&n>0;return '<label class="loadrow"><span class="li">'+p.icon+'</span><span class="ld"><b>'+p.name+'</b><small>'+p.desc+' · '+(p.id==='rocket'?'Unlimited uses':('Owned: '+n+(p.id==='ghost'?' · Black Market good':'')))+'</small></span><input type="checkbox" data-equip-pu="'+p.id+'" '+(checked?'checked':'')+' '+(p.id==='rocket'?'':' '+(n<1?'disabled':''))+'></label>';}).join(''); }
 $('loadRows').addEventListener('change',e=>{const id=e.target.dataset.equipPu;if(!id)return;if(e.target.checked&&id==='rocket'){for(const k of Object.keys(PU.equipped))PU.equipped[k]=false;PU.equipped.rocket=true;popup('RPG REPLACES ALL OTHER POWER-UPS','good');}else{if(e.target.checked&&PU.equipped.rocket){PU.equipped.rocket=false;popup('RPG UNEQUIPPED','good');}if(e.target.checked&&id==='ghost'&&PU.equipped.nitrous){PU.equipped.nitrous=false;popup('GHOST CHASSIS REPLACES NITROUS','good');}if(e.target.checked&&id==='nitrous'&&PU.equipped.ghost){PU.equipped.ghost=false;popup('NITROUS REPLACES GHOST CHASSIS','good');}PU.equipped[id]=!!e.target.checked;}savePU();renderLoadout();});
 { const _rl=renderLoadout;
   renderLoadout=function(){ _rl(); if(CS.sel!=='prius') return;
@@ -3419,16 +3404,7 @@ function renderTipJar(){
   const coins=spots.slice(0,coinCount).map(([x,y],i)=>'<g><circle cx="'+x+'" cy="'+y+'" r="7.2" fill="'+(i%3===0?'#f8d36f':'#d99b35')+'" stroke="#8b571b" stroke-width="1.4"/><circle cx="'+x+'" cy="'+y+'" r="4.4" fill="none" stroke="#ffebaa" stroke-width="1" opacity=".8"/></g>').join('');
   return '<section class="tipjar-card"><svg class="tipjar-art" viewBox="0 0 180 158" role="img" aria-label="Glass tip jar with '+coinCount+' coins inside"><defs><clipPath id="tipJarClip"><path d="M43 37 Q43 30 54 30 H126 Q137 30 137 42 V128 Q137 139 126 139 H54 Q43 139 43 128Z"/></clipPath><linearGradient id="tipGlass" x1="0" x2="1"><stop offset="0" stop-color="#bceaff" stop-opacity=".12"/><stop offset=".5" stop-color="#e6f8ff" stop-opacity=".34"/><stop offset="1" stop-color="#9edbff" stop-opacity=".1"/></linearGradient></defs><path d="M62 12 H118 V25 Q118 30 130 34 Q145 39 145 51 V128 Q145 147 126 147 H54 Q35 147 35 128 V51 Q35 39 50 34 Q62 30 62 25Z" fill="url(#tipGlass)" stroke="#c7e9f7" stroke-width="4"/><path d="M58 12 H122 V27 H58Z" fill="#9ac8da" fill-opacity=".35" stroke="#c7e9f7" stroke-width="3"/><g clip-path="url(#tipJarClip)">'+coins+'</g><path d="M47 47 V125 Q47 135 57 135" fill="none" stroke="#fff" stroke-opacity=".6" stroke-width="3" stroke-linecap="round"/><path d="M134 54 V119" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="2" stroke-linecap="round"/><path d="M68 20 H112" stroke="#e7f8ff" stroke-width="2" stroke-linecap="round" opacity=".8"/></svg><div class="tipjar-copy"><strong>Scout’s Tip Jar</strong><small>Help fill the jar for a mystery surprise!</small><span class="tipjar-next">'+(tipGoalReached?'GOAL REACHED':'Next tip: '+money(tipNext))+'</span><small>Raised: '+money(tipTotal)+' / $10,000.00</small><div class="tipjar-track"><span style="width:'+(progress*100)+'%"></span></div><small>'+Math.floor(progress*100)+'% full · '+coinCount+' coins in the jar</small></div>'+(tipGoalReached?'<small style="grid-column:1/-1">Scout has enough for a surprise!</small>':'<button type="button" class="tipjar-donate" data-tipjar="1">Drop in '+money(tipNext)+'</button>')+'</section>';
 }
-let dm=false;
-const DM_ITEMS=[['x4 Points',88800,'Quadruples every points multiplier for a whole run. Single use. Do not ask how.','x4'],["Toucs' Ship",5000000,"Scout's ship, but bigger, bluer and twice as fast (1,600 mph). Unranked, obviously.",'tjet']];
-const TOUCS_LINES=["Oh, you found the back room. Congratulations. Buy something.","Scout sells you junk. I sell you better junk.","Don't touch anything you can't afford. Which is everything.","Scout's ship is cute. Mine is bigger.","Yes, the prices are insane. No, I won't discuss it.","Your car is fine. For a car. Scout would say it's 'an supercar'. Scout is easily impressed.","Mac & cheese? Please. I'm too refined for that.","Refunds are a myth.","I'm not smiling. This is just my face.","Silas is mid, by the way."];
-function applyDM(){ $('bmTitle').textContent=dm?'Darker Market':'Black Market'; $('bmSub').textContent=dm?'Cash only · no questions · no refunds':'Cash only · stock is limited'; $('scoutImg').src=dm?'toucs.png':'scout.png'; $('scoutImg').alt=dm?'Toucs':'Scout'; $('smile2').style.display=dm?'none':''; }
-function renderDM(){ $('bmItems').innerHTML=DM_ITEMS.map(([n,c,s,id])=>{ const price='$'+(c/100).toLocaleString(); const own=id==='tjet'&&CS.owned.includes('tjet'); const st=id==='x4'?(PU.stock.x4||0):0;
-  return '<button type="button" class="bmbuy'+(own?' own':'')+'" data-dm="'+id+'">'+n+'<b>'+(own?'Owned':price)+'</b><small>'+s+'</small><small>'+(own?'In your garage':id==='x4'&&st?'In stock: '+st+' · buy another':wallet<c?'Need '+money(c-wallet)+' more':'Tap to buy')+'</small></button>'; }).join(''); }
-function setDM(on){ dm=on; applyDM(); renderBM(); typeScoutLine(on?TOUCS_LINES[0]:'...'); }
-$('smile2').addEventListener('click',()=>{ const a=prompt('Month of the game.'); if(a===null) return; if(a.trim().toLowerCase()==='november') setDM(true); else alert('wrong answer'); });
 function renderBM(){
-  if(dm){ renderDM(); return; }
   $('bmItems').innerHTML=BM_ITEMS.map(([n,c,s,id])=>{
     const price='$'+(c/100).toLocaleString();
     if(id==='ghost'){const nOwned=PU.stock.ghost||0;return '<button type="button" class="bmbuy" data-bm="ghost">'+n+'<b>'+price+'</b>'+(s?'<small>'+s+'</small>':'')+'<small>'+(nOwned?'Unlocked · in stock: '+nOwned+' · buy another':wallet<c?'Need '+money(c-wallet)+' more':'Tap to unlock and buy')+'</small></button>'; }
@@ -3441,9 +3417,6 @@ function renderBM(){
   }).join('') + renderTipJar();
 }
 $('bmItems').addEventListener('click',e=>{
-  const d=e.target.closest('[data-dm]'); if(d){ const it=DM_ITEMS.find(x=>x[3]===d.dataset.dm); if(!it) return;
-    if(it[3]==='tjet'){ if(CS.owned.includes('tjet')) return; if(!spend(it[1])){ typeScoutLine('Come back when you have money.'); return; } CS.owned.push('tjet'); saveCars(); renderBM(); typeScoutLine('Try not to scratch it.'); popup("Toucs' Ship added to your garage",'good'); return; }
-    if(!spend(it[1])){ typeScoutLine('Come back when you have money.'); return; } PU.stock.x4=(PU.stock.x4||0)+1; savePU(); renderBM(); renderPowerups(); typeScoutLine(TOUCS_LINES[1+Math.floor(Math.random()*(TOUCS_LINES.length-1))]); popup('x4 POINTS ACQUIRED','good'); return; }
   const tip=e.target.closest('[data-tipjar]');if(tip){if(tipGoalReached)return;if(!spend(tipNext)){popup('NOT ENOUGH CASH','bad');return;}tipTotal+=tipNext;tipNext*=2;tipGoalReached=tipTotal>=1000000;if(tipGoalReached){PU.rocketUnlocked=true;PU.equipped.rocket=false;savePU();}saveTipJar();renderBM();if(tipGoalReached)renderPowerups();typeScoutLine(tipGoalReached?'I have something that goes and makes an Kaboom!':'one tiny step closer to a surprise.');return;}
   const b=e.target.closest('.bmbuy'); if(!b) return;
   if(b.dataset.bm==='ghost'){const it=BM_ITEMS.find(x=>x[3]==='ghost');if(!it||!spend(it[1]))return;PU.stock.ghost=(PU.stock.ghost||0)+1;PU.ghostUnlocked=true;savePU();renderBM();renderWallet();popup('GHOST CHASSIS ACQUIRED','good');return;}
@@ -3454,13 +3427,13 @@ $('bmItems').addEventListener('click',e=>{
   CS.owned.push(it[3]); saveCars(); renderBM(); popup(it[0]+' added to your garage','good');
 });
 const SCOUT_LINES=["Yo, I'm scout. Purchase one of my totally legit goods please",'what do you mean ripping you off?','I wonder what the cars taste like.','Tonight on top gea-wait wrong thing.','Very cheap new beta car for sale great deal totally!','Anyone named silas is pretty cool','Some random kid created me, idk why','Keep that V10 safe. Would be a shame if someone stole it right out of the bay.','Your car is an supercar.','I could use some mac & cheese right about now.','Your paint looks cool bud'];
-let scoutAudioCtx=null; function scoutBlip(){ try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;if(!scoutAudioCtx)scoutAudioCtx=new AC();if(scoutAudioCtx.state==='suspended')scoutAudioCtx.resume();const t=scoutAudioCtx.currentTime,base=620+Math.random()*520, dur=.052+Math.random()*.018, master=scoutAudioCtx.createGain(),tone=scoutAudioCtx.createBiquadFilter(),voice=scoutAudioCtx.createOscillator(),buzz=scoutAudioCtx.createOscillator(),env=scoutAudioCtx.createGain();tone.type='bandpass';tone.frequency.setValueAtTime(1050+Math.random()*950,t);tone.Q.setValueAtTime(.8+Math.random()*1.4,t);voice.type='sawtooth';voice.frequency.setValueAtTime(base,t);voice.frequency.exponentialRampToValueAtTime(base*(.78+Math.random()*.12),t+dur);buzz.type='triangle';buzz.frequency.setValueAtTime(base*(1.98+Math.random()*.04),t);buzz.detune.setValueAtTime((Math.random()-.5)*24,t);env.gain.setValueAtTime(.0001,t);env.gain.linearRampToValueAtTime(.28+Math.random()*.07,t+.006);env.gain.exponentialRampToValueAtTime(.0001,t+dur);voice.connect(tone);buzz.connect(tone);tone.connect(env);env.connect(master);master.gain.setValueAtTime(1.65,t);master.connect(scoutAudioCtx.destination);voice.start(t);buzz.start(t);voice.stop(t+dur+.005);buzz.stop(t+dur+.005);}catch(e){} } function typeScoutLine(line){const el=$('scoutLine');if(!el)return;el.textContent='';el.classList.add('typing');let i=0;const tick=()=>{if(!bmOpen)return;if(i>=line.length){el.classList.remove('typing');return;}const ch=line[i++];el.textContent+=ch;if(ch!==' '&&ch!=='\n')scoutBlip();setTimeout(tick,/[,.;!?]/.test(ch)?115:27+Math.random()*9);};tick();} function setBM(on){ bmOpen=on; dm=false; applyDM(); $('bm').classList.toggle('show',on); renderWallet(); if(on){renderBM();typeScoutLine(PU.rocketUnlocked?'I have something that goes and makes an Kaboom!':SCOUT_LINES[Math.floor(Math.random()*SCOUT_LINES.length)]);} syncMenuMusic(); }
+let scoutAudioCtx=null; function scoutBlip(){ try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;if(!scoutAudioCtx)scoutAudioCtx=new AC();if(scoutAudioCtx.state==='suspended')scoutAudioCtx.resume();const t=scoutAudioCtx.currentTime,base=620+Math.random()*520, dur=.052+Math.random()*.018, master=scoutAudioCtx.createGain(),tone=scoutAudioCtx.createBiquadFilter(),voice=scoutAudioCtx.createOscillator(),buzz=scoutAudioCtx.createOscillator(),env=scoutAudioCtx.createGain();tone.type='bandpass';tone.frequency.setValueAtTime(1050+Math.random()*950,t);tone.Q.setValueAtTime(.8+Math.random()*1.4,t);voice.type='sawtooth';voice.frequency.setValueAtTime(base,t);voice.frequency.exponentialRampToValueAtTime(base*(.78+Math.random()*.12),t+dur);buzz.type='triangle';buzz.frequency.setValueAtTime(base*(1.98+Math.random()*.04),t);buzz.detune.setValueAtTime((Math.random()-.5)*24,t);env.gain.setValueAtTime(.0001,t);env.gain.linearRampToValueAtTime(.28+Math.random()*.07,t+.006);env.gain.exponentialRampToValueAtTime(.0001,t+dur);voice.connect(tone);buzz.connect(tone);tone.connect(env);env.connect(master);master.gain.setValueAtTime(1.65,t);master.connect(scoutAudioCtx.destination);voice.start(t);buzz.start(t);voice.stop(t+dur+.005);buzz.stop(t+dur+.005);}catch(e){} } function typeScoutLine(line){const el=$('scoutLine');if(!el)return;el.textContent='';el.classList.add('typing');let i=0;const tick=()=>{if(!bmOpen)return;if(i>=line.length){el.classList.remove('typing');return;}const ch=line[i++];el.textContent+=ch;if(ch!==' '&&ch!=='\n')scoutBlip();setTimeout(tick,/[,.;!?]/.test(ch)?115:27+Math.random()*9);};tick();} function setBM(on){ bmOpen=on; $('bm').classList.toggle('show',on); renderWallet(); if(on){renderBM();typeScoutLine(PU.rocketUnlocked?'I have something that goes and makes an Kaboom!':SCOUT_LINES[Math.floor(Math.random()*SCOUT_LINES.length)]);} syncMenuMusic(); }
 /* ---------------- garage: shows only the cars you own (the Carrera GT, plus the Beta Car once bought). Reuses the showroom orbit camera. */
 let garageOpen=false;
 function renderGarage(){
   const own=CARS.filter(c=>CS.owned.includes(c.id));
   $('gCount').textContent=own.length+(own.length===1?' car':' cars');
-  $('gList').innerHTML=own.map(c=>{ const spec=c.id==='raptor'?'107 MPH · ~5.6 s 0–60 · 411 hp 6.2L V8 · perfect grip and x1.5 points on dirt trails':c.id==='ccx'?'247 MPH · ~3.1 s 0–60 · 806 hp 4.7L supercharged V8 · random score multiplier 0.5x–3x each run':c.id==='r34'?'162 MPH · ~4.7 s 0–60 · 2.6L twin-turbo I6 · crashes cost triple time but no score':c.id==='f360'?'183 MPH · ~4.4 s 0–60 · 395 hp 3.6L V8 · pick your next event from 3 cards':c.id==='xkr'?'175 MPH · ~4.6 s 0–60 · 510 hp supercharged V8 · twice as many events':c.id==='m3'?'154 MPH · ~6.3 s 0–60 · 235 hp 2.5L I4 · no reckless drivers · close passes +0.75 s':c.id==='chiron'?'261 MPH · ~2.4 s 0–60 · 1,479 hp quad-turbo W16 · x10 score above 250 mph':c.id==='dawn'?'155 MPH · ~4.9 s 0–60 · 563 hp twin-turbo V12 · x2 cash-out · x2 rain chance':c.id==='l037'?'134 MPH · ~6.8 s 0–60 · 205 hp supercharged I4 · 20% chance to skip the crash time penalty':c.id==='fulvia'?'109 MPH · ~9.3 s 0–60 · 115 hp V4 · no traction loss in rain · speed boost in sun · x1.5 time bonuses':c.id==='prius'?'112 MPH · ~10.0 s 0–60 · 134 hp hybrid · free power-up each run':c.id==='fiesta'?'120 MPH · ~8.0 s 0–60 · immune to Fiesta traffic':c.id==='accord'?'145 MPH · ~6.5 s 0–60 · immune to Accord traffic':c.id==='ram'?'165 MPH · ~4.8 s 0–60 · V10 · immune to Ram traffic':c.id==='beta'?'310 MPH · ~1 s 0–60 · impact immunity · UNRANKED':c.id==='enzo'?'217 MPH · ~3.3 s 0–60 · 650 hp V12':c.id==='tjet'?'1,600 MPH · ~0.5 s 0–60 · flies over traffic · UNRANKED':c.id==='jet'?'800 MPH · ~0.5 s 0–60 · flies over traffic · UNRANKED':c.id==='aero'?'257 MPH · ~2.8 s 0–60 · 1,046 hp twin-turbo V8':c.id==='daytona'?'198 MPH · ~4.0 s 0–60 · 385 hp V8':c.id==='zonda'?'233 MPH · ~2.7 s 0–60 · 749 hp V12':c.id==='viper'?'206 MPH · ~3.5 s 0–60 · 640 hp V10':c.id==='nsx'?'191 MPH · ~2.9 s 0–60 · 573 hp hybrid V6':c.id==='charger'?'175 MPH · ~4.4 s 0–60 · 470 hp HEMI V8':'205 MPH · ~3.9 s 0–60 · standard scoring'; return '<button type="button" class="gcar'+(CS.sel===c.id?' eq':'')+'" data-id="'+c.id+'"><span class="gn">'+c.name+'</span><span class="gd">'+c.desc+'<br><small>'+spec+'</small></span><span class="gb">'+(CAR_BONUS[c.id]||'')+'</span><span class="gs">'+(CS.sel===c.id?'Selected':'Select')+'</span></button>'; }).join('');
+  $('gList').innerHTML=own.map(c=>{ const spec=c.id==='raptor'?'107 MPH · ~5.6 s 0–60 · 411 hp 6.2L V8 · perfect grip and x1.5 points on dirt trails':c.id==='ccx'?'247 MPH · ~3.1 s 0–60 · 806 hp 4.7L supercharged V8 · random score multiplier 0.5x–3x each run':c.id==='r34'?'162 MPH · ~4.7 s 0–60 · 2.6L twin-turbo I6 · crashes cost triple time but no score':c.id==='f360'?'183 MPH · ~4.4 s 0–60 · 395 hp 3.6L V8 · pick your next event from 3 cards':c.id==='xkr'?'175 MPH · ~4.6 s 0–60 · 510 hp supercharged V8 · twice as many events':c.id==='m3'?'154 MPH · ~6.3 s 0–60 · 235 hp 2.5L I4 · no reckless drivers · close passes +0.75 s':c.id==='chiron'?'261 MPH · ~2.4 s 0–60 · 1,479 hp quad-turbo W16 · x10 score above 250 mph':c.id==='dawn'?'155 MPH · ~4.9 s 0–60 · 563 hp twin-turbo V12 · x2 cash-out · x2 rain chance':c.id==='l037'?'134 MPH · ~6.8 s 0–60 · 205 hp supercharged I4 · 20% chance to skip the crash time penalty':c.id==='fulvia'?'109 MPH · ~9.3 s 0–60 · 115 hp V4 · no traction loss in rain · speed boost in sun · x1.5 time bonuses':c.id==='prius'?'112 MPH · ~10.0 s 0–60 · 134 hp hybrid · free power-up each run':c.id==='fiesta'?'120 MPH · ~8.0 s 0–60 · immune to Fiesta traffic':c.id==='accord'?'145 MPH · ~6.5 s 0–60 · immune to Accord traffic':c.id==='ram'?'165 MPH · ~4.8 s 0–60 · V10 · immune to Ram traffic':c.id==='beta'?'310 MPH · ~1 s 0–60 · impact immunity · UNRANKED':c.id==='enzo'?'217 MPH · ~3.3 s 0–60 · 650 hp V12':c.id==='jet'?'800 MPH · ~0.5 s 0–60 · flies over traffic · UNRANKED':c.id==='aero'?'257 MPH · ~2.8 s 0–60 · 1,046 hp twin-turbo V8':c.id==='daytona'?'198 MPH · ~4.0 s 0–60 · 385 hp V8':c.id==='zonda'?'233 MPH · ~2.7 s 0–60 · 749 hp V12':c.id==='viper'?'206 MPH · ~3.5 s 0–60 · 640 hp V10':c.id==='nsx'?'191 MPH · ~2.9 s 0–60 · 573 hp hybrid V6':c.id==='charger'?'175 MPH · ~4.4 s 0–60 · 470 hp HEMI V8':'205 MPH · ~3.9 s 0–60 · standard scoring'; return '<button type="button" class="gcar'+(CS.sel===c.id?' eq':'')+'" data-id="'+c.id+'"><span class="gn">'+c.name+'</span><span class="gd">'+c.desc+'<br><small>'+spec+'</small></span><span class="gb">'+(CAR_BONUS[c.id]||'')+'</span><span class="gs">'+(CS.sel===c.id?'Selected':'Select')+'</span></button>'; }).join('');
 }
 function setGarage(on){
   if(on===garageOpen) return; garageOpen=on; shopOpen=on; paintView=on;
@@ -3606,10 +3579,10 @@ function showOver(title,html,cashed){
 function endRun(why){
   ghostLeft=0;ghostVisual(false);
   if(CH.active){ chEnd(why); return; }
-  if(why==='exit'){ if(isBetaCar()){ state='over'; showOver('Black Market run','<b>UNRANKED</b><div class="nb">'+(CS.sel==='tjet'?"Toucs' Ship":CS.sel==='jet'?"Scout's Ship":'Beta Car')+' · no cash or leaderboard records</div>',false); return; } state='over'; const sc=Math.floor(score); showOver('Cashed out!','<b>+'+money(exitCash)+'</b><div class="nb">'+sc.toLocaleString()+' pts banked · '+miles.toFixed(2)+' mi</div>',true); return; }
+  if(why==='exit'){ if(isBetaCar()){ state='over'; showOver('Black Market run','<b>UNRANKED</b><div class="nb">'+(CS.sel==='jet'?"Scout's Ship":'Beta Car')+' · no cash or leaderboard records</div>',false); return; } state='over'; const sc=Math.floor(score); showOver('Cashed out!','<b>+'+money(exitCash)+'</b><div class="nb">'+sc.toLocaleString()+' pts banked · '+miles.toFixed(2)+' mi</div>',true); return; }
   if(why==='esc'){ state='over'; showOver('Run abandoned','<div class="nb">Quit early - nothing was recorded</div>',false); return; }   // quitting counts for nothing: no records, miles or leaderboard stats
   state='over'; const sc=Math.floor(score); let extra='';
-  if(!CAR_STATS[CS.sel].leaderboard){ showOver('Black Market run','<b>UNRANKED</b><div class="nb">'+(CS.sel==='tjet'?"Toucs' Ship":CS.sel==='jet'?"Scout's Ship":'Beta Car')+' · no points, cash, or leaderboard records</div><div class="nb">'+miles.toFixed(2)+' mi travelled</div>',false); return; }
+  if(!CAR_STATS[CS.sel].leaderboard){ showOver('Black Market run','<b>UNRANKED</b><div class="nb">'+(CS.sel==='jet'?"Scout's Ship":'Beta Car')+' · no points, cash, or leaderboard records</div><div class="nb">'+miles.toFixed(2)+' mi travelled</div>',false); return; }
   if(CASH_ON_TIMEOUT&&sc>0) addCash(centsFor(sc));
   else if(sc>=1000) extra='<div class="nb" style="color:#ff9b8f">'+money(centsFor(sc))+' not cashed — take an exit to bank your points</div>';
   const nb=recordRun();
@@ -3646,7 +3619,7 @@ function gainTime(base){ if(isBetaCar()) return 0; if(MP.on&&MP.mode==='battle')
 function threadGap(r){
   if(isBetaCar()) return;
   const ch=lastGap>=0&&r.gap!==lastGap; weave=ch?Math.min(9,weave+1):1;   // cap is 9 so the 'Maximum Weave' challenge (WEAVE x9) is reachable lastGap=r.gap;
-  const b=Math.round(400*mult*((runPU.x4?4:runPU.double?2:1))*weave*speedK()); score+=b;
+  const b=Math.round(400*mult*(runPU.double?2:1)*weave*speedK()); score+=b;
   if(CH.active){ CH.st.th++; CH.st.wm=Math.max(CH.st.wm,weave); } const ts=gainTime(1.3); popup((weave>1?'WEAVE x'+weave:'THREAD THE GAP')+'  +'+b.toLocaleString()+(ts>0?'  ·  +'+ts.toFixed(1)+'s':''),'good');
 }
 // Scout's RPG: a reusable rocket, one shot every 90 seconds.
@@ -3702,7 +3675,7 @@ function physics(dt){
   if(run&&off&&!wasOff) popup('OFF ROAD','bad'); wasOff=off;
   if(run){
     const mph=speed*MPH;
-    if(!isBetaCar()&&mph>40&&!off) score+=3*Math.pow((mph-40)/8,2)*mult*((runPU.x4?4:runPU.double?2:1))*(CS.sel==='chiron'&&mph>250?10:1)*dt;
+    if(!isBetaCar()&&mph>40&&!off) score+=3*Math.pow((mph-40)/8,2)*mult*(runPU.double?2:1)*(CS.sel==='chiron'&&mph>250?10:1)*dt;
     if(CS.sel==='chiron'){ const on=mph>250; if(on&&!chironX10) popup('250+ MPH · x10 SCORE','good'); chironX10=on; }
     miles+=fwd*dt/1609.34; clean+=dt; mult=(1+Math.min(4,Math.floor(clean/8)))*(raining()?1.5:1)*(MP.link?1.25:1);   // rain: x1.5 on the multiplier
     if(CH.active&&chTick(dt)) return;
@@ -3719,7 +3692,7 @@ function updateHud(){
   const _n=performance.now(); if(_n-_hudAt<90) return; _hudAt=_n;     // ~11 Hz is plenty for text
   kmhEl.textContent=Math.round(speed*MPH); if(CH.active) chHudUpdate();
   { const c=todText(tod)+' · '+todStage(tod)+(rainK>.12?' · Rain':''); if($('clk').textContent!==c) $('clk').textContent=c; $('gRain').textContent=raining()?'RAIN x1.5':''; }
-  $('gScore').textContent=isBetaCar()?'—':Math.floor(score).toLocaleString(); { const cx=(CS.sel==='chiron'&&chironX10&&state==='run'); const cm=state!=='run'?1:CS.sel==='ccx'?ccxMult:CS.sel==='raptor'?Math.round((1+.5*BW.w[8])*100)/100:1; $('gMult').textContent=isBetaCar()?'UNRANKED':'x'+(Math.round(mult*((runPU.x4?4:runPU.double?2:1))*(cx?10:1)*cm*100)/100)+(cx?' ⚡x10 SPEED':'')+(cm!==1?(cm>1?' 🍀':' ☁'):''); $('gMult').style.color=cx?'#ffd23c':cm<1?'#ff7a7a':cm>1?'#7dffb0':''; $('gMult').style.textShadow=cx?'0 0 10px #ffb300':''; }
+  $('gScore').textContent=isBetaCar()?'—':Math.floor(score).toLocaleString(); { const cx=(CS.sel==='chiron'&&chironX10&&state==='run'); const cm=state!=='run'?1:CS.sel==='ccx'?ccxMult:CS.sel==='raptor'?Math.round((1+.5*BW.w[8])*100)/100:1; $('gMult').textContent=isBetaCar()?'UNRANKED':'x'+(Math.round(mult*(runPU.double?2:1)*(cx?10:1)*cm*100)/100)+(cx?' ⚡x10 SPEED':'')+(cm!==1?(cm>1?' 🍀':' ☁'):''); $('gMult').style.color=cx?'#ffd23c':cm<1?'#ff7a7a':cm>1?'#7dffb0':''; $('gMult').style.textShadow=cx?'0 0 10px #ffb300':''; }
   $('gMiles').textContent=miles.toFixed(2); $('nextB').textContent=isBetaCar()?'BLACK MARKET · NO POINTS':tStreak+'  (+'+(1.3+.3*Math.min(8,tStreak)).toFixed(1)+' s next)';
   $('gExit').textContent=Math.max(0,((Math.floor(runDist/EX)+1)*EX-runDist)/1609.34).toFixed(2); $('gCash').textContent=isBetaCar()?'$0.00':money(centsFor(Math.floor(Math.max(0,score))));
   const t=Math.ceil(timeLeft); $('gTime').textContent=adminInfiniteClock?'∞':Math.floor(t/60)+':'+String(t%60).padStart(2,'0');
@@ -3783,7 +3756,7 @@ eng.rpm=Math.max(ECFG.idle,ECFG.ratio[eng.gear]*speed);
 const CAR_PHYS={nsx:{fk:1.36,cdA:1.08,gk:1.1},dawn:{fk:.79,cdA:1.3,gk:.95},fulvia:{fk:.43,cdA:.68,gk:1.95},l037:{fk:.56,cdA:.75,gk:1.6},   // fulvia: tuned with the same model (headless sim) so 0-60 ~ 9.3 s, top speed ~ 109 mph
      // dawn: heavy (2.56 t) – estimated from Charger tuning for 0-60 ~4.9 s, ~155 mph
   prius:{fk:.4,cdA:.72,gk:1.9},   // prius: tuned (headless sim of this model) so 0-60 = 10.0 s, top speed = 112 mph
-  jet:{fk:1.4,cdA:.45,gk:.82},tjet:{fk:1.4,cdA:.45,gk:.82},fiesta:{fk:.49,cdA:.6,gk:1.77},accord:{fk:.61,cdA:.75,gk:1.45},ram:{fk:.8,cdA:1.1,gk:1.27},aero:{fk:1.4,cdA:.45,gk:.82},chiron:{fk:1.5,cdA:.45,gk:.8},m3:{fk:.6,cdA:.7,gk:1.4},xkr:{fk:.8,cdA:.9,gk:1.2},f360:{fk:.85,cdA:.9,gk:.95},ccx:{fk:1.2,cdA:.45,gk:.85},raptor:{fk:.68,cdA:1.4,gk:2},r34:{fk:.8,cdA:.8,gk:1.3},daytona:{fk:1.02,cdA:.7,gk:.95},zonda:{fk:1.3,cdA:.65,gk:.9},gt:{fk:1,cdA:.83,gk:1},enzo:{fk:1.18,cdA:.84,gk:.95},viper:{fk:1.12,cdA:.9,gk:.95},charger:{fk:.88,cdA:1.02,gk:.95}};
+  jet:{fk:1.4,cdA:.45,gk:.82},fiesta:{fk:.49,cdA:.6,gk:1.77},accord:{fk:.61,cdA:.75,gk:1.45},ram:{fk:.8,cdA:1.1,gk:1.27},aero:{fk:1.4,cdA:.45,gk:.82},chiron:{fk:1.5,cdA:.45,gk:.8},m3:{fk:.6,cdA:.7,gk:1.4},xkr:{fk:.8,cdA:.9,gk:1.2},f360:{fk:.85,cdA:.9,gk:.95},ccx:{fk:1.2,cdA:.45,gk:.85},raptor:{fk:.68,cdA:1.4,gk:2},r34:{fk:.8,cdA:.8,gk:1.3},daytona:{fk:1.02,cdA:.7,gk:.95},zonda:{fk:1.3,cdA:.65,gk:.9},gt:{fk:1,cdA:.83,gk:1},enzo:{fk:1.18,cdA:.84,gk:.95},viper:{fk:1.12,cdA:.9,gk:.95},charger:{fk:.88,cdA:1.02,gk:.95}};
 const VEH0={cdA:VEH.cdA,grip:VEH.grip,pw:VEH.pw}; let physId=null;
 function applyCarPhysics(){
   const id=CS.sel; if(id===physId) return; physId=id;
@@ -3810,7 +3783,7 @@ function driveStep(dt){
     // Black Market Beta: huge launch torque, almost no aerodynamic fade until the hard 310 mph limiter.
     // Full throttle reaches its cap in roughly four seconds from rest; braking remains controllable.
     const cap=CAR_STATS[CS.sel].topSpeedMph/MPH;
-    const accel=(isJet()?60:36)*thrS - 1.1*(thrS<.02?1:0) - 25*brkS*(1+brkAssist);
+    const accel=(CS.sel==='jet'?60:36)*thrS - 1.1*(thrS<.02?1:0) - 25*brkS*(1+brkAssist);
     speed=Math.max(0,Math.min(cap,speed+accel*dt));
     eng.gear=5; eng.rpm=900+Math.min(7400,speed/cap*7400); eng.thr=thrS;
     return;
@@ -4241,7 +4214,6 @@ const SR_FACTS={
  fiesta:{eng:'front',nose:['Ford’s First Supermini','The Mk1 Fiesta launched in 1976 as Ford’s first supermini, a small front-wheel-drive hatchback.'],eng_:['Valencia Engine','Early Fiestas used the small 957 cc "Valencia" engine.'],tail:['Built Across Europe','Production ran 1976–1983 in Spain, Germany and the UK.'],roof:['Project Bobcat','Ford developed it under the codename Bobcat.']},
  accord:{eng:'front',nose:['Made in America','Honda opened its Marysville, Ohio plant in 1982, making the Accord the first Japanese-brand car built in the US.'],roof:['America’s Best-Seller','In 1989 the Accord became the best-selling car in America, the first Japanese nameplate to do it.'],eng_:['Fifth Generation','This is a fifth-generation Accord (1994–1997), sold with four-cylinder and V6 engines.'],tail:['Reputation for Reliability','The Accord built its name on dependability and long life.']},
  ram:{eng:'front',nose:['Fastest Truck','In 2004 the Ram SRT-10 set a Guinness record as the fastest production pickup, at 154.5 mph.'],eng_:['Viper V10 Power','The SRT-10 carries the Viper’s 8.3 L V10, rated at 500 hp.'],tail:['The Bee Badge','Dodge’s bee logo goes back to the 1968 Coronet Super Bee.'],roof:['Rumble Bee','The Bee name nods to Dodge’s muscle-car heritage.']},
- tjet:{eng:'none',nose:['Why Drive?','Totally street legal. Probably.'],tail:['Twin Engines','Bigger engines. Bluer flames. Same questionable legality.'],roof:['Toucs Special','Scout\'s fighter, upsized and recoloured by someone with more money.']},
  jet:{eng:'none',nose:['Why Drive?','Totally street legal. Probably.'],tail:['Twin Engines','Those glowing engine ports are what let it skim over traffic.'],roof:['Red Fighter','A cartoon-grade fighter jet, unlocked by a one-in-5,000 red token.']},
  prius:{eng:'front',nose:['First Mass-Produced Hybrid','The first Prius went on sale in Japan in 1997 and was the first mass-produced hybrid car.'],eng_:['Hybrid Synergy Drive','A 1.8 L Atkinson-cycle engine and an electric motor make 134 hp combined.'],roof:['Latin Name','Prius is Latin for "to go before".'],tail:['Slippery Shape','The wedge shape gives a drag coefficient of about 0.25, among the best of its time.']},
  l037:{eng:'mid',nose:['Group B Homologation','Lancia built just over 200 road-going Stradale cars so the rally 037 could race in Group B. It was the last rear-wheel-drive car to win the World Rally Championship.'],eng_:['Supercharged Abarth I4','A 2.0 L four-cylinder with a Volumex supercharger sits behind the seats, driving the rear wheels.'],roof:['Pininfarina Shape','The body was styled by Pininfarina on a Dallara-built tubular chassis with glass-fibre and Kevlar panels.'],tail:['Rally Heritage','The 037 beat the four-wheel-drive Audi quattro to the 1983 World Rally Championship for Makes.']},
@@ -5179,8 +5151,8 @@ function evOptions(){
   if(left>2600) opts.push('convoy');
   if(left>EVC.streetMi*1609.34+700) opts.push('street');
   if(left>EVC.raceMi*1609.34+700) opts.push('plane','train','balloon','duster','frecce');
-  if(left>EVC.arcadeMi*1609.34+700&&!isBetaCar()&&!isJet()) opts.push('arcade');
-  if(left>4300&&!isBetaCar()&&!isJet()) opts.push('boss');   // boss battle: the clock is paused for it, so it only starts with plenty of road before the next exit
+  if(left>EVC.arcadeMi*1609.34+700&&!isBetaCar()&&CS.sel!=='jet') opts.push('arcade');
+  if(left>4300&&!isBetaCar()&&CS.sel!=='jet') opts.push('boss');   // boss battle: the clock is paused for it, so it only starts with plenty of road before the next exit
   return opts;
 }
 function evPick(){ const o=evOptions(); return o.length?o[(Math.random()*o.length)|0]:null; }
@@ -5768,7 +5740,7 @@ function frame(){
       }
       if(r.wall&&r.z<260&&r.z>-40) t.off=Math.max(-60,Math.min(60,t.off+(t.v-VT)*dt));
       { const bz=r.z+t.off, ta=trafficAlpha(bz); t.alpha=ta.a; t.pz=t.z; t.z=bz+(ta.before?46*Math.pow(1-ta.a,1.6):0); t.g.position.set(t.x,0,t.z); t.g.rotation.x=-Math.atan(roadSlopeAt(t.z)); applyCarAlpha(t); }
-      if(!run||t.crashT>0||t.alpha<.5||isJet()) continue;   // the jet flies over traffic
+      if(!run||t.crashT>0||t.alpha<.5||CS.sel==='jet') continue;   // the jet flies over traffic
       { const gapZ=t.z-(t.type===0?4.0:4.45), closing=speed-t.v;                                  // bumper-to-bumper distance and closing speed
         if(gapZ>-.5&&gapZ<80&&closing>1&&Math.abs(px-t.x)<2.1){ const ttc=Math.max(gapZ,0)/closing; threat=Math.max(threat,Math.min(1,Math.max(0,1-ttc/2.6))); } }
       const dx=px-t.x, adx=Math.abs(dx);
@@ -5786,13 +5758,13 @@ function frame(){
           speed=Math.max(0,Math.min(speed,t.v)*.85); const sd=dx>=0?1:-1; px+=sd*.4; yaw=sd*.15; vl=sd*2.5;
           t.crashT=1.3; t.vx=-sd*5; t.spin=-sd*4; }
       } else if(!isBetaCar()&&t.pz>0&&t.z<=0&&adx<3.1&&speed-t.v>4){
-        const b=Math.round(500*mult*((runPU.x4?4:runPU.double?2:1))*speedK()); score+=b; if(CS.sel==='m3'){ timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+.75); popup('CLOSE PASS +'+b.toLocaleString()+'  ·  +0.75s','good'); } else popup('CLOSE PASS +'+b.toLocaleString(),'good'); if(CH.active) CH.st.cp++;
+        const b=Math.round(500*mult*(runPU.double?2:1)*speedK()); score+=b; if(CS.sel==='m3'){ timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+.75); popup('CLOSE PASS +'+b.toLocaleString()+'  ·  +0.75s','good'); } else popup('CLOSE PASS +'+b.toLocaleString(),'good'); if(CH.active) CH.st.cp++;
       }
     }
     if(run&&!r.done&&r.pz>0&&r.z<=0){
       r.done=true;
       if(trafficAlpha(r.z).a<.5){ /* empty exit zone: no points for threading cars that aren't there */ }
-      else if(r.wall){ if(!r.hit&&!isBetaCar()){ const b=Math.round(1500*mult*((runPU.x4?4:runPU.double?2:1))*speedK()); score+=b; if(CH.active) CH.st.th++; const ts=gainTime(3); popup('WALL CLEARED +'+b.toLocaleString()+(ts>0?'  ·  +'+ts.toFixed(1)+'s':''),'good'); } }
+      else if(r.wall){ if(!r.hit&&!isBetaCar()){ const b=Math.round(1500*mult*(runPU.double?2:1)*speedK()); score+=b; if(CH.active) CH.st.th++; const ts=gainTime(3); popup('WALL CLEARED +'+b.toLocaleString()+(ts>0?'  ·  +'+ts.toFixed(1)+'s':''),'good'); } }
       else if(!isBetaCar()&&!r.hit&&Math.abs(px-LANES[r.gap])<1.5) threadGap(r); else{ weave=0; tStreak=0; }
     }
   }
@@ -5847,14 +5819,14 @@ function frame(){
   camYaw+=(yaw*.7-camYaw)*(1-Math.exp(-5*dt));
   const V=VIEWS2[view], c=Math.cos(camYaw), s=Math.sin(camYaw);
   { const zp=-V.p[0]*s+V.p[2]*c, zt=-V.t[0]*s+V.t[2]*c;          // camera follows the road surface up and down hills
-    const jh=isJet()?JET_H:0;   // follow the jet up to its hover height
+    const jh=CS.sel==='jet'?JET_H:0;   // follow the jet up to its hover height
     const tl=view==='chase'?(CAM_TALL[CS.sel]||0):0;   // trucks / SUVs sit taller, so the chase camera rides higher (and a touch further back) to see over the bed and tailgate
     _cp.set(px+V.p[0]*c+(V.p[2]-tl*.55)*s,V.p[1]+jh+yAt(zp)+tl,zp-tl*.55*c);
     _cl.set(px+V.t[0]*c+V.t[2]*s,V.t[1]+jh+yAt(zt)+tl*.3,zt); }
   const k=firstCam?1:1-Math.exp(-9*dt); firstCam=false;
   if(state==='exit') cineCam(); else{ camera.position.lerp(_cp,k); _lk.lerp(_cl,k); }
   if(TC.on||titleOn){ try{ tcFrame(rdt); }catch(e){ console.error('[title cinematic]',e); TC.on=false; } }
-  if(paintView){ if(SR.on) showroomCam(dt); else{ pvA+=dt*.3; { const jh=isJet()?JET_H:0; camera.position.set(px+Math.sin(pvA)*6.4,1.4+jh+.25*Math.sin(pvA*.7),Math.cos(pvA)*6.4); _lk.set(px,.55+jh,0); } } }   // garage/paint orbit (SR.on = the title-screen Showroom has its own free camera)
+  if(paintView){ if(SR.on) showroomCam(dt); else{ pvA+=dt*.3; { const jh=CS.sel==='jet'?JET_H:0; camera.position.set(px+Math.sin(pvA)*6.4,1.4+jh+.25*Math.sin(pvA*.7),Math.cos(pvA)*6.4); _lk.set(px,.55+jh,0); } } }   // garage/paint orbit (SR.on = the title-screen Showroom has its own free camera)
   if(CIN.on) cinCam(); else if(camera.up.y<.9999) camera.up.set(0,1,0);
   if(shake>0){ camera.position.x+=(Math.random()-.5)*shake*.4; camera.position.y+=(Math.random()-.5)*shake*.3; }
   camera.lookAt(_lk);
@@ -6012,7 +5984,7 @@ function tcWant(){
 }
 function tcMenuPaused(){ return paintView||shopOpen||bmOpen||loadoutOpen||SR.on||tcBlocked(); }
 
-function tcCars(){ const ids=CARS.filter(c=>CS.owned.includes(c.id)&&c.id!=='jet'&&c.id!=='tjet'&&c.id!=='beta'&&(!LAZY[c.id]||LAZY[c.id].st>=2||c.id===TC.saved.sel)).map(c=>c.id); return ids.length?ids:[TC.saved.sel]; }
+function tcCars(){ const ids=CARS.filter(c=>CS.owned.includes(c.id)&&c.id!=='jet'&&c.id!=='beta'&&(!LAZY[c.id]||LAZY[c.id].st>=2||c.id===TC.saved.sel)).map(c=>c.id); return ids.length?ids:[TC.saved.sel]; }
 function tcStart(){
   TC.saved={sel:CS.sel,tod:window.__todLock,night:window.__nightLock,rain:window.__rainLock,bi:adminBiomeOverride,atd:adminTrafficDisabled,vis:trafficCars.map(t=>t.g.visible),speed:speed};
   TC.on=true; TC.i=-1; TC.t=0; TC.ph=0; TC.queue=[]; TC.carI=-1; TC.hero=true;
@@ -6050,7 +6022,7 @@ function tcFrame(dt){
   if(f!==TC.fadeV){ TC.fadeV=f; $('tcFade').style.opacity=f; }
   if(TC.t>=TC.dur) tcNext();
   const u=Math.min(1,TC.t/TC.dur), e=u*u*(3-2*u)*.6+u*.4;   // ease, mostly smooth
-  const jh=isJet()?JET_H:0;
+  const jh=CS.sel==='jet'?JET_H:0;
   camera.position.set(px+sh.a[0]+(sh.b[0]-sh.a[0])*e, sh.a[1]+(sh.b[1]-sh.a[1])*e+jh, sh.a[2]+(sh.b[2]-sh.a[2])*e);
   _lk.set(px+sh.la[0]+(sh.lb[0]-sh.la[0])*e, sh.la[1]+(sh.lb[1]-sh.la[1])*e+jh, sh.la[2]+(sh.lb[2]-sh.la[2])*e);
   TC.fovNow=sh.f[0]+(sh.f[1]-sh.f[0])*e;
