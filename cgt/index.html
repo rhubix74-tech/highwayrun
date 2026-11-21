@@ -5917,10 +5917,14 @@ const TC_BLOCK=['chMenu','garage','shop','bm','loadout','mpm','mpRes','showroom'
 let _tcBlk=null;
 function tcBlocked(){ if(!_tcBlk) _tcBlk=TC_BLOCK.map(id=>document.getElementById(id)).filter(Boolean); for(let i=0;i<_tcBlk.length;i++) if(_tcBlk[i].classList.contains('show')) return true; return false; }
 function tcWant(){
-  if(!titleOn||state!=='menu'||SET.classicTitle||paintView||shopOpen||bmOpen||loadoutOpen||SR.on) return false;
+  // Keep the title cinematic alive while menu overlays are open. Menu overlays pause
+  // the shot progression, but do not tear down / restore the world scene.
+  if(!titleOn||state!=='menu'||SET.classicTitle) return false;
   const ov=document.getElementById('assetLoad'); if(ov&&ov.style.display!=='none') return false;   // wait for the "Preparing your drive" screen to be dismissed
-  return !tcBlocked();
+  return true;
 }
+function tcMenuPaused(){ return paintView||shopOpen||bmOpen||loadoutOpen||SR.on||tcBlocked(); }
+
 function tcCars(){ const ids=CARS.filter(c=>CS.owned.includes(c.id)&&c.id!=='jet'&&c.id!=='beta'&&(!LAZY[c.id]||LAZY[c.id].st>=2||c.id===TC.saved.sel)).map(c=>c.id); return ids.length?ids:[TC.saved.sel]; }
 function tcStart(){
   TC.saved={sel:CS.sel,tod:window.__todLock,night:window.__nightLock,rain:window.__rainLock,bi:adminBiomeOverride,atd:adminTrafficDisabled,vis:trafficCars.map(t=>t.g.visible),speed:speed};
@@ -5950,6 +5954,9 @@ function tcFrame(dt){
   const want=tcWant();
   if(want&&!TC.on){ tcStart(); } else if(!want&&TC.on){ tcStop(); }
   if(!TC.on) return;
+  // Freeze the current title shot behind menu overlays; resume from the same
+  // frame when the overlay closes instead of rebuilding the cinematic scene.
+  if(tcMenuPaused()) return;
   const sh=TC.shot; TC.t+=dt;
   // fade: black at the cut, open again just after (the new biome / car need a moment to appear)
   const f=TC.t<.9?1-Math.min(1,Math.max(0,(TC.t-.35)/.5)):(TC.t>TC.dur-.55?Math.min(1,(TC.t-(TC.dur-.55))/.5):0);
@@ -5961,8 +5968,7 @@ function tcFrame(dt){
   _lk.set(px+sh.la[0]+(sh.lb[0]-sh.la[0])*e, sh.la[1]+(sh.lb[1]-sh.la[1])*e+jh, sh.la[2]+(sh.lb[2]-sh.la[2])*e);
   TC.fovNow=sh.f[0]+(sh.f[1]-sh.f[0])*e;
 }
-// opening a menu that needs the real scene (or starting a run) must see the player's own car / weather first
-['tStart','tChal','tShop','tGarage','tShow','tMp'].forEach(id=>{ const b=document.getElementById(id); if(b) b.addEventListener('click',()=>{ if(TC.on) tcStop(); },true); });
+// Menus keep the cinematic scene underneath; only starting a run tears it down.
 const _rsrTC=requestStartRun; requestStartRun=function(){ if(TC.on) tcStop(); return _rsrTC.apply(this,arguments); };
 
 const _sg=setGfxUI; setGfxUI=function(on){ _sg(on); if(on){ renderSet(); $('rstBox').hidden=true; $('rstIn').value=''; $('rstGo').disabled=true; } };
