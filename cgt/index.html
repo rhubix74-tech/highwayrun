@@ -3811,7 +3811,9 @@ CHALLENGES_B.forEach(c=>{ c.list='B'; c.pen=[0,5,8,10,15,20][c.tier]; });
 const CHALLENGES_C=[
  {id:'C1',tier:3,name:'Storm Chaser',car:'xkr',   song:null,time:120,exitMi:12,g:{race:true},race:{k:'plane',mi:7,hard:true}},
  {id:'C2',tier:3,name:'Train in Vain',car:'fulvia',song:null,time:120,exitMi:12,dens:1,g:{race:true},race:{k:'train',mi:7,hard:true}},
- {id:'C3',tier:4,name:'37 Versus 037',car:'l037',song:null,time:120,exitMi:12,g:{race:true},race:{k:'balloon',mi:7,hard:true,n:37}}
+ {id:'C3',tier:4,name:'37 Versus 037',car:'l037',song:null,time:120,exitMi:12,g:{race:true},race:{k:'balloon',mi:7,hard:true,n:37}},
+ {id:'C4',tier:4,name:'Il Tricolore Aereo',car:'f360',song:null,time:120,exitMi:12,g:{race:true},race:{k:'frecce',mi:7,hard:true}},
+ {id:'C5',tier:3,name:'North By Northwest',car:'raptor',song:null,time:120,exitMi:12,g:{race:true},race:{k:'duster',mi:7,hard:true}}
 ];
 CHALLENGES_C.forEach(c=>{ c.list='C'; c.pen=10; });
 
@@ -3835,7 +3837,7 @@ function chGoal(d){ const g=Object.assign({},d.g); if(g.top){ const simulated=si
 function chText(d){
   const g=chGoal(d), p=[], ex=g.exit;
   if(g.race&&d.race.k==='balloon') return 'Overtake all '+d.race.n+' balloons before any of them reaches the finish, over '+d.race.mi+' miles · spread-out fleet · smarter balloons that run when you close in · the clock holds during the race · each crash −'+d.pen+' s';
-  if(g.race) return 'Beat the '+(d.race.k==='plane'?'cargo plane':'freight train')+' to the finish over '+d.race.mi+' miles · tougher AI · the clock holds during the race · each crash −'+d.pen+' s';
+  if(g.race) return 'Beat the '+RK[d.race.k].n.toLowerCase()+' to the finish over '+d.race.mi+' miles · tougher AI · the clock holds during the race · each crash −'+d.pen+' s';
   if(ex){ const em=d.exitMi||(d.car==='zonda'?5:10); let t='Take the exit '+em+' mi ahead';
     if(ex.frac) t+=' with '+Math.round(ex.frac*100)+'% of your time left'; if(ex.min) t+=' with '+ex.min+' s left'; if(ex.gain) t+=' with more time than you started with'; p.push(t); }
   if(g.speed) p.push('Reach '+g.speed+' mph'+(g.top?' ('+Math.round(g.top*100)+'% of its real top speed)':''));
@@ -3925,7 +3927,7 @@ function chHudUpdate(){
   if(g.clock){ goals.push('Clock up to '+g.clock+' s'); progress.push('Clock '+Math.ceil(timeLeft)+' / '+g.clock+' s'); }
   if(g.noBrake) goals.push('No braking');
   if(g.race&&CH.def.race.k==='balloon'){ const rc=CH.def.race, ev=EV.cur&&EV.cur.k==='balloon'?EV.cur:null; goals.push('Overtake all '+rc.n+' balloons over '+rc.mi+' miles'); progress.push(ev?ev.passed+' / '+ev.n+' overtaken':'Race starts in a few seconds'); }
-  else if(g.race){ const rc=CH.def.race, ev=EV.cur&&EV.cur.hard?EV.cur:null; goals.push('Beat the '+(rc.k==='plane'?'cargo plane':'freight train')+' over '+rc.mi+' miles'); progress.push(ev?(ev.Q>runDist-ev.P0?'Behind by '+Math.round(ev.Q-(runDist-ev.P0))+' m':'Ahead by '+Math.round((runDist-ev.P0)-ev.Q)+' m'):'Race starts in a few seconds'); }
+  else if(g.race){ const rc=CH.def.race, ev=EV.cur&&EV.cur.hard?EV.cur:null; goals.push('Beat the '+RK[rc.k].n.toLowerCase()+' over '+rc.mi+' miles'); progress.push(ev?(ev.Q>runDist-ev.P0?'Behind by '+Math.round(ev.Q-(runDist-ev.P0))+' m':'Ahead by '+Math.round((runDist-ev.P0)-ev.Q)+' m'):'Race starts in a few seconds'); }
   if(g.noCrash){ goals.push('No crashes'); progress.push(st.cr?'CRASHED':'No crashes'); } else progress.push('Crash penalty −'+CH.def.pen+' s');
   const h='<b>#'+CH.def.id+' · '+CH.def.name+'</b><div class="chHudGoal"><strong>GOAL</strong> '+goals.join(' · ')+'</div><div class="chHudProgress"><strong>PROGRESS</strong> '+progress.join(' · ')+'</div>';
   const el=$('chHud'); if(el._h!==h){ el.innerHTML=h; el._h=h; }
@@ -4885,7 +4887,7 @@ function evMakeDuster(){
   g.scale.setScalar(1.15); g.traverse(o=>{ o.frustumCulled=false; if(o.material) o.material.side=THREE.DoubleSide; }); g.visible=false; scene.add(g); return g;
 }
 function evMakeFrecce(){
-  const g=new THREE.Group(), blue=evMat(0x1c4fa8,.45,.15), wht=evMat(0xf0f2f5,.5,.1), dk=evMat(0x1b1e22,.6,.4), gl=evMat(0x0f1c2a,.15,.7), grn=evMat(0x009246,.6,0), red=evMat(0xce2b37,.6,0), hot=new THREE.MeshBasicMaterial({color:0xff9a3a});
+  const g=new THREE.Group(), blue=evMat(0x8a9099,.45,.3), wht=evMat(0xf0f2f5,.5,.1), dk=evMat(0x1b1e22,.6,.4), gl=evMat(0x0f1c2a,.15,.7), grn=evMat(0x009246,.6,0), red=evMat(0xce2b37,.6,0), hot=new THREE.MeshBasicMaterial({color:0xff9a3a});
   const sh=new THREE.Shape(); sh.moveTo(0,1.9); sh.lineTo(5.2,-.9); sh.lineTo(5.2,-1.9); sh.lineTo(0,-1.5); sh.closePath();
   const wg=new THREE.ExtrudeGeometry(sh,{depth:.16,bevelEnabled:false}).rotateX(Math.PI/2), fg=new THREE.CylinderGeometry(.85,.65,8,12).rotateX(Math.PI/2), ng=new THREE.ConeGeometry(.85,3.2,12).rotateX(Math.PI/2),
     tg=new THREE.CylinderGeometry(.5,.42,1,10).rotateX(Math.PI/2), cg=new THREE.SphereGeometry(.7,10,8), tk=new THREE.CylinderGeometry(.28,.28,3,8).rotateX(Math.PI/2), fin=new THREE.BoxGeometry(.14,2.3,1.9), st=new THREE.BoxGeometry(.16,.5,1.4), ig=new THREE.BoxGeometry(.4,.55,1.7), dg=new THREE.CircleGeometry(.4,10).rotateY(Math.PI);
@@ -5050,7 +5052,7 @@ function evStart(kind){
     // Per-opponent tuning (table RK): the plane holds a little more pace than the train; the crop duster is the gentle one, the Frecce Tricolori the hard one (never above 88% of the car's top speed; simulated: every car wins by holding about 88% of its top speed or more, the crop duster needs only ~80%)
     const rc=(CH.active&&CH.def&&CH.def.race)||null, hard=!!(rc&&rc.hard), rmi=rc?rc.mi:EVC.raceMi;
     const vMin=top*K.vmin, vTarget=Math.max(vMin,reach*K.vf)*(hard?1.03:1);   // balance: opponents were too slow, so the player won too often
-    EV.cur={k:kind,t:0,wx:K.wx,P0:runDist,Q:0,v0:speed,vt:vTarget,vMin,aiV:speed,o,R:rmi*1609.34,mi:rmi,hard,topMs:top,cap:K.cap}; o.visible=true; if(kind==='train') o.userData.track.visible=true;
+    EV.cur={k:kind,t:0,wx:K.wx,P0:runDist,Q:0,v0:speed,vt:vTarget,vMin,aiV:speed,o,R:rmi*1609.34,mi:rmi,hard,topMs:top,cap:K.cap?Math.min(.965,K.cap+(hard?.08:0)):0}; o.visible=true; if(kind==='train') o.userData.track.visible=true;
     popup((hard?'CHALLENGE RACE · ':'SHOWCASE RACE · ')+K.n+' · '+rmi+' MILES','good'); cinBegin(kind);
     { const sg=RADIO.find(t=>t.t===K.song); evPlayTheme(sg); }   // temporary showcase theme; restore the previous radio state at event end
     return true; }
