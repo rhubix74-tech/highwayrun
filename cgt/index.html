@@ -5111,14 +5111,14 @@ function smokeClear(){ if(!SMK.pts) return; SMK.age.fill(99); SMK.sz.fill(0); SM
 const _sv=new THREE.Vector3(), SM_BROWN=[[.48,.33,.2],[.56,.4,.25],[.42,.29,.18]], SM_TRI=[[0,.57,.28],[0,.57,.28],[1,1,1],[1,1,1],[.81,.17,.22],[.81,.17,.22]];   // Italian flag: green, white, red
 function airTick(rdt,dt){
   const d=EV.duster&&EV.duster.visible?EV.duster:null, f=!d&&EV.frecce&&EV.frecce.visible?EV.frecce:null;
-  if(d){ if(d.userData.prop) d.userData.prop.rotation.z+=rdt*70;
+  if(d){ if(d.userData.prop) d.userData.prop.rotation[d.userData.propAx||'z']+=rdt*55;
     smokeInit(); d.updateMatrixWorld(true); const E=d.userData.em;
     for(let k=0;k<E.length;k++){ SMK.acc[k]+=rdt; let guard=0; while(SMK.acc[k]>=.04&&guard++<3){ SMK.acc[k]-=.04;
       _sv.set(E[k][0],E[k][1],E[k][2]).applyMatrix4(d.matrixWorld); const c=SM_BROWN[(Math.random()*3)|0], big=k<2;
       smokeEmit(_sv.x+(Math.random()-.5)*.5,_sv.y+(Math.random()-.5)*.4,_sv.z,c[0],c[1],c[2],big?3.4:2.0,big?3.6:2.4,big?.62:.4,(Math.random()-.5)*1.6,.5+Math.random()*.8); } }
   } else if(f){ smokeInit(); f.updateMatrixWorld(true); const J=f.userData.jets;
     for(let k=0;k<J.length;k++){ SMK.acc[k]+=rdt; let guard=0; while(SMK.acc[k]>=.035&&guard++<3){ SMK.acc[k]-=.035;
-      _sv.set(0,0,-5.2).applyMatrix4(J[k].matrixWorld); const c=SM_TRI[k];
+      _sv.set(0,0,-5.6).applyMatrix4(J[k].matrixWorld); const c=SM_TRI[k];
       smokeEmit(_sv.x,_sv.y,_sv.z,c[0],c[1],c[2],2.6,3.4,.8,(Math.random()-.5)*.5,.25+Math.random()*.3); } }
   }
   if(SMK.live) smokeTick(rdt,dt);
@@ -5138,7 +5138,33 @@ function evMakeDuster(){
   box(9.2,.07,.07,dk,0,-.3,-.45);                                               // spray boom
   for(const sx of [-1,1]){ cyl(.36,.36,.26,dk,sx*1.05,-1.0,1.05,0).rotation.z=Math.PI/2; box(.1,1.0,.1,sil,sx*.75,-.5,1.05).rotation.z=sx*.25; }   // fixed gear
   g.userData.em=[[-4.5,-.3,-.9],[4.5,-.3,-.9],[0,.1,-.4]];                      // smoke: two spray-boom ends (thick), a thin exhaust trail
-  g.scale.setScalar(1.15); g.traverse(o=>{ o.frustumCulled=false; if(o.material) o.material.side=THREE.DoubleSide; }); g.visible=false; scene.add(g); return g;
+  g.scale.setScalar(1.15); g.traverse(o=>{ o.frustumCulled=false; if(o.material) o.material.side=THREE.DoubleSide; }); g.visible=false; scene.add(g);
+  /* crop_duster_thing1.glb replaces the built-in shapes when it has loaded (they stay as the fallback); its propeller is spun about the nose axis */
+  dusterModel(proto=>{ body.visible=false; const m=proto.clone(true); m.traverse(o=>{ o.frustumCulled=false; }); g.add(m);
+    g.userData.prop=m.getObjectByName('dProp')||g.userData.prop; g.userData.propAx='x'; g.userData.em=[[-5,-.4,-.5],[5,-.4,-.5],[0,.1,-.5]]; });
+  return g;
+}
+/* crop duster model: nose toward -X, 8 m long, 12.9 m span, wheels on y=0, propeller = node 'prop' (hub at about x=-2, y=1.85). Turned to face +Z, scaled .87 (so with the group's 1.15 it is ~13 m across, as the old shapes were)
+   and centred on the fuselage. Painted crop-duster yellow (DUSTER_PAINT; set it to null to keep the model's own white). */
+const DUSTER_PAINT=0xf4c20d, DM={state:0,cbs:[],proto:null};
+function dusterModel(cb){
+  if(DM.state===2){ cb(DM.proto); return; } DM.cbs.push(cb); if(DM.state===1) return; DM.state=1;
+  new THREE.GLTFLoader().load('crop_duster_thing1.glb',gltf=>{
+    const scn=gltf.scene; scn.updateMatrixWorld(true);
+    const bodyM=DUSTER_PAINT===null?null:new THREE.MeshStandardMaterial({color:DUSTER_PAINT,roughness:.55,metalness:.1,side:THREE.DoubleSide}), legM=new THREE.MeshStandardMaterial({color:0x8d939a,roughness:.5,metalness:.5}), darkM=new THREE.MeshStandardMaterial({color:0x202225,roughness:.6,metalness:.3});
+    if(bodyM) bendMat(bodyM); bendMat(legM); bendMat(darkM);
+    scn.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; const mats=Array.isArray(o.material)?o.material:[o.material], nm=(o.name||'')+'/'+(o.parent&&o.parent.name||'');
+      const f=m=>{ const plain=!m.name||m.name==='Material.007'||/^DefaultMaterial/i.test(m.name);
+        if(plain){ if(/leg/i.test(nm)) return legM; if(/Cylinder/i.test(nm)) return darkM; return bodyM||(()=>{ const c=m.clone(); c.metalness=.1; c.roughness=.6; bendMat(c); return c; })(); }
+        const c=m.clone(); if(c.metalness!==undefined) c.metalness=Math.min(c.metalness,.4); bendMat(c); return c; };
+      o.material=Array.isArray(o.material)?mats.map(f):f(mats[0]); });
+    scn.traverse(o=>{ if(/^(wheel|leg)/i.test(o.name||'')) o.visible=false; });   // gear up: main wheels, tail wheel and the three legs
+    const prop=scn.getObjectByName('prop');   // spin pivot on the hub, axis = nose axis (x)
+    if(prop){ const bx=new THREE.Box3().setFromObject(prop), c=bx.getCenter(new THREE.Vector3()), pv=new THREE.Group(); pv.name='dProp'; pv.position.copy(c); scn.add(pv); pv.updateMatrixWorld(true); pv.attach(prop); }
+    const inner=new THREE.Group(); inner.add(scn); inner.rotation.y=Math.PI/2; inner.scale.setScalar(.87); inner.position.set(0,-1.22,1.44);   // nose -X -> +Z; fuselage centre (x 1.65, y 1.4) onto the origin
+    const proto=new THREE.Group(); proto.add(inner); DM.proto=proto; DM.state=2;
+    for(const f of DM.cbs.splice(0)) try{ f(proto); }catch(e){ console.warn(e); }
+  },undefined,e=>{ DM.state=0; DM.cbs.length=0; console.warn('[crop duster] crop_duster_thing1.glb failed to load - using the built-in shapes',e); });
 }
 const FRECCE={url:'freece_tricolor_plane_simplified.glb',tpl:null,loading:false,error:null};
 FRECCE.loading=true;
@@ -5154,7 +5180,57 @@ function evMakeFrecce(){
   /* Six model-based jets only. No procedural aircraft fallback is used. */
   const slots=[[-11.2,0,-9],[-5.6,0,-4.5],[0,0,0],[0,0,-9],[5.6,0,-4.5],[11.2,0,-9]], jets=[];
   slots.forEach(sl=>{ const j=cloneJet(); j.position.set(sl[0],sl[1],sl[2]); g.add(j); jets.push(j); });
-  g.userData.jets=jets; g.traverse(o=>{ o.frustumCulled=false; if(o.material&&o.material.isMeshStandardMaterial) o.material.side=THREE.DoubleSide; }); g.visible=false; scene.add(g); return g;
+  g.userData.jets=jets; g.traverse(o=>{ o.frustumCulled=false; if(o.material&&o.material.isMeshStandardMaterial) o.material.side=THREE.DoubleSide; }); g.visible=false; scene.add(g);
+  /* the real model (freece_tricolor_plane_simplified.glb, an MB-339) replaces the built-in shapes on every jet as soon as it has loaded; the shapes stay as a fallback */
+  frecceModel(proto=>{ for(const j of jets){ for(const c of j.children) c.visible=false; const m=proto.clone(true); m.traverse(o=>{ o.frustumCulled=false; }); j.add(m); } });
+  return g;
+}
+/* MB-339 model: nose toward -X, 10.9 m long, 10.1 m span, ground at y=-1.8. Only the outer skin (livery texture) and the canopy glass are kept - the other 50+ meshes are the cockpit gauges (a draw call each, x6 jets).
+   Turned so the nose points +Z and re-centred on the fuselage axis. The livery's blue is repainted grey (as asked); the green / white / red markings are untouched. */
+const FM={state:0,cbs:[],proto:null};
+function frecceGrey(tex){
+  try{ const im=tex.image, w=im.width, h=im.height, cv=document.createElement('canvas'); cv.width=w; cv.height=h; const cx=cv.getContext('2d'); cx.drawImage(im,0,0);
+    const id=cx.getImageData(0,0,w,h), d=id.data;
+    for(let i=0;i<d.length;i+=4){ const r=d[i], g=d[i+1], b=d[i+2], bl=b-Math.max(r,g);
+      if(bl>10){ const t=Math.min(1,(bl-10)/35), l=.3*r+.59*g+.11*b, gr=Math.min(255,l*1.55+48); d[i]+=(gr-r)*t; d[i+1]+=(gr*1.02-g)*t; d[i+2]+=(gr*1.05-b)*t; } }
+    cx.putImageData(id,0,0); const t2=new THREE.CanvasTexture(cv); t2.flipY=tex.flipY; t2.encoding=tex.encoding; t2.wrapS=tex.wrapS; t2.wrapT=tex.wrapT; t2.anisotropy=tex.anisotropy; return t2;
+  }catch(e){ return tex; }
+}
+/* landing gear up (like the cargo plane): the MB-339's wheels and struts are not separate meshes, they are loose pieces inside the two skin meshes. The pieces are found as connected triangle groups
+   (welded vertices) and removed when their bounding box matches one of the known gear parts below (scene-space [minX,minY,minZ,maxX,maxY,maxZ]; the underwing tanks, pylons and gear doors stay). */
+const FRECCE_GEAR=[[-4.51,-1.8,-.07,-4.12,-1.12,.07],[-.23,-1.66,1.12,.38,-1.03,1.34],[-.23,-1.66,-1.35,.38,-1.03,-1.12],[-4.5,-1.43,-.02,-4.5,-1.4,.01],[-3.19,-1.35,0,-3.01,-1.18,.01],
+  [-.22,-1.09,1.19,-.08,-.8,1.28],[-.22,-1.09,-1.28,-.08,-.8,-1.19],[-4.42,-1.42,-.01,-4.39,-1.24,.01],[-.17,-1.2,-1.26,-.08,-.95,-1.21],[-.17,-1.2,1.21,-.08,-.95,1.26]];
+function frecceGearUp(scn){
+  scn.updateMatrixWorld(true); const v=new THREE.Vector3();
+  scn.traverse(o=>{ if(!o.isMesh||!o.geometry||!o.geometry.index) return;
+    const g=o.geometry, pos=g.attributes.position, idx=g.index.array, nt=idx.length/3, key=new Map(), wid=new Int32Array(pos.count), w=new Float32Array(pos.count*3);
+    for(let i=0;i<pos.count;i++){ v.fromBufferAttribute(pos,i).applyMatrix4(o.matrixWorld); w[i*3]=v.x; w[i*3+1]=v.y; w[i*3+2]=v.z;
+      const k=Math.round(v.x*1000)+','+Math.round(v.y*1000)+','+Math.round(v.z*1000); let id=key.get(k); if(id===undefined){ id=key.size; key.set(k,id); } wid[i]=id; }
+    const par=new Int32Array(key.size); for(let i=0;i<par.length;i++) par[i]=i;
+    const find=x=>{ while(par[x]!==x){ par[x]=par[par[x]]; x=par[x]; } return x; };
+    for(let t=0;t<nt;t++){ const a=find(wid[idx[t*3]]), b=find(wid[idx[t*3+1]]), c=find(wid[idx[t*3+2]]); par[a]=b; par[find(b)]=find(c); }
+    const bb=new Map();
+    for(let t=0;t<nt;t++){ const r=find(wid[idx[t*3]]); let B=bb.get(r); if(!B){ B=[1e9,1e9,1e9,-1e9,-1e9,-1e9]; bb.set(r,B); }
+      for(let k=0;k<3;k++){ const vi=idx[t*3+k]; for(let a=0;a<3;a++){ const x=w[vi*3+a]; if(x<B[a]) B[a]=x; if(x>B[a+3]) B[a+3]=x; } } }
+    const drop=new Set(); for(const [r,B] of bb) for(const T of FRECCE_GEAR){ let ok=true; for(let a=0;a<6;a++) if(Math.abs(B[a]-T[a])>.04){ ok=false; break; } if(ok){ drop.add(r); break; } }
+    if(!drop.size) return;
+    const keep=[]; for(let t=0;t<nt;t++) if(!drop.has(find(wid[idx[t*3]]))) keep.push(idx[t*3],idx[t*3+1],idx[t*3+2]);
+    g.setIndex(new THREE.BufferAttribute(pos.count>65535?new Uint32Array(keep):new Uint16Array(keep),1)); });
+}
+function frecceModel(cb){
+  if(FM.state===2){ cb(FM.proto); return; } FM.cbs.push(cb); if(FM.state===1) return; FM.state=1;
+  new THREE.GLTFLoader().load('freece_tricolor_plane_simplified.glb',gltf=>{
+    const scn=gltf.scene, drop=[]; scn.traverse(o=>{ if(!o.isMesh) return; const n=o.material&&o.material.name; if(n!=='DefaultWhite'&&n!=='transparent'&&n!=='transparentExt') drop.push(o); });
+    for(const o of drop) if(o.parent) o.parent.remove(o);
+    try{ frecceGearUp(scn); }catch(e){ console.warn('[frecce] gear removal skipped',e); }
+    scn.traverse(o=>{ if(!o.isMesh) return; const n=o.material.name; let m;
+      if(n==='DefaultWhite'){ m=o.material.clone(); if(m.map) m.map=frecceGrey(m.map); m.metalness=.15; m.roughness=.55; m.side=THREE.DoubleSide; }
+      else { m=new THREE.MeshStandardMaterial({color:0x14202b,roughness:.15,metalness:.6,transparent:true,opacity:.6,side:THREE.DoubleSide}); }
+      bendMat(m); o.material=m; o.frustumCulled=false; });
+    const inner=new THREE.Group(); inner.add(scn); inner.rotation.y=Math.PI/2; inner.position.y=.5;   // nose -X -> +Z, fuselage axis onto y=0
+    const proto=new THREE.Group(); proto.add(inner); FM.proto=proto; FM.state=2;
+    for(const f of FM.cbs.splice(0)) try{ f(proto); }catch(e){ console.warn(e); }
+  },undefined,e=>{ FM.state=0; FM.cbs.length=0; console.warn('[frecce] freece_tricolor_plane_simplified.glb failed to load - using the built-in jet shapes',e); });
 }
 function evMakeTrain(){
   const g=new THREE.Group(), loco=new THREE.Mesh(new THREE.BoxGeometry(3.4,3.8,20,1,1,6),evMat(0xc2371b,.5,.3)), cab=new THREE.Mesh(new THREE.BoxGeometry(3.4,1.2,6,1,1,2),evMat(0x1a1c20)); loco.position.set(0,2.6,0); cab.position.set(0,4.9,-6); g.add(loco,cab);
