@@ -133,6 +133,7 @@
   #shop .card{max-width:480px;position:relative}
   #smile{position:absolute;top:8px;right:10px;width:14px;height:14px;padding:0;border:0;background:none;cursor:pointer;opacity:.5}
   #smile:hover{opacity:1}
+  #c5trk{margin:10px 4px 0;text-align:left;font-size:13px}#c5trk select{max-width:100%;margin-left:6px;padding:4px 6px;border-radius:6px;font:inherit;background:#e8edf7;color:#0b0f16;border:0}
   #smile2{position:absolute;top:8px;right:10px;width:14px;height:14px;padding:0;border:0;background:none;cursor:pointer;opacity:.35}#smile2:hover{opacity:.9}#smile2 svg{display:block;width:100%;height:100%;shape-rendering:crispEdges}
   #smile svg{display:block;width:100%;height:100%;shape-rendering:crispEdges}
   #bm{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(6,9,15,.78);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);z-index:9}
@@ -1847,6 +1848,7 @@ const priusRoot=new THREE.Group(); car.add(priusRoot); const priusWheels=[];
 const dawnRoot=new THREE.Group(); car.add(dawnRoot); const dawnWheels=[];
 const fulviaRoot=new THREE.Group(); car.add(fulviaRoot); const fulviaWheels=[];
 const l037Root=new THREE.Group(); car.add(l037Root); const l037Wheels=[];
+const c5Root=new THREE.Group(); car.add(c5Root); const c5Wheels=[]; var c5Pod={t:0,v:0,pods:[],lens:[]};   /* pop-up headlight state: t = target (0 closed, 1 open), v = animated value */
 /* BETA CAR: playable version of the old boxy traffic car (same body/cab/under/tail boxes as makeTraffic, 1.85 x ~1.9 x 4.5 m, +Z front),
    now with wheels, head/brake lights and the shared paint material, so the paint shop works on it. */
 (function buildBeta(){
@@ -1871,10 +1873,10 @@ const l037Root=new THREE.Group(); car.add(l037Root); const l037Wheels=[];
   betaRoot.traverse(m=>{ m.castShadow=castsShadow(m); });
 })();
 const fiestaRoot=new THREE.Group(), accordRoot=new THREE.Group(), ramRoot=new THREE.Group(); [fiestaRoot,accordRoot,ramRoot].forEach(r=>car.add(r));   // unlockable traffic cars, built from the traffic GLBs
-const CARS=[{id:'raptor',name:'2013 Ford F-150 SVT Raptor R',desc:'The off-road truck. Dirt trails are home turf.',root:raptorRoot},{id:'ccx',name:'2006 Koenigsegg CCX',desc:'806 hp Swedish hypercar. Your score is in the hands of fate.',root:ccxRoot},{id:'r34',name:'1999 Nissan Skyline GT-R (R34)',desc:'Godzilla. A crash costs a lot of clock, but never any points.',root:r34Root},{id:'f360',name:'1999 Ferrari 360 Modena',desc:'Mid-engine V8 berlinetta. Deal yourself the next event.',root:f360Root},{id:'xkr',name:'2009 Jaguar XKR',desc:'Supercharged British grand tourer. Things happen around it.',root:xkrRoot},{id:'m3',name:'1988 BMW M3 Evolution II',desc:'DTM homologation special. Keeps traffic honest.',root:m3Root},{id:'chiron',name:'Bugatti Chiron',desc:'1,479 hp. Keep it above 250.',root:chironRoot},{id:'aero',name:'SSC Ultimate Aero',desc:'Once the fastest production car on Earth.',root:aeroRoot},{id:'daytona',name:'Shelby Cobra Daytona',desc:'Le Mans-winning 1965 coupe in racing blue.',root:daytonaRoot},{id:'zonda',name:'Pagani Zonda R',desc:'Track-only V12 in bare carbon fibre.',root:zondaRoot},{id:'gt',name:'Porsche Carrera GT',desc:'The Star of this show.',root:gtRoot},{id:'beta',name:'Beta Car',desc:'Old traffic cars from testing builds!',root:betaRoot},{id:'enzo',name:'Ferrari Enzo',desc:'The V12 Red Baron!',root:enzoRoot},{id:'viper',name:'2013 SRT Viper GTS',desc:'American V10 muscle, venom included.',root:viperRoot},{id:'nsx',name:'2017 Acura NSX',desc:'Hybrid supercar. Pays you in gold.',root:nsxRoot},{id:'charger',name:'2013 Dodge Charger SRT8',desc:'Four doors. Zero apologies.',root:chargerRoot},{id:'fiesta',name:'Ford Fiesta Mk1',desc:'The 1976 supermini from the road, now behind the wheel.',root:fiestaRoot},{id:'accord',name:'Honda Accord',desc:'1996 family sedan. Dependable, and never a crash with its own.',root:accordRoot},{id:'jet',name:"Scout's Ship",desc:'Why is this even flying so low? Originally from roblox game Star Blox',root:jetRoot},{id:'tjet',name:"Toucs' Ship",desc:'A larger, bluer, much faster version of Scout\'s ship.',root:tjetRoot},{id:'ram',name:'Dodge Ram Rumble Bee',desc:'First-gen Ram with a Viper V10 shoved under the hood.',root:ramRoot},{id:'prius',name:'2012 Toyota Prius',desc:'Hypermiling hero. Cheap, calm and always prepared.',root:priusRoot},{id:'dawn',name:'2016 Rolls-Royce Dawn',desc:'Whispers past traffic. Pays double. Makes it rain.',root:dawnRoot},{id:'fulvia',name:'1971 Lancia Fulvia Rallye',desc:'Racing-red rally legend. Never loses grip in the rain.',root:fulviaRoot},{id:'l037',name:'1982 Lancia 037 Stradale',desc:'Mid-engined Group B homologation special. Sometimes the clock forgives a crash.',root:l037Root}];
+const CARS=[{id:'raptor',name:'2013 Ford F-150 SVT Raptor R',desc:'The off-road truck. Dirt trails are home turf.',root:raptorRoot},{id:'ccx',name:'2006 Koenigsegg CCX',desc:'806 hp Swedish hypercar. Your score is in the hands of fate.',root:ccxRoot},{id:'r34',name:'1999 Nissan Skyline GT-R (R34)',desc:'Godzilla. A crash costs a lot of clock, but never any points.',root:r34Root},{id:'f360',name:'1999 Ferrari 360 Modena',desc:'Mid-engine V8 berlinetta. Deal yourself the next event.',root:f360Root},{id:'xkr',name:'2009 Jaguar XKR',desc:'Supercharged British grand tourer. Things happen around it.',root:xkrRoot},{id:'m3',name:'1988 BMW M3 Evolution II',desc:'DTM homologation special. Keeps traffic honest.',root:m3Root},{id:'chiron',name:'Bugatti Chiron',desc:'1,479 hp. Keep it above 250.',root:chironRoot},{id:'aero',name:'SSC Ultimate Aero',desc:'Once the fastest production car on Earth.',root:aeroRoot},{id:'daytona',name:'Shelby Cobra Daytona',desc:'Le Mans-winning 1965 coupe in racing blue.',root:daytonaRoot},{id:'zonda',name:'Pagani Zonda R',desc:'Track-only V12 in bare carbon fibre.',root:zondaRoot},{id:'gt',name:'Porsche Carrera GT',desc:'The Star of this show.',root:gtRoot},{id:'beta',name:'Beta Car',desc:'Old traffic cars from testing builds!',root:betaRoot},{id:'enzo',name:'Ferrari Enzo',desc:'The V12 Red Baron!',root:enzoRoot},{id:'viper',name:'2013 SRT Viper GTS',desc:'American V10 muscle, venom included.',root:viperRoot},{id:'nsx',name:'2017 Acura NSX',desc:'Hybrid supercar. Pays you in gold.',root:nsxRoot},{id:'charger',name:'2013 Dodge Charger SRT8',desc:'Four doors. Zero apologies.',root:chargerRoot},{id:'fiesta',name:'Ford Fiesta Mk1',desc:'The 1976 supermini from the road, now behind the wheel.',root:fiestaRoot},{id:'accord',name:'Honda Accord',desc:'1996 family sedan. Dependable, and never a crash with its own.',root:accordRoot},{id:'jet',name:"Scout's Ship",desc:'Why is this even flying so low? Originally from roblox game Star Blox',root:jetRoot},{id:'tjet',name:"Toucs' Ship",desc:'A larger, bluer, much faster version of Scout\'s ship.',root:tjetRoot},{id:'c5',name:'2001 Chevrolet Corvette C5',desc:'America\'s sports car, with pop-up headlights. Pick your own soundtrack.',root:c5Root},{id:'ram',name:'Dodge Ram Rumble Bee',desc:'First-gen Ram with a Viper V10 shoved under the hood.',root:ramRoot},{id:'prius',name:'2012 Toyota Prius',desc:'Hypermiling hero. Cheap, calm and always prepared.',root:priusRoot},{id:'dawn',name:'2016 Rolls-Royce Dawn',desc:'Whispers past traffic. Pays double. Makes it rain.',root:dawnRoot},{id:'fulvia',name:'1971 Lancia Fulvia Rallye',desc:'Racing-red rally legend. Never loses grip in the rain.',root:fulviaRoot},{id:'l037',name:'1982 Lancia 037 Stradale',desc:'Mid-engined Group B homologation special. Sometimes the clock forgives a crash.',root:l037Root}];
 let CS={owned:['gt'],sel:'gt'};      // owned: car ids (the Carrera GT is always owned; the Beta Car is bought on the Black Market)
 try{ const j=JSON.parse(localStorage.getItem('cgt_cars','cgt_ch')||'null');
-  if(j&&Array.isArray(j.owned)){ CS.owned=['gt',...j.owned.filter(x=>x==='beta'||x==='enzo'||x==='viper'||x==='nsx'||x==='charger'||x==='zonda'||x==='daytona'||x==='aero'||x==='chiron'||x==='m3'||x==='xkr'||x==='f360'||x==='ccx'||x==='r34'||x==='raptor'||x==='fiesta'||x==='accord'||x==='ram'||x==='jet'||x==='tjet'||x==='prius'||x==='dawn'||x==='fulvia'||x==='l037')]; if(CS.owned.includes(j.sel)) CS.sel=j.sel; } }catch(e){}
+  if(j&&Array.isArray(j.owned)){ CS.owned=['gt',...j.owned.filter(x=>x==='beta'||x==='enzo'||x==='viper'||x==='nsx'||x==='charger'||x==='zonda'||x==='daytona'||x==='aero'||x==='chiron'||x==='m3'||x==='xkr'||x==='f360'||x==='ccx'||x==='r34'||x==='raptor'||x==='fiesta'||x==='accord'||x==='ram'||x==='jet'||x==='tjet'||x==='prius'||x==='dawn'||x==='fulvia'||x==='l037'||x==='c5')]; if(CS.owned.includes(j.sel)) CS.sel=j.sel; } }catch(e){}
 // Independent handling/performance profiles. The Carrera GT profile remains the original simulation.
 const CAR_STATS={
   gt:{topSpeedMph:205,zeroTo60:3.9,points:true,leaderboard:true},
@@ -1887,6 +1889,7 @@ const CAR_STATS={
   dawn:{topSpeedMph:155,zeroTo60:4.9,points:true,leaderboard:true},
   fulvia:{topSpeedMph:109,zeroTo60:9.3,points:true,leaderboard:true},
   l037:{topSpeedMph:134,zeroTo60:6.8,points:true,leaderboard:true},
+  c5:{topSpeedMph:172,zeroTo60:4.8,points:true,leaderboard:true},
   zonda:{topSpeedMph:215,zeroTo60:2.7,points:true,leaderboard:true},
   daytona:{topSpeedMph:198,zeroTo60:4.0,points:true,leaderboard:true},
   aero:{topSpeedMph:240,zeroTo60:2.8,points:true,leaderboard:true},
@@ -1921,7 +1924,8 @@ const FUTURE_CAR_SPECS={
   prius:{name:'2012 Toyota Prius',year:2012,engine:'1.8L Atkinson-cycle I4 hybrid',powerHp:134,topSpeedMph:112,zeroTo60:10.0,available:true,price:5000},
   dawn:{name:'2016 Rolls-Royce Dawn',year:2016,engine:'6.6L twin-turbo V12',powerHp:563,topSpeedMph:155,zeroTo60:4.9,available:true,price:250000},
   fulvia:{name:'1971 Lancia Fulvia Rallye',year:1971,engine:'1.6L narrow-angle V4',powerHp:115,topSpeedMph:109,zeroTo60:9.3,available:true,price:20000},
-  l037:{name:'1982 Lancia 037 Stradale',year:1982,engine:'2.0L supercharged Abarth I4',powerHp:205,topSpeedMph:134,zeroTo60:6.8,available:true,price:90000}
+  l037:{name:'1982 Lancia 037 Stradale',year:1982,engine:'2.0L supercharged Abarth I4',powerHp:205,topSpeedMph:134,zeroTo60:6.8,available:true,price:90000},
+  c5:{name:'2001 Chevrolet Corvette C5',year:2001,engine:'5.7L LS1 V8',powerHp:345,topSpeedMph:172,zeroTo60:4.8,available:true,price:175000}
 };
 const isJet=()=>CS.sel==='jet'||CS.sel==='tjet';
 const isBetaCar=()=>CS.sel==='beta'||CS.sel==='jet'||CS.sel==='tjet';   // unranked specials: no points/cash/exit, immune to traffic (the Red Fighter Jet flies over it)
@@ -2858,6 +2862,100 @@ lazyCar('ccx','koenigsegg_ccx_-_100_followers_special.glb',gltf=>{
     lamp:bb=>({hx:.62,hy:.52,hz:bb.max.z-.4,tx:.6,ty:.55,tz:bb.min.z+.12})});
 },undefined,err=>console.error('Could not load Koenigsegg CCX model',err));
 
+
+/* ---------------- 2001 Chevrolet Corvette C5 (chevrolet_corvette_c5.glb) ----------------
+   Merged by material, nose at -X (turned to +Z by rotY). Because every part of the same material is one mesh, c5Prep() pulls the pieces it needs out by connected component:
+   the four tyres (one mesh), the four rims (hiding inside two body meshes) and the two headlight covers. Each cover becomes a hinged POD: the cover keeps the body paint, and a lamp
+   (housing, bezel, glowing lens) is built behind it. Closed, the cover is flush with the bonnet; open, the pod turns about its rear edge until the lens faces forward. */
+const C5_LAMP=mkLamp(0,[0,0,0],[1,1,1],[0,0,0],[1,1,1]); C5_LAMP.tri.value=1;
+const c5Patch=makePaintPatch(C5_LAMP), c5PaintMats=[];
+function syncC5Paint(){ for(const m of c5PaintMats){ m.copy(M.paint); m.map=null; m.normalMap=null; m.clearcoatNormalMap=null; m.needsUpdate=true; } }
+function c5Compact(g,tris){   /* new geometry holding only these triangles (own compact vertex list, so bounding boxes are honest) */
+  const idx=g.index.array, map=new Map(), list=[], ni=[];
+  for(const t of tris) for(let k=0;k<3;k++){ const a=idx[3*t+k]; let q=map.get(a); if(q===undefined){ q=list.length; map.set(a,q); list.push(a); } ni.push(q); }
+  const g2=new THREE.BufferGeometry();
+  for(const nm in g.attributes){ const at=g.attributes[nm], is=at.itemSize, arr=new Float32Array(list.length*is); for(let i=0;i<list.length;i++){ const a=list[i]; arr[i*is]=at.getX(a); if(is>1) arr[i*is+1]=at.getY(a); if(is>2) arr[i*is+2]=at.getZ(a); if(is>3) arr[i*is+3]=at.getW(a); } g2.setAttribute(nm,new THREE.BufferAttribute(arr,is)); }
+  g2.setIndex(ni); return g2;
+}
+function c5Comps(g){   /* connected components of an indexed geometry (vertices welded by position): [{t:[triangle ids],mn,mx}] */
+  const pos=g.attributes.position, idx=g.index.array, nT=idx.length/3, key=new Map(), par=[], vid=new Int32Array(pos.count);
+  const fd=a=>{ while(par[a]!==a){ par[a]=par[par[a]]; a=par[a]; } return a; };
+  for(let i=0;i<pos.count;i++){ const k=Math.round(pos.getX(i)*200)+','+Math.round(pos.getY(i)*200)+','+Math.round(pos.getZ(i)*200); let q=key.get(k); if(q===undefined){ q=par.length; par.push(q); key.set(k,q); } vid[i]=q; }
+  for(let t=0;t<nT;t++){ const a=fd(vid[idx[3*t]]), b=fd(vid[idx[3*t+1]]), c=fd(vid[idx[3*t+2]]); if(b!==a) par[b]=a; const c2=fd(c), a2=fd(a); if(c2!==a2) par[c2]=a2; }
+  const comp=new Map();
+  for(let t=0;t<nT;t++){ const r=fd(vid[idx[3*t]]); let c=comp.get(r); if(!c){ c={t:[],mn:[1e9,1e9,1e9],mx:[-1e9,-1e9,-1e9]}; comp.set(r,c); } c.t.push(t);
+    for(let k=0;k<3;k++){ const a=idx[3*t+k], p=[pos.getX(a),pos.getY(a),pos.getZ(a)]; for(let d=0;d<3;d++){ if(p[d]<c.mn[d]) c.mn[d]=p[d]; if(p[d]>c.mx[d]) c.mx[d]=p[d]; } } }
+  return [...comp.values()];
+}
+function c5Prep(sc){
+  const c5Pieces={};
+  const byName=n=>{ let r=null; sc.traverse(o=>{ if(o.isMesh&&o.name===n) r=o; }); return r; };
+  sc.traverse(o=>{ if(!o.isMesh) return; for(const m of (Array.isArray(o.material)?o.material:[o.material])){ if(m&&m.transparent&&m.name!=='Mesh10Mtl'){ m.transparent=false; m.depthWrite=true; } } });   /* BLEND with opacity 1 would re-sort every frame (flicker) */
+  sc.traverse(o=>{ if(o.isMesh&&o.material&&o.material.name==='Mesh19Mtl'){ o.material.polygonOffset=true; o.material.polygonOffsetFactor=4; o.material.polygonOffsetUnits=4; } });   /* a textured copy of the shell lies exactly under the paint: push it back so it cannot z-fight through */
+  const rimMat=new THREE.MeshStandardMaterial({color:0x2b2d31,metalness:.85,roughness:.28}); rimMat.name='c5rim';
+  const mk=(src,tris,mat,name)=>{ const m=new THREE.Mesh(c5Compact(src.geometry,tris),mat); m.name=name; src.parent.add(m); return m; };
+  for(const nm of ['Object_13','Object_14']){   /* body meshes that also hold rims and lamp covers */
+    const o=byName(nm); if(!o||!o.geometry.index) continue;
+    const rimT={}, lampT={L:[],R:[]}, keepT=[];
+    for(const c of c5Comps(o.geometry)){ const [x0,y0,z0]=c.mn,[x1,y1,z1]=c.mx;
+      /* Actual C5 popup covers are small 26-triangle components at the extreme nose,
+         with their normals facing -X (the model's forward direction before gcLoad rotates it). */
+      const side=(x0>-55.7&&x1<-54.9&&z0>1.4&&z1<2.1&&c.t.length>=20&&c.t.length<=32)?(y0>64.5&&y1<68.0?'L':(y0>69.5&&y1<72.0?'R':null)):null;
+      if(side){ lampT[side].push(...c.t); continue; }
+      const cx=(x0+x1)/2, wheelX=(cx>-52.9&&cx<-49.1)||(cx>-40.1&&cx<-36.1);
+      if(wheelX&&(y1<65.9||y0>71.1)&&z1<3.1){ const k=(cx<-45?'F':'R')+((y0+y1)/2<68.5?'L':'R'); (rimT[k]=rimT[k]||[]).push(...c.t); } else keepT.push(...c.t); }
+    for(const k in rimT) mk(o,rimT[k],rimMat,'c5rim_'+k+'_'+nm);
+    for(const side of ['L','R']) if(lampT[side].length) (c5Pieces[side]=c5Pieces[side]||[]).push({o,g:(()=>{const q=c5Compact(o.geometry,lampT[side]);q.translate(-.006,0,0);return q;})()});
+    const idx=o.geometry.index.array, ni=new idx.constructor(keepT.length*3); keepT.forEach((t,i)=>{ ni[3*i]=idx[3*t]; ni[3*i+1]=idx[3*t+1]; ni[3*i+2]=idx[3*t+2]; }); o.geometry.setIndex(new THREE.BufferAttribute(ni,1));
+  }
+  for(const side of ['L','R']) if(c5Pieces[side]) c5MakePod(side,c5Pieces[side]);
+  const ty=byName('Object_17');   /* the four tyres are one mesh: make four */
+  if(ty&&ty.geometry.index){ const comps=c5Comps(ty.geometry); if(comps.length===4){ comps.forEach((c,i)=>mk(ty,c.t,ty.material,'c5tyre'+i)); ty.parent.remove(ty); } }
+}
+function c5MakePod(side,pieces){   /* one pod per side; its cover can span two source meshes */
+  const gs=pieces.map(p=>p.g);
+  let nx=0,nz=0,xmax=-1e9,ymin=1e9,ymax=-1e9;
+  for(const g of gs){ const pos=g.attributes.position, nor=g.attributes.normal; for(let i=0;i<pos.count;i++){ if(nor.getX(i)<-.3){ nx+=nor.getX(i); nz+=nor.getZ(i); xmax=Math.max(xmax,pos.getX(i)); } ymin=Math.min(ymin,pos.getY(i)); ymax=Math.max(ymax,pos.getY(i)); } }
+  const sg=Math.atan2(-nx,nz), n=new THREE.Vector3(-Math.sin(sg),0,Math.cos(sg)), t=new THREE.Vector3(-Math.cos(sg),0,-Math.sin(sg)), H=new THREE.Vector3(); let hn=0;
+  for(const g of gs){ const pos=g.attributes.position, nor=g.attributes.normal; for(let i=0;i<pos.count;i++) if(nor.getX(i)<-.3&&pos.getX(i)>xmax-.08){ H.x+=pos.getX(i); H.z+=pos.getZ(i); hn++; } }
+  H.x/=hn; H.z/=hn; H.y=(ymin+ymax)/2; H.addScaledVector(n,-.04);
+  let len=0; for(const g of gs){ const pos=g.attributes.position, nor=g.attributes.normal; for(let i=0;i<pos.count;i++) if(nor.getX(i)<-.3) len=Math.max(len,(pos.getX(i)-H.x)*t.x+(pos.getZ(i)-H.z)*t.z); }
+  const piv=new THREE.Group(); piv.position.copy(H); pieces[0].o.parent.add(piv);
+  gs.forEach((g,k)=>{ const lm=new THREE.Mesh(g,pieces[k].o.material); lm.name='c5lamp'+side+k; lm.position.copy(H).negate(); piv.add(lm); });
+  console.info('[C5] pod',side,'slope deg',(sg*57.3).toFixed(1),'len',len.toFixed(2),'H',H.toArray().map(x=>+x.toFixed(2)).join(','));
+  c5Pod.pods.push({piv,phi:sg+Math.PI/2,H,n,t,len,D:.8});
+}
+function c5Build(){   /* the lamp behind each cover (built after gcLoad so its materials are left alone) */
+  const housM=new THREE.MeshStandardMaterial({color:0x15161a,metalness:.4,roughness:.6,side:THREE.DoubleSide}), bezM=new THREE.MeshStandardMaterial({color:0xd9dde3,metalness:.95,roughness:.2,side:THREE.DoubleSide});
+  for(const p of c5Pod.pods){
+    const asm=new THREE.Group(), D=p.D*.85; asm.matrixAutoUpdate=false;
+    asm.matrix.makeBasis(new THREE.Vector3(0,1,0),p.t.clone(),p.n.clone()); asm.matrix.setPosition(p.t.clone().multiplyScalar(p.len/2).addScaledVector(p.n,-D/2));
+    const hg=new THREE.CylinderGeometry(.74,.68,D,28,1,true); hg.rotateX(Math.PI/2); hg.scale(.85,1.088,.85); asm.add(new THREE.Mesh(hg,housM));
+    const rg=new THREE.RingGeometry(.58,.78,28); rg.scale(.85,1.088,.85); rg.rotateY(Math.PI); const ring=new THREE.Mesh(rg,bezM); ring.position.z=-D/2+.0034; asm.add(ring);
+    const lg=new THREE.CircleGeometry(.6,28); lg.scale(.85,1.088,.85); lg.rotateY(Math.PI);
+    const lens=new THREE.Mesh(lg,new THREE.MeshStandardMaterial({color:0xcfd8e6,metalness:.1,roughness:.08,emissive:0xdfeaff,emissiveIntensity:0})); lens.position.z=-D/2+.0051; asm.add(lens); c5Pod.lens.push(lens);
+    asm.traverse(m=>{ if(m.isMesh){ m.castShadow=false; m.frustumCulled=false; } }); p.piv.add(asm);
+  }
+}
+function c5Update(dt){
+  const P=c5Pod, d=P.t-P.v; if(d===0) return;
+  P.v+=Math.sign(d)*Math.min(Math.abs(d),dt*1.8);
+  P.pods.forEach((p,i)=>{ const u=Math.min(1,Math.max(0,P.v*1.3-(i?.3:0))), e=u*u*(3-2*u); p.piv.rotation.y=p.phi*e; });
+}
+lazyCar('c5','chevrolet_corvette_c5.glb',gltf=>{
+  c5Pod.pods.length=0; c5Pod.lens.length=0;
+  c5Prep(gltf.scene);
+  gcLoad(gltf,{tag:'C5',root:c5Root,wheels:c5Wheels,paintMats:c5PaintMats,patch:c5Patch,sync:syncC5Paint,wb:2.66,len:4.57,rotY:()=>Math.PI/2,
+    kind:o=>{ const mn=o.userData.mn||'';
+      if(mn==='Mesh24Mtl') return 'tire'; if(mn==='c5rim') return 'rim'; if(mn==='Lip1Mtl') return 'paint';
+      if(mn==='Mesh10Mtl') return 'window'; if(mn==='Mesh15Mtl') return 'interior'; return ''; },
+    lamp:bb=>{ let hx=.62,hy=.62,hz=bb.max.z-.7; const p=c5Pod.pods[0];
+      if(p){ const lc=p.t.clone().multiplyScalar(p.len/2).addScaledVector(p.n,-p.D), c=Math.cos(p.phi), sn=Math.sin(p.phi), v=new THREE.Vector3(p.H.x+lc.x*c+lc.z*sn,p.H.y,p.H.z-lc.x*sn+lc.z*c);
+        p.piv.parent.localToWorld(v); c5Root.worldToLocal(v); hx=Math.abs(v.x); hy=v.y; hz=v.z+.03; }
+      return {hx,hy,hz,tx:.62,ty:.62,tz:bb.min.z+.1}; }});
+  c5Build(); c5Root.traverse(m=>{ if(m.isMesh&&!c5Pod.lens.includes(m)) m.castShadow=castsShadow(m); }); applyQuality();
+},undefined,err=>console.error('Could not load Corvette C5 model',err));
+
 /* ---------------- 2013 Ford F-150 SVT Raptor R (ford_f150_svt_raptor_r.glb) ----------------
    152 separate meshes, nose +Z once the file's root rotation is applied; the four wheels are already separate pieces (tyre = Wheel003x, rim face = Wheel002x/Wheel001x, hubs = the Hub pieces and Wheel1 to Wheel4).
    Almost everything is alpha-BLEND with opacity 1, which would re-sort every frame (flicker), so those are made opaque first; real glass keeps its own black material. Scaled from the real 3.69 m wheelbase. */
@@ -3240,6 +3338,7 @@ function applyNight(){
   carLights.spots.forEach(s=>s.intensity=3.2*L);
   carLights.tails.forEach(p=>p.intensity=.45*L);
   carLights.beams.forEach(b=>b.material.uniforms.uOn.value=L);
+  c5Pod.t=L>.1?1:0; for(const m of c5Pod.lens) m.material.emissiveIntensity=2.4*L;   // Corvette: pop-up pods rise with the headlights
   lampSprites.forEach(s=>s.material.opacity=.85*L); lampPools.forEach(p=>p.material.opacity=.5*L);
   trafficCars.forEach(t=>{
     t.lamps.forEach(l=>{
@@ -3314,7 +3413,7 @@ var TC={on:false,park:false,fovNow:34,fade:0};
 let tStreak=0, weave=0, lastGap=-1, wasOff=false, nextBonus=100000, runT=0, bHeat=0, lastBT=-999, shopOpen=false, bmOpen=false, paintView=false, pvA=.6, titleOn=true, exZone=false, exitCash=0, camFrom=null;
 var MP={on:false,mode:'',link:false};   // multiplayer state (filled in by the multiplayer block near the end of the script)
 let state='menu', score=0, miles=0, mult=1, clean=0, timeLeft=180, soundAsked=false;
-const CAR_BONUS={raptor:'Baja Spec · Perfect Control and x1.5 Points on Dirt Trails',ccx:'Fortune · Random Score Multiplier Each Run, 0.5x (Unlucky) to 3x (Lucky)',r34:'Heavy Toll · A Crash Costs Triple Time (60 s) But No Score',f360:'Wildcard · Choose Your Next Event From 3 Random Cards',xkr:'Increased Events · Twice as Many Random Events',nsx:'Gold Coins ($35) Can Be Found on the Road',m3:'No Reckless Drivers · Close Passes Add +0.75 s',chiron:'x10 Score While Above 250 MPH',dawn:'x2 Cash-Out Money · x2 Rain Chance',l037:'1 in 5 Chance to Skip the Time Penalty on a Crash (Score Is Still Lost)',fulvia:'Perfect Traction in Rain · Slight Speed Boost in Sun · x1.5 Time Bonuses',prius:'Free Power-Up Every Run: Nitrous or Insurance (your choice) · +15 s Starting Time · x1.5 Time Bonuses',jet:'Flies Above Traffic · No Exit · Unranked · Red Token Reward',fiesta:'Immune to Crashes With Other Fiestas',accord:'Immune to Crashes With Other Accords',ram:'Immune to Crashes With Other Rams',aero:'Reduced Traffic Density',daytona:'1 in 10 Chance to Double Each Time Bonus',zonda:'Exits Every 5 Miles Instead of 10',gt:'No Bonus, Starter Car',enzo:'Less Score Lost in Crashes',viper:'2 Uses of Single-Use Power-Ups',charger:'+30 Seconds Starting Time & Only −10 s per Crash'};
+const CAR_BONUS={raptor:'Baja Spec · Perfect Control and x1.5 Points on Dirt Trails',ccx:'Fortune · Random Score Multiplier Each Run, 0.5x (Unlucky) to 3x (Lucky)',r34:'Heavy Toll · A Crash Costs Triple Time (60 s) But No Score',f360:'Wildcard · Choose Your Next Event From 3 Random Cards',xkr:'Increased Events · Twice as Many Random Events',nsx:'Gold Coins ($35) Can Be Found on the Road',m3:'No Reckless Drivers · Close Passes Add +0.75 s',chiron:'x10 Score While Above 250 MPH',dawn:'x2 Cash-Out Money · x2 Rain Chance',c5:'Radio Pick · Choose Your Starting Music Track for Every Run (in the Garage)',l037:'1 in 5 Chance to Skip the Time Penalty on a Crash (Score Is Still Lost)',fulvia:'Perfect Traction in Rain · Slight Speed Boost in Sun · x1.5 Time Bonuses',prius:'Free Power-Up Every Run: Nitrous or Insurance (your choice) · +15 s Starting Time · x1.5 Time Bonuses',jet:'Flies Above Traffic · No Exit · Unranked · Red Token Reward',fiesta:'Immune to Crashes With Other Fiestas',accord:'Immune to Crashes With Other Accords',ram:'Immune to Crashes With Other Rams',aero:'Reduced Traffic Density',daytona:'1 in 10 Chance to Double Each Time Bonus',zonda:'Exits Every 5 Miles Instead of 10',gt:'No Bonus, Starter Car',enzo:'Less Score Lost in Crashes',viper:'2 Uses of Single-Use Power-Ups',charger:'+30 Seconds Starting Time & Only −10 s per Crash'};
 const puMax=()=>CS.sel==='viper'?2:1, puLeft=u=>puMax()>1?' ('+(puMax()-u)+' LEFT)':'';
 const startBonus=()=>CH.active?0:CS.sel==='charger'?30:CS.sel==='prius'?15:0, crashKeep=()=>CS.sel==='enzo'?.6:1, crashTime=()=>CH.active?(CH.def.pen||10)*(CS.sel==='r34'?3:1):CS.sel==='charger'?10:CS.sel==='r34'?60:20;   // seconds lost per crash (Charger: half)
 var chironX10=false;
@@ -3375,7 +3474,7 @@ function savePU(){try{store.set('cgt_powerups',JSON.stringify(PU));}catch(e){}}
 let priusFree='nitrous'; try{ if(localStorage.getItem('cgt_prius_free')==='insurance') priusFree='insurance'; }catch(e){}   // Prius bonus: which free power-up to take each run
 let powerView=false,loadoutOpen=false,runPU={insurance:false,nitrous:false,double:false,ghost:false,rocket:false},insuranceSpent=0,nitrousLeft=0,nitrousUsed=0,ghostLeft=0,ghostUsed=0,rocketCooldown=0,rocketMesh=null,rocketExplosion=null;
 function ghostVisual(active){
-  const root=CS.sel==='raptor'?raptorRoot:CS.sel==='ccx'?ccxRoot:CS.sel==='r34'?r34Root:CS.sel==='f360'?f360Root:CS.sel==='xkr'?xkrRoot:CS.sel==='m3'?m3Root:CS.sel==='chiron'?chironRoot:CS.sel==='dawn'?dawnRoot:CS.sel==='fulvia'?fulviaRoot:CS.sel==='l037'?l037Root:CS.sel==='prius'?priusRoot:CS.sel==='aero'?aeroRoot:CS.sel==='daytona'?daytonaRoot:CS.sel==='zonda'?zondaRoot:CS.sel==='beta'?betaRoot:CS.sel==='enzo'?enzoRoot:CS.sel==='viper'?viperRoot:CS.sel==='nsx'?nsxRoot:CS.sel==='charger'?chargerRoot:CS.sel==='fiesta'?fiestaRoot:CS.sel==='accord'?accordRoot:CS.sel==='ram'?ramRoot:CS.sel==='jet'?jetRoot:gtRoot;
+  const root=CS.sel==='c5'?c5Root:CS.sel==='raptor'?raptorRoot:CS.sel==='ccx'?ccxRoot:CS.sel==='r34'?r34Root:CS.sel==='f360'?f360Root:CS.sel==='xkr'?xkrRoot:CS.sel==='m3'?m3Root:CS.sel==='chiron'?chironRoot:CS.sel==='dawn'?dawnRoot:CS.sel==='fulvia'?fulviaRoot:CS.sel==='l037'?l037Root:CS.sel==='prius'?priusRoot:CS.sel==='aero'?aeroRoot:CS.sel==='daytona'?daytonaRoot:CS.sel==='zonda'?zondaRoot:CS.sel==='beta'?betaRoot:CS.sel==='enzo'?enzoRoot:CS.sel==='viper'?viperRoot:CS.sel==='nsx'?nsxRoot:CS.sel==='charger'?chargerRoot:CS.sel==='fiesta'?fiestaRoot:CS.sel==='accord'?accordRoot:CS.sel==='ram'?ramRoot:CS.sel==='jet'?jetRoot:gtRoot;
   root.traverse(o=>{ if(!o.isMesh)return;
     if(active){ if(!o.userData._ghostOriginal){ o.userData._ghostOriginal=o.material; const cloneMat=m=>{const c=m.clone();c.transparent=true;c.opacity=Math.min(c.opacity===undefined?1:c.opacity,.32);c.depthWrite=false;return c;}; o.material=Array.isArray(o.material)?o.material.map(cloneMat):cloneMat(o.material); } }
     else if(o.userData._ghostOriginal){ if(Array.isArray(o.material))o.material.forEach(m=>m.dispose&&m.dispose());else if(o.material.dispose)o.material.dispose();o.material=o.userData._ghostOriginal;delete o.userData._ghostOriginal; }
@@ -3460,8 +3559,17 @@ let garageOpen=false;
 function renderGarage(){
   const own=CARS.filter(c=>CS.owned.includes(c.id));
   $('gCount').textContent=own.length+(own.length===1?' car':' cars');
-  $('gList').innerHTML=own.map(c=>{ const spec=c.id==='raptor'?'107 MPH · ~5.6 s 0–60 · 411 hp 6.2L V8 · perfect grip and x1.5 points on dirt trails':c.id==='ccx'?'247 MPH · ~3.1 s 0–60 · 806 hp 4.7L supercharged V8 · random score multiplier 0.5x–3x each run':c.id==='r34'?'162 MPH · ~4.7 s 0–60 · 2.6L twin-turbo I6 · crashes cost triple time but no score':c.id==='f360'?'183 MPH · ~4.4 s 0–60 · 395 hp 3.6L V8 · pick your next event from 3 cards':c.id==='xkr'?'175 MPH · ~4.6 s 0–60 · 510 hp supercharged V8 · twice as many events':c.id==='m3'?'154 MPH · ~6.3 s 0–60 · 235 hp 2.5L I4 · no reckless drivers · close passes +0.75 s':c.id==='chiron'?'261 MPH · ~2.4 s 0–60 · 1,479 hp quad-turbo W16 · x10 score above 250 mph':c.id==='dawn'?'155 MPH · ~4.9 s 0–60 · 563 hp twin-turbo V12 · x2 cash-out · x2 rain chance':c.id==='l037'?'134 MPH · ~6.8 s 0–60 · 205 hp supercharged I4 · 20% chance to skip the crash time penalty':c.id==='fulvia'?'109 MPH · ~9.3 s 0–60 · 115 hp V4 · no traction loss in rain · speed boost in sun · x1.5 time bonuses':c.id==='prius'?'112 MPH · ~10.0 s 0–60 · 134 hp hybrid · free power-up each run':c.id==='fiesta'?'120 MPH · ~8.0 s 0–60 · immune to Fiesta traffic':c.id==='accord'?'145 MPH · ~6.5 s 0–60 · immune to Accord traffic':c.id==='ram'?'165 MPH · ~4.8 s 0–60 · V10 · immune to Ram traffic':c.id==='beta'?'310 MPH · ~1 s 0–60 · impact immunity · UNRANKED':c.id==='enzo'?'217 MPH · ~3.3 s 0–60 · 650 hp V12':c.id==='tjet'?'1,600 MPH · ~0.5 s 0–60 · flies over traffic · UNRANKED':c.id==='jet'?'800 MPH · ~0.5 s 0–60 · flies over traffic · UNRANKED':c.id==='aero'?'257 MPH · ~2.8 s 0–60 · 1,046 hp twin-turbo V8':c.id==='daytona'?'198 MPH · ~4.0 s 0–60 · 385 hp V8':c.id==='zonda'?'233 MPH · ~2.7 s 0–60 · 749 hp V12':c.id==='viper'?'206 MPH · ~3.5 s 0–60 · 640 hp V10':c.id==='nsx'?'191 MPH · ~2.9 s 0–60 · 573 hp hybrid V6':c.id==='charger'?'175 MPH · ~4.4 s 0–60 · 470 hp HEMI V8':'205 MPH · ~3.9 s 0–60 · standard scoring'; return '<button type="button" class="gcar'+(CS.sel===c.id?' eq':'')+'" data-id="'+c.id+'"><span class="gn">'+c.name+'</span><span class="gd">'+c.desc+'<br><small>'+spec+'</small></span><span class="gb">'+(CAR_BONUS[c.id]||'')+'</span><span class="gs">'+(CS.sel===c.id?'Selected':'Select')+'</span></button>'; }).join('');
+  $('gList').innerHTML=own.map(c=>{ const spec=c.id==='raptor'?'107 MPH · ~5.6 s 0–60 · 411 hp 6.2L V8 · perfect grip and x1.5 points on dirt trails':c.id==='ccx'?'247 MPH · ~3.1 s 0–60 · 806 hp 4.7L supercharged V8 · random score multiplier 0.5x–3x each run':c.id==='r34'?'162 MPH · ~4.7 s 0–60 · 2.6L twin-turbo I6 · crashes cost triple time but no score':c.id==='f360'?'183 MPH · ~4.4 s 0–60 · 395 hp 3.6L V8 · pick your next event from 3 cards':c.id==='xkr'?'175 MPH · ~4.6 s 0–60 · 510 hp supercharged V8 · twice as many events':c.id==='m3'?'154 MPH · ~6.3 s 0–60 · 235 hp 2.5L I4 · no reckless drivers · close passes +0.75 s':c.id==='chiron'?'261 MPH · ~2.4 s 0–60 · 1,479 hp quad-turbo W16 · x10 score above 250 mph':c.id==='dawn'?'155 MPH · ~4.9 s 0–60 · 563 hp twin-turbo V12 · x2 cash-out · x2 rain chance':c.id==='c5'?'172 MPH · ~4.8 s 0–60 · 345 hp 5.7L LS1 V8 · pop-up headlights · choose your starting track in the Garage':c.id==='l037'?'134 MPH · ~6.8 s 0–60 · 205 hp supercharged I4 · 20% chance to skip the crash time penalty':c.id==='fulvia'?'109 MPH · ~9.3 s 0–60 · 115 hp V4 · no traction loss in rain · speed boost in sun · x1.5 time bonuses':c.id==='prius'?'112 MPH · ~10.0 s 0–60 · 134 hp hybrid · free power-up each run':c.id==='fiesta'?'120 MPH · ~8.0 s 0–60 · immune to Fiesta traffic':c.id==='accord'?'145 MPH · ~6.5 s 0–60 · immune to Accord traffic':c.id==='ram'?'165 MPH · ~4.8 s 0–60 · V10 · immune to Ram traffic':c.id==='beta'?'310 MPH · ~1 s 0–60 · impact immunity · UNRANKED':c.id==='enzo'?'217 MPH · ~3.3 s 0–60 · 650 hp V12':c.id==='tjet'?'1,600 MPH · ~0.5 s 0–60 · flies over traffic · UNRANKED':c.id==='jet'?'800 MPH · ~0.5 s 0–60 · flies over traffic · UNRANKED':c.id==='aero'?'257 MPH · ~2.8 s 0–60 · 1,046 hp twin-turbo V8':c.id==='daytona'?'198 MPH · ~4.0 s 0–60 · 385 hp V8':c.id==='zonda'?'233 MPH · ~2.7 s 0–60 · 749 hp V12':c.id==='viper'?'206 MPH · ~3.5 s 0–60 · 640 hp V10':c.id==='nsx'?'191 MPH · ~2.9 s 0–60 · 573 hp hybrid V6':c.id==='charger'?'175 MPH · ~4.4 s 0–60 · 470 hp HEMI V8':'205 MPH · ~3.9 s 0–60 · standard scoring'; return '<button type="button" class="gcar'+(CS.sel===c.id?' eq':'')+'" data-id="'+c.id+'"><span class="gn">'+c.name+'</span><span class="gd">'+c.desc+'<br><small>'+spec+'</small></span><span class="gb">'+(CAR_BONUS[c.id]||'')+'</span><span class="gs">'+(CS.sel===c.id?'Selected':'Select')+'</span></button>'; }).join('');
+  c5TrackUI();
 }
+function c5Chosen(){ let f=null; try{ f=localStorage.getItem('cgt_c5_track'); }catch(e){} if(!f||f==='random') return null; return RADIO.find(t=>(t.f||t.t)===f)||null; }
+function c5TrackUI(){   /* Corvette bonus: choose which song starts each run */
+  let el=document.getElementById('c5trk'); if(!CS.owned.includes('c5')){ if(el) el.remove(); return; }
+  if(!el){ el=document.createElement('div'); el.id='c5trk'; $('gList').after(el); }
+  let cur='random'; try{ cur=localStorage.getItem('cgt_c5_track')||'random'; }catch(e){}
+  el.innerHTML='<label>Corvette · starting track <select id="c5Sel"><option value="random">Random</option>'+RADIO.map(t=>{ const v=(t.f||t.t).replace(/"/g,'&quot;'); return '<option value="'+v+'"'+((t.f||t.t)===cur?' selected':'')+'>'+t.t.replace(/</g,'&lt;')+(t.a?' — '+t.a.replace(/</g,'&lt;'):'')+'</option>'; }).join('')+'</select></label>';
+}
+document.addEventListener('change',e=>{ if(e.target&&e.target.id==='c5Sel'){ try{ localStorage.setItem('cgt_c5_track',e.target.value); }catch(err){} } });
 function setGarage(on){
   if(on===garageOpen) return; garageOpen=on; shopOpen=on; paintView=on;
   document.body.classList.toggle('pv',on); $('garage').classList.toggle('show',on); if(on) renderGarage();
@@ -3495,6 +3603,7 @@ try{ const j=JSON.parse(localStorage.getItem('cgt_paint')||'null');
 function savePaint(){ try{store.set('cgt_paint',JSON.stringify(PS))}catch(e){} }
 function stockDef(){ const b={id:'stock',grp:'special',price:0};
   if(CS.sel==='dawn') return Object.assign(b,{name:'Factory Default (Bronze)',c:'#8a4a0b',fin:'gloss'});
+  if(CS.sel==='c5') return Object.assign(b,{name:'Factory Default (Black)',c:'#0c0c0e',fin:'gloss'});
   if(CS.sel==='l037') return Object.assign(b,{name:'Factory Default (Arancio)',c:'#e8480c',fin:'gloss'});
   if(CS.sel==='fulvia') return Object.assign(b,{name:'Factory Default (Racing Red)',c:'#d6141c',fin:'gloss'});
   if(CS.sel==='prius') return Object.assign(b,{name:'Factory Default (Sea Glass Pearl)',c:'#8fa5a0',fin:'pearl'});
@@ -3532,7 +3641,7 @@ function applyPaint(d){ const f=FIN[d.fin]||FIN.gloss, m=M.paint;
   const dual=d.id==='dualpaint', f2=dual?(FIN[d.fin2]||FIN.metal):f;
   PAINT_U.dualOn.value=dual?1:0; PAINT_U.dualColor.value.set(dual?d.c2:'#000000'); PAINT_U.dualRough.value=f2.r; PAINT_U.dualMetal.value=f2.m; PAINT_U.dualCC.value=Q.coat?f2.cc:0; PAINT_U.dualCCR.value=f2.ccr;
   if(dual&&m.clearcoat===0&&PAINT_U.dualCC.value>0) m.clearcoat=.001;   // keep the clearcoat code path compiled so the other side can use it
-  m.onBeforeCompile=paintPatchCarrera; m.customProgramCacheKey=PAINT_KEY; m.needsUpdate=true; syncEnzoPaint(); syncZondaPaint(); syncCobraPaint(); syncAeroPaint(); syncChironPaint(); syncM3Paint(); syncXkrPaint(); syncF360Paint(); syncCcxPaint(); syncR34Paint(); syncRaptorPaint(); syncFulviaPaint(d); }   // [fix] the Raptor was never re-synced here, so it kept its first colour whatever you picked
+  m.onBeforeCompile=paintPatchCarrera; m.customProgramCacheKey=PAINT_KEY; m.needsUpdate=true; syncEnzoPaint(); syncZondaPaint(); syncCobraPaint(); syncAeroPaint(); syncChironPaint(); syncM3Paint(); syncXkrPaint(); syncF360Paint(); syncCcxPaint(); syncR34Paint(); syncRaptorPaint(); syncC5Paint(); syncFulviaPaint(d); }   // [fix] the Raptor was never re-synced here, so it kept its first colour whatever you picked
 const dotCss=d=>d.fin==='carbon'?'repeating-linear-gradient(45deg,#1b1d21 0 3px,#33363c 3px 6px)':d.id==='scoutpaint'?"repeating-linear-gradient(45deg,rgba(40,110,35,.25) 0 4px,transparent 4px 8px),#398b35":d.fin==='chrome'?'linear-gradient(135deg,#fff,#8f97a4 45%,#f6f8fb)':'radial-gradient(circle at 30% 28%,rgba(255,255,255,'+(d.fin==='matte'?.12:.5)+'),transparent 40%),'+d.c;
 function spend(c){ if(wallet<c) return false; wallet-=c; try{store.set('cgt_cash',String(wallet))}catch(e){} renderWallet(); return true; }
 function renderPaint(keepScroll){
@@ -3584,6 +3693,7 @@ function startRun(){ if(typeof arcReset==='function') arcReset();
   runDist=0; exitT=0; $('cine').classList.remove('on'); $('cineCap').classList.remove('in'); firstCam=true;
   trafficCars.forEach(t=>{ if(t.oncoming){ respawn(t,true); t.g.visible=true; } }); ROW_GAP=rowGapFor(CS.sel); resetRows(); weave=0; tStreak=0; lastGap=-1; nextBonus=100000; runT=0; bHeat=0; lastBT=-999; evReset(); fixGear(); $('ov').classList.add('hide');
   if(!eng.on&&!eng.manualOff) setSound(true);
+  if(CS.sel==='c5'&&!radio.manualOff){ const _t=c5Chosen(); if(_t){ if(!radio.on) setRadio(true); radio.a.loop=false; playTrack(_t); } }   // Corvette bonus: your own starting track
   if(!radio.manualOff){ if(!radio.on) setRadio(true); else if(radio.a.paused) radio.a.play().catch(()=>{}); }
 }
 function recordRun(){                       // high-score tables; returns the "new record" notes
@@ -3780,7 +3890,7 @@ eng.rpm=Math.max(ECFG.idle,ECFG.ratio[eng.gear]*speed);
 
 /* Top speeds come out of this model (gearing gk x torque x drag), not a fixed number. Tuned by simulation: Aero ~257 mph (0-60 ~2.8 s), Zonda R ~233 mph. */
 /* longitudinal dynamics: pedals -> engine torque x gear (traction-, drag-, shift- and redline-limited) + brakes */
-const CAR_PHYS={nsx:{fk:1.36,cdA:1.08,gk:1.1},dawn:{fk:.79,cdA:1.3,gk:.95},fulvia:{fk:.43,cdA:.68,gk:1.95},l037:{fk:.56,cdA:.75,gk:1.6},   // fulvia: tuned with the same model (headless sim) so 0-60 ~ 9.3 s, top speed ~ 109 mph
+const CAR_PHYS={c5:{fk:.94,cdA:1.3,gk:.95},nsx:{fk:1.36,cdA:1.08,gk:1.1},dawn:{fk:.79,cdA:1.3,gk:.95},fulvia:{fk:.43,cdA:.68,gk:1.95},l037:{fk:.56,cdA:.75,gk:1.6},   // fulvia: tuned with the same model (headless sim) so 0-60 ~ 9.3 s, top speed ~ 109 mph
      // dawn: heavy (2.56 t) – estimated from Charger tuning for 0-60 ~4.9 s, ~155 mph
   prius:{fk:.4,cdA:.72,gk:1.9},   // prius: tuned (headless sim of this model) so 0-60 = 10.0 s, top speed = 112 mph
   jet:{fk:1.4,cdA:.45,gk:.82},tjet:{fk:1.4,cdA:.45,gk:.82},fiesta:{fk:.49,cdA:.6,gk:1.77},accord:{fk:.61,cdA:.75,gk:1.45},ram:{fk:.8,cdA:1.1,gk:1.27},aero:{fk:1.4,cdA:.45,gk:.82},chiron:{fk:1.5,cdA:.45,gk:.8},m3:{fk:.6,cdA:.7,gk:1.4},xkr:{fk:.8,cdA:.9,gk:1.2},f360:{fk:.85,cdA:.9,gk:.95},ccx:{fk:1.2,cdA:.45,gk:.85},raptor:{fk:.68,cdA:1.4,gk:2},r34:{fk:.8,cdA:.8,gk:1.3},daytona:{fk:1.02,cdA:.7,gk:.95},zonda:{fk:1.3,cdA:.65,gk:.9},gt:{fk:1,cdA:.83,gk:1},enzo:{fk:1.18,cdA:.84,gk:.95},viper:{fk:1.12,cdA:.9,gk:.95},charger:{fk:.88,cdA:1.02,gk:.95}};
@@ -3795,7 +3905,7 @@ function applyCarPhysics(){
 }
 /* Dirt trail grip: DIRT_LOSS is "how much worse than a dry road" in rain-equivalent units (the rain model above scales lateral grip -7 %, braking -8 %, tyre lag +20 % per 1.0).
    Rally-bred / all-wheel-drive / tall cars are negative (a little BETTER than on tarmac), road-only supercars up to +.8 (roughly a heavy shower), so nobody is ever in real trouble. */
-const DIRT_LOSS={fulvia:-.4,l037:-.35,ram:-.3,r34:-.25,fiesta:-.1,nsx:.1,m3:.15,accord:.1,charger:.3,prius:.35,xkr:.4,chiron:.45,daytona:.5,dawn:.5,gt:.6,viper:.6,f360:.6,ccx:.6,raptor:-1,enzo:.7,zonda:.75,aero:.8};
+const DIRT_LOSS={c5:.55,fulvia:-.4,l037:-.35,ram:-.3,r34:-.25,fiesta:-.1,nsx:.1,m3:.15,accord:.1,charger:.3,prius:.35,xkr:.4,chiron:.45,daytona:.5,dawn:.5,gt:.6,viper:.6,f360:.6,ccx:.6,raptor:-1,enzo:.7,zonda:.75,aero:.8};
 const dirtLoss=()=>BW.w[8]*(DIRT_LOSS[CS.sel]||0);
 const slipK=()=>rainK*(CS.sel==='fulvia'?0:1)+dirtLoss();
 const dirtDrive=()=>1-.06*dirtLoss();      // the same surface also trims (or adds to) traction-limited drive force by up to ~5 %
@@ -4244,6 +4354,7 @@ const SR_FACTS={
  tjet:{eng:'none',nose:['Why Drive?','Totally street legal. Probably.'],tail:['Twin Engines','Bigger engines. Bluer flames. Same questionable legality.'],roof:['Toucs Special','Scout\'s fighter, upsized and recoloured by someone with more money.']},
  jet:{eng:'none',nose:['Why Drive?','Totally street legal. Probably.'],tail:['Twin Engines','Those glowing engine ports are what let it skim over traffic.'],roof:['Red Fighter','A cartoon-grade fighter jet, unlocked by a one-in-5,000 red token.']},
  prius:{eng:'front',nose:['First Mass-Produced Hybrid','The first Prius went on sale in Japan in 1997 and was the first mass-produced hybrid car.'],eng_:['Hybrid Synergy Drive','A 1.8 L Atkinson-cycle engine and an electric motor make 134 hp combined.'],roof:['Latin Name','Prius is Latin for "to go before".'],tail:['Slippery Shape','The wedge shape gives a drag coefficient of about 0.25, among the best of its time.']},
+ c5:{eng:'front',nose:['Pop-Up Pods','The headlights hide in flip-up pods that rise as soon as the lights come on.'],eng_:['LS1 5.7 L V8','An all-aluminium pushrod V8 makes 345 hp from a very compact package.'],roof:['Fixed-Roof Coupe','The C5 Corvette stiffened the car with a hydroformed frame, a big step up from the C4.'],tail:['Rear Transaxle','The gearbox sits at the back axle, which gives close to a 50/50 weight balance.']},
  l037:{eng:'mid',nose:['Group B Homologation','Lancia built just over 200 road-going Stradale cars so the rally 037 could race in Group B. It was the last rear-wheel-drive car to win the World Rally Championship.'],eng_:['Supercharged Abarth I4','A 2.0 L four-cylinder with a Volumex supercharger sits behind the seats, driving the rear wheels.'],roof:['Pininfarina Shape','The body was styled by Pininfarina on a Dallara-built tubular chassis with glass-fibre and Kevlar panels.'],tail:['Rally Heritage','The 037 beat the four-wheel-drive Audi quattro to the 1983 World Rally Championship for Makes.']},
  fulvia:{eng:'front',nose:['Fanalone','The 1.6 HF earned the nickname "Fanalone" ("big lamp") for the large auxiliary headlights fitted to the rally cars.'],eng_:['Narrow-Angle V4','Lancia\'s V4 has a cylinder angle of just 13 degrees, so the whole engine is compact enough to sit ahead of the front axle of this front-wheel-drive car.'],roof:['Monte Carlo Winner','A Fulvia HF won the 1972 Monte Carlo Rally, and Lancia took the International Championship for Makes that year.'],tail:['Rally Livery','Number 2 and the Spear-Italy hood decals mark this car as a works-style rally entry.']},
  dawn:{eng:'front',nose:['Spirit of Ecstasy','The hood ornament dates to 1911 and retracts into the grille if struck.'],eng_:['6.6 L V12','A twin-turbo V12 makes 563 hp. Rolls-Royce calls the effortless delivery "waftability".'],roof:['Silent Roof','The fabric roof opens or closes in about 22 seconds, silently, at up to 50 km/h.'],side:['Coach Doors','The rear-hinged coach doors are a Rolls-Royce signature.']},
@@ -4386,6 +4497,7 @@ const PROF={
   chiron: {nf:8,seq:[0,1],spread:.04,pipe:1,   res:.5, ik:.8, br:.9,  vol:1,   idle:800, red:6700,tb:.9,bo:1},
   dawn:   {nf:6,seq:[0,1],spread:.03,pipe:1.2, res:.35,ik:.45,br:.55, vol:.6,  idle:600, red:5800,tb:.12},
   fulvia: {nf:2,seq:[0,1],spread:.14,pipe:.75, res:.7, ik:1.0,br:1.2, vol:.85,idle:1000,red:6900},
+  c5:     {nf:4,seq:XP8,  spread:.16,pipe:1.15,res:.6, ik:1.05,br:.9, vol:1.0, idle:700, red:6000},
   l037:   {nf:2,seq:[0,1],spread:.12,pipe:.85, res:.6, ik:1.2,br:1.1, vol:.95,idle:1000,red:7600,tb:.5},
   nsx:    {nf:3,seq:[0,1],spread:.1, pipe:.9,  res:.6, ik:1,  br:1.1, vol:.95, idle:900, red:7500,tb:.4,ev:.5},
   prius:  {nf:2,seq:[0,0],spread:.1, pipe:.7,  res:.4, ik:.6, br:.6,  vol:.55,idle:1000,red:5200,ev:1},
@@ -4728,13 +4840,13 @@ function cineCam(){
    None of it happens in challenges, with the Beta Car / Scout's Ship, in admin-disabled traffic, or when an exit is too close to finish the event. */
 const EVC={tunnelOdds:5,ambientSecs:120,afterEvent:20,hiMphCap:125,policeMi:5,policeMaxGap:110,convoySecs:30,raceMi:5,streetMi:5,arcadeMi:5};
 /* convoy members are the real shop cars (clones of the loaded car models), never traffic models or token / Black Market cars */
-const CV_IDS=['gt','enzo','viper','nsx','charger','zonda','daytona','m3','xkr','f360','ccx','r34','raptor','chiron','aero','prius','dawn','fulvia','l037'];
+const CV_IDS=['gt','enzo','viper','nsx','charger','zonda','daytona','m3','xkr','f360','ccx','r34','raptor','chiron','aero','prius','dawn','fulvia','l037','c5'];
 function cvMake(id){
   const c=CARS.find(q=>q.id===id); if(!c||!c.root||(LAZY[id]&&LAZY[id].st!==2)) return null;
   const m=c.root.clone(true), rm=[]; m.visible=true;
   /* wheels: the car's spin/steer objects are tracked by reference in its wheel array, so find their counterparts in the clone (clone(true) copies the tree 1:1, same order) and drive those */
   const src=[], dst=[]; c.root.traverse(o=>src.push(o)); m.traverse(o=>dst.push(o));
-  const WL={gt:wheels,enzo:enzoWheels,viper:viperWheels,nsx:nsxWheels,charger:chargerWheels,zonda:zondaWheels,daytona:daytonaWheels,m3:m3Wheels,xkr:xkrWheels,f360:f360Wheels,ccx:ccxWheels,r34:r34Wheels,raptor:raptorWheels,chiron:chironWheels,aero:aeroWheels,prius:priusWheels,dawn:dawnWheels,fulvia:fulviaWheels,l037:l037Wheels}[id]||[], cw=[];
+  const WL={gt:wheels,enzo:enzoWheels,viper:viperWheels,nsx:nsxWheels,charger:chargerWheels,zonda:zondaWheels,daytona:daytonaWheels,m3:m3Wheels,xkr:xkrWheels,f360:f360Wheels,ccx:ccxWheels,r34:r34Wheels,raptor:raptorWheels,chiron:chironWheels,aero:aeroWheels,prius:priusWheels,dawn:dawnWheels,fulvia:fulviaWheels,l037:l037Wheels,c5:c5Wheels}[id]||[], cw=[];
   const at=o=>{ const i=o&&src.length===dst.length?src.indexOf(o):-1; return i>=0?dst[i]:null; };
   for(const w of WL){ const sp=at(w.spin||w.pivot), st=at(w.steer||w.tp); if(!sp) continue; if(st) st.rotation.y=0; if(!w.spin) sp.rotation.y=0; cw.push({sp,r:w.r||.33,angle:0}); }   // convoy cars drive straight: drop the steering the original had when it was cloned
   m.traverse(o=>{ if(o.isLight||o.isSprite) rm.push(o); }); rm.forEach(o=>{ if(o.parent) o.parent.remove(o); });
@@ -5822,6 +5934,7 @@ function frame(){
   enzoTreadUniforms.omega.value=w0; }
   if(ccxRoot.visible) for(let _wi=0,_ws=ccxWheels,w;_wi<_ws.length&&((w=_ws[_wi]),true);_wi++){ w.angle+=speed/w.r*dt; w.spin.rotation.x=w.angle; if(w.front) w.steer.rotation.y=sa; }
   if(r34Root.visible) for(let _wi=0,_ws=r34Wheels,w;_wi<_ws.length&&((w=_ws[_wi]),true);_wi++){ w.angle+=speed/w.r*dt; w.spin.rotation.x=w.angle; if(w.front) w.steer.rotation.y=sa; }
+  if(c5Root.visible){ for(let _wi=0,_ws=c5Wheels,w;_wi<_ws.length&&((w=_ws[_wi]),true);_wi++){ w.angle+=speed/w.r*dt; w.spin.rotation.x=w.angle; if(w.front) w.steer.rotation.y=sa; } c5Update(dt); }
   if(raptorRoot.visible) for(let _wi=0,_ws=raptorWheels,w;_wi<_ws.length&&((w=_ws[_wi]),true);_wi++){ w.angle+=speed/w.r*dt; w.spin.rotation.x=w.angle; if(w.front) w.steer.rotation.y=sa; }
   if(f360Root.visible) for(let _wi=0,_ws=f360Wheels,w;_wi<_ws.length&&((w=_ws[_wi]),true);_wi++){ w.angle+=speed/w.r*dt; w.spin.rotation.x=w.angle; if(w.front) w.steer.rotation.y=sa; }
   if(xkrRoot.visible) for(let _wi=0,_ws=xkrWheels,w;_wi<_ws.length&&((w=_ws[_wi]),true);_wi++){ w.angle+=speed/w.r*dt; w.spin.rotation.x=w.angle; if(w.front) w.steer.rotation.y=sa; }
@@ -5840,7 +5953,7 @@ function frame(){
   blurMat.opacity=.78*smooth(5,28,w0);
   car.rotation.set(-Math.atan(roadSlopeAt(0))-accS*.0022+Math.sin(time*1.3)*.0006*gauss(speed,0,30)+JMP.pitch,yaw,ayS*.0035+JMP.jr,'YXZ');   // arcade jumps: pitch + barrel roll
   car.position.set(px,yAt(0)+JMP.y+Math.sin(time*9.3)*.0012*gauss(speed,0,30)+Math.sin(time*2.1)*.0015,0);
-  car.updateMatrixWorld(true); if(PAINT_U.dualOn.value>.5||PAINT_U.stripe.value>.5||enzoRoot.visible||zondaRoot.visible||daytonaRoot.visible||aeroRoot.visible||chironRoot.visible||m3Root.visible||xkrRoot.visible||f360Root.visible||ccxRoot.visible||r34Root.visible||raptorRoot.visible) PAINT_U.carInv.value.copy(car.matrixWorld).invert();   // car-space axes for dual paint, Viper stripes and lamp glow, from THIS frame's pose (was one frame stale)
+  car.updateMatrixWorld(true); if(PAINT_U.dualOn.value>.5||PAINT_U.stripe.value>.5||enzoRoot.visible||zondaRoot.visible||daytonaRoot.visible||aeroRoot.visible||chironRoot.visible||m3Root.visible||xkrRoot.visible||f360Root.visible||ccxRoot.visible||r34Root.visible||raptorRoot.visible||c5Root.visible) PAINT_U.carInv.value.copy(car.matrixWorld).invert();   // car-space axes for dual paint, Viper stripes and lamp glow, from THIS frame's pose (was one frame stale)
   blob.position.set(px,.012,-.1); blob.rotation.z=yaw;
 
   // follow camera
