@@ -314,6 +314,59 @@
   #cine .cap{position:absolute;left:0;right:0;bottom:15vh;text-align:center;font-weight:700;letter-spacing:.3em;font-size:clamp(14px,2.4vw,22px);text-transform:uppercase;opacity:0;transform:translateY(10px);transition:opacity .8s,transform .8s;text-shadow:0 2px 12px rgba(0,0,0,.8)}
   #cine .cap.in{opacity:1;transform:none}
   #cine .cap em{display:block;font-style:normal;letter-spacing:.05em;font-size:1.9em;color:#7dffb0;margin-top:4px;font-variant-numeric:tabular-nums}
+
+  /* Shared menu visual language: match the title screen's cream buttons + red underline, with compact responsive sizing. */
+  .card{box-sizing:border-box;padding:clamp(12px,2.2vw,18px);border-radius:10px;background:rgba(12,15,20,.94);border:1px solid rgba(243,239,230,.22);box-shadow:0 12px 36px rgba(0,0,0,.42);max-height:90dvh;overflow:auto;overscroll-behavior:contain}
+  .card h1{font-size:clamp(19px,3vw,25px);letter-spacing:-.25px;margin:0 0 3px}
+  .card p{margin:3px 0 8px}
+  .card button:not(.tb),#garage button,#paintPanel button,#powerPanel button,#loadout button,#gfx button,#adm button,#lb button,#lbName button,#chMenu button,#shop button,#bm button{
+    box-sizing:border-box;position:relative;border-radius:3px 9px 3px 9px;padding:6px 11px;min-height:36px;font-size:12px;font-weight:700;letter-spacing:.035em;text-transform:uppercase;
+    border:1px solid rgba(24,24,24,.24);background:linear-gradient(180deg,#f3efe6 0%,#d8d2c5 100%);color:#292a2d;
+    box-shadow:0 3px 9px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.72);transition:filter .14s,transform .14s,border-color .14s;
+  }
+  .card button:not(.tb)::after,#garage button::after,#paintPanel button::after,#powerPanel button::after,#loadout button::after,#gfx button::after,#adm button::after,#lb button::after,#lbName button::after,#chMenu button::after,#shop button::after,#bm button::after{
+    content:'';display:block;height:2px;margin:4px -2px -4px;background:linear-gradient(90deg,#b30d0d,#ff2a2a 60%,#b30d0d);opacity:.95;
+  }
+  .card button:not(.tb):hover:not(:disabled),#garage button:hover:not(:disabled),#paintPanel button:hover:not(:disabled),#powerPanel button:hover:not(:disabled),#loadout button:hover:not(:disabled),#gfx button:hover:not(:disabled),#adm button:hover:not(:disabled),#lb button:hover:not(:disabled),#lbName button:hover:not(:disabled),#chMenu button:hover:not(:disabled),#shop button:hover:not(:disabled),#bm button:hover:not(:disabled){filter:brightness(1.07);transform:translateY(-1px)}
+  .card button:not(.tb):disabled,#garage button:disabled,#paintPanel button:disabled,#powerPanel button:disabled,#loadout button:disabled,#gfx button:disabled,#adm button:disabled,#lb button:disabled,#lbName button:disabled,#chMenu button:disabled,#shop button:disabled,#bm button:disabled{opacity:.42;filter:none;transform:none;cursor:default}
+  /* Keep functional/status colors (owned, equipped, selected, destructive) distinct from the shared default. */
+  .card button.on,.gTabs .on,.lbtabs button.on,.gopt.on,.gcar.eq,.sw.eq,.sw.own,.carshop-row.owned button,.bmbuy.own,.sbtn.danger,.admb.danger{border-color:currentColor}
+  .card .sbtn,.card .admb,.card .bmbuy,.card .tipjar-donate{padding:6px 10px;min-height:34px}
+  .card .cols{gap:clamp(8px,2vw,14px);margin:8px 0}
+  .card .bmi{gap:7px;margin:9px 0}
+  .card .bmi div{padding:8px 6px}
+  .card .items{gap:7px;margin:9px 0}
+  .card .item{padding:8px 4px}
+  .card .loadrow{padding:7px 2px;gap:9px}
+  .card .sec{margin:10px 0 5px;padding-top:8px}
+  .chc{gap:8px;margin:5px 0;padding:7px 9px;border-radius:5px 10px 5px 10px}
+  .carshop-row{gap:8px;padding:8px;margin:6px 0;border-radius:6px}
+  .gcar{padding:8px 10px;border-radius:5px 10px 5px 10px}
+  .sw{border-radius:5px 9px 5px 9px;padding:6px 3px}
+  .gopt{padding:8px 10px;border-radius:5px 10px 5px 10px}
+  .lbtabs button{padding:5px 9px;min-height:32px}
+  #tutorial .card{padding:clamp(12px,2.2vw,18px)}
+  #tutorial .tutgrid{gap:7px}
+  #tutorial .tutitem{padding:8px;border-radius:6px}
+  @media(max-width:640px){
+    .card{width:min(96vw,100%);max-height:calc(100dvh - 16px);padding:12px;border-radius:9px}
+    .card h1{font-size:20px}
+    .card button:not(.tb),#garage button,#paintPanel button,#powerPanel button,#loadout button,#gfx button,#adm button,#lb button,#lbName button,#chMenu button,#shop button,#bm button{padding:6px 9px;min-height:38px;font-size:11px}
+    .carshop-row{gap:7px;padding:7px}
+    .carshop-row strong{font-size:13px}
+    .carshop-row button{white-space:normal;max-width:42%;}
+    #chMenu .card,#gfx .card,#tutorial .card{max-height:calc(100dvh - 16px)}
+    #tutorial .tutgrid{grid-template-columns:1fr 1fr}
+  }
+  @media(max-width:420px){
+    .card{padding:10px}
+    .card h1{font-size:18px}
+    .cols{gap:8px}
+    .items{grid-template-columns:repeat(2,1fr)}
+    #tutorial .tutgrid{grid-template-columns:1fr}
+    .chc .chn{width:24px;font-size:16px}
+    .chc .chr{font-size:10px}
+  }
 </style>
 </head>
 <body>
