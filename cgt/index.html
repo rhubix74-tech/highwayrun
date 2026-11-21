@@ -4471,6 +4471,7 @@ function engineTick(dt){
    Songs you add with + are measured in the browser and corrected the same way. */
 const RADIO=[
  {f:'audio15.mp3',t:'You',a:'Lane 8',d:214,g:9.2},
+ {f:'audio16.mp3',t:'Pyramid',a:'Astral',d:316,g:0},
  {f:'audio14.mp3',t:'Ingrid Is a Hybrid',a:'Dusky',d:257,g:3.8},
  {f:'audio13.mp3',t:'Hydra',a:'Fred V & Grafix',d:246,g:2.3},
  {f:'audio12.mp3',t:'Paddling Out',a:'Miike Snow',d:223,g:-2.1},
@@ -4817,7 +4818,7 @@ const RK={   // per-opponent race tuning. vmin/vf: floor and target as fractions
   plane:{n:'CARGO PLANE',w:'plane',air:1,vmin:.72,vf:1.0,acc:1.65,dec:2.25,cap:0,wx:'rain',song:'Hydra'},
   train:{n:'FREIGHT TRAIN',w:'train',air:0,vmin:.68,vf:.95,acc:1.45,dec:2.0,cap:0,wx:'clear',song:'Train in Vain'},
   duster:{n:'CROP DUSTER',w:'duster',air:1,vmin:.5,vf:.8,acc:1.9,dec:2.6,cap:.8,wx:'clear',song:'A Moment Apart'},
-  frecce:{n:'FRECCE TRICOLORI',w:'jets',air:1,vmin:.7,vf:.88,acc:2.3,dec:2.8,cap:.88,wx:'clear',song:'The Power (feat. Dizzee Rascal)'}};
+  frecce:{n:'FRECCE TRICOLORI',w:'jets',air:1,vmin:.7,vf:.88,acc:2.3,dec:2.8,cap:.88,wx:'clear',song:'Pyramid'}};
 /* --- smoke: one pooled THREE.Points (soft round puffs, per-puff colour / size / alpha). Puffs live in straight world coordinates, scroll back with the road
    and are bent onto the road on the CPU, exactly like the aircraft (so they hang in the air where the aircraft was, bends and hills included). */
 const SMK={n:720,i:0,live:false,pts:null,mat:null,acc:[0,0,0,0,0,0,0,0]};
@@ -5006,8 +5007,8 @@ function evBalloon(c,dt,H){
   if(H) H.push('<b style="color:#ffd76a">RACE: BALLOONS</b> · '+c.passed+' / '+c.balloons.length+' overtaken',(c.R/1609.34).toFixed(0)+'-mile stretch · '+remain+' remaining · '+(left/1609.34).toFixed(2)+' mi to finish');
 }
 /* ---- state machine ---- */
-function evPlayTheme(track){
-  if(!track||track.bad||radio.manualOff) return;
+function evPlayTheme(track,force=false){
+  if(!track||track.bad||(!force&&radio.manualOff)) return;
   // Showcase music temporarily borrows the radio element; remember exactly what was playing.
   if(!EV.theme) EV.theme={on:radio.on,track:radio.cur,time:radio.a.currentTime||0,loop:radio.a.loop,src:radio.a.currentSrc||radio.a.src,manualOff:!!radio.manualOff};
   if(!radio.on) setRadio(true);
@@ -5054,7 +5055,7 @@ function evStart(kind){
     const vMin=top*K.vmin, vTarget=Math.max(vMin,reach*K.vf)*(hard?1.03:1);   // balance: opponents were too slow, so the player won too often
     EV.cur={k:kind,t:0,wx:K.wx,P0:runDist,Q:0,v0:speed,vt:vTarget,vMin,aiV:speed,o,R:rmi*1609.34,mi:rmi,hard,topMs:top,cap:K.cap?Math.min(.965,K.cap+(hard?.08:0)):0}; o.visible=true; if(kind==='train') o.userData.track.visible=true;
     popup((hard?'CHALLENGE RACE · ':'SHOWCASE RACE · ')+K.n+' · '+rmi+' MILES','good'); cinBegin(kind);
-    { const sg=RADIO.find(t=>t.t===K.song); evPlayTheme(sg); }   // temporary showcase theme; restore the previous radio state at event end
+    { const sg=RADIO.find(t=>t.t===K.song); evPlayTheme(sg,kind==='frecce'); }   // Frecce Tricolori forces Pyramid; other showcase themes respect manual radio-off
     return true; }
   if(kind==='arcade'){
     ensureArc(); ARC.on=true;
