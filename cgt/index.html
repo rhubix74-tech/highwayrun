@@ -3808,13 +3808,13 @@ function physics(dt){
   // simcade steering: speed-sensitive lock, grip-limited yaw rate, heading self-centres when steering is released
   const v=speed, steerV=isBetaCar()?Math.min(v,58):v, rate=(Math.abs(st)>Math.abs(steer)?3.4:5)/(1+steerV/45), d=st-steer;
   steer+=Math.sign(d)*Math.min(Math.abs(d),rate*dt);
-  const dmax=.55/(1+Math.pow(steerV/14,1.5)), amax=(11-4*brkS-2*hb)*(1-.07*slipK()), lim=amax/Math.max(steerV,3);
-  yr=Math.max(-lim,Math.min(lim,v*Math.tan(dmax*steer)/2.7))*(1+.5*hb);
+  const dmax=.55*VEH.stK/(1+Math.pow(steerV/14,1.5)), amax=(11*VEH.latK*(1+VEH.df*Math.min(1.6,(v*v)/4900))*(1-VEH.ov*thrS*Math.min(1,Math.abs(steer)*2))-4*brkS-2*hb)*(1-.07*slipK()), lim=amax/Math.max(steerV,3);   // per-car grip, downforce and power-oversteer
+  yr=Math.max(-lim,Math.min(lim,v*Math.tan(dmax*steer)/VEH.wb))*(1+.5*hb);   // per-car wheelbase
   yaw+=(yr-.8*v*kappaAt(dist))*dt;                         // road turns under you; steering assist follows ~80% of it
   yaw-=yaw*Math.min(1,(2.2-1.2*hb)*(1-Math.abs(steer))*dt); yaw=Math.max(-.5,Math.min(.5,yaw));
   tokenTick(dt); coinTick(dt); arcTick(dt); const v0=speed; driveStep(dt); if(run&&ghostLeft>0)speed=Math.max(0,speed-.12*dt); if(run&&nitrousLeft>0){nitrousLeft=Math.max(0,nitrousLeft-dt);speed=Math.min((CAR_STATS[CS.sel].topSpeedMph||205)/MPH*1.55,speed+30*dt);}
   accS+=(Math.max(-14,Math.min(8,(speed-v0)/Math.max(dt,.001)))-accS)*(1-Math.exp(-6*dt)); ayS+=(v*yr-ayS)*(1-Math.exp(-8*dt));
-  vl+=(v*Math.sin(yaw)-vl)*(1-Math.exp(-dt/(.13+.3*hb)*(1+.2*slipK())));   // tyres lag the heading: the car slides a little
+  vl+=(v*Math.sin(yaw)-vl)*(1-Math.exp(-dt/(.13*VEH.tauK+.3*hb)*(1+.2*slipK())));   // per-car tyre response   // tyres lag the heading: the car slides a little
   fwd=speed*Math.cos(yaw); px+=vl*dt;
   { const lz0=runDist-exitK()*EX; exZone=state==='exit'||((state==='run'||state==='menu')&&lz0>-160&&lz0<60); }   // rail is open and the shoulder is a free lane next to an exit
   if(state==='exit'){ const lz=runDist-exitAt; px+=(rampX(lz)-px)*Math.min(1,3*dt); yaw+=(-Math.atan(rampSlope(lz))-yaw)*Math.min(1,4*dt); vl=speed*Math.sin(yaw); }
@@ -3894,7 +3894,7 @@ function gaugeTick(){
    Sound: AudioWorklet V10 (see #v10-worklet) with a Web Audio synth fallback. A recorded-loop backend can replace
    `engineBackend` if it has init(ctx,out) / update(state,t) / pop(strength,count).
    state = {rpm, rn (0..1 rpm), thr (0..1 load), gm (volume mod: shudder + limiter), v (m/s)} */
-const VEH={m:1450, R:.355, fd:4.325, eta:.88, cdA:.83, roll:170, pw:388000, grip:10800, brake:15};
+const VEH={m:1450, R:.355, fd:4.325, eta:.88, cdA:.83, roll:170, pw:388000, grip:10800, brake:15, latK:1, wb:2.7, tauK:1, df:0, ov:0, stK:1};
 const ECFG={idle:900, redline:8400 /* 8600 with upgraded cam */, cyl:10, period:.31, gears:[3.20,1.87,1.36,1.07,.90,.75]};
 ECFG.tot=ECFG.gears.map(g=>g*VEH.fd);
 ECFG.ratio=ECFG.tot.map(t=>t*60/(2*Math.PI*VEH.R));          // engine rpm per m/s in each gear
@@ -3914,11 +3914,45 @@ const CAR_PHYS={c5:{fk:.94,cdA:1.3,gk:.95},nsx:{fk:1.36,cdA:1.08,gk:1.1},dawn:{f
      // dawn: heavy (2.56 t) – estimated from Charger tuning for 0-60 ~4.9 s, ~155 mph
   prius:{fk:.4,cdA:.72,gk:1.9},   // prius: tuned (headless sim of this model) so 0-60 = 10.0 s, top speed = 112 mph
   jet:{fk:1.4,cdA:.45,gk:.82},tjet:{fk:1.4,cdA:.45,gk:.82},fiesta:{fk:.49,cdA:.6,gk:1.77},accord:{fk:.61,cdA:.75,gk:1.45},ram:{fk:.8,cdA:1.1,gk:1.27},aero:{fk:1.4,cdA:.45,gk:.82},chiron:{fk:1.5,cdA:.45,gk:.8},m3:{fk:.6,cdA:.7,gk:1.4},xkr:{fk:.8,cdA:.9,gk:1.2},f360:{fk:.85,cdA:.9,gk:.95},ccx:{fk:1.2,cdA:.45,gk:.85},raptor:{fk:.68,cdA:1.4,gk:2},r34:{fk:.8,cdA:.8,gk:1.3},daytona:{fk:1.02,cdA:.7,gk:.95},zonda:{fk:1.3,cdA:.65,gk:.9},gt:{fk:1,cdA:.83,gk:1},enzo:{fk:1.18,cdA:.84,gk:.95},viper:{fk:1.12,cdA:.9,gk:.95},charger:{fk:.88,cdA:1.02,gk:.95}};
+/* Per-car handling, from road-test numbers for the real cars (Car and Driver / Motor Trend / manufacturer data, rounded):
+   lat = skidpad lateral grip (g)        brk = average 60-0 mph braking (g; 60-0 ft ~ 120/g)       wb = wheelbase (m)
+   tau = tyre-lag / response multiplier (<1 = turns in sharply, >1 = slow and heavy: mass, overhang, soft tyres)
+   df  = aero downforce: extra lateral grip at (70 m/s)^2, scales with v^2      ov = power-oversteer: grip lost when you are on the throttle in a turn (RWD+power > 0, AWD <= 0)
+   st  = steering lock multiplier (trucks/limos <1, race cars >1)
+   The game's baseline (1.12 g, 1.53 g braking, 2.7 m wheelbase) is shared by every car, so each value is scaled relative to it in applyCarPhysics. */
+const HDL_DEF={lat:.95,brk:1.15,wb:2.7,tau:1,df:0,ov:0,st:1};
+const CAR_HANDLING={
+  gt:     {lat:1.00,brk:1.20,wb:2.73,tau:.92,df:.15,ov:.05,st:1.00},   // Porsche Carrera GT: ~1.0 g, 60-0 ~100 ft, active rear wing, famously snappy
+  enzo:   {lat:.98, brk:1.21,wb:2.65,tau:.88,df:.20,ov:.04,st:1.00},   // Ferrari Enzo: ~1.0 g, 60-0 ~99 ft
+  zonda:  {lat:1.45,brk:1.45,wb:2.70,tau:.80,df:.45,ov:.03,st:1.10},   // Pagani Zonda R: slicks + huge wing/diffuser, track-car grip that grows with speed
+  chiron: {lat:1.15,brk:1.25,wb:2.71,tau:1.00,df:.25,ov:0,  st:1.00},   // Bugatti Chiron: AWD, ~1.1 g, 60-0 ~100 ft, heavy (2 t) but planted
+  aero:   {lat:1.00,brk:1.05,wb:2.70,tau:.90,df:.12,ov:.06,st:1.00},   // SSC Ultimate Aero: RWD, 1000+ hp, skittish on the throttle
+  ccx:    {lat:1.10,brk:1.20,wb:2.66,tau:.88,df:.20,ov:.03,st:1.00},   // Koenigsegg CCX: light, ~1.1 g
+  f360:   {lat:.96, brk:1.11,wb:2.60,tau:.85,df:0,  ov:.03,st:1.00},   // Ferrari 360 Modena: ~0.95 g, 1.4 t aluminium, very responsive
+  r34:    {lat:.95, brk:1.07,wb:2.665,tau:.95,df:0, ov:-.04,st:1.00},  // Nissan Skyline GT-R R34: ATTESA AWD, grips harder on the throttle
+  nsx:    {lat:1.02,brk:1.20,wb:2.63,tau:.90,df:.05,ov:-.03,st:1.00},  // 2017 NSX: hybrid AWD torque vectoring, ~1.0 g
+  viper:  {lat:.98, brk:1.20,wb:2.51,tau:.90,df:.05,ov:.12,st:1.00},   // 2013 Viper GTS: short wheelbase, 640 hp RWD: eager to oversteer
+  charger:{lat:.87, brk:1.01,wb:3.05,tau:1.18,df:0, ov:.06,st:.95},    // Charger SRT8: 2 t sedan, long wheelbase
+  xkr:    {lat:.90, brk:1.00,wb:2.75,tau:1.05,df:0, ov:.06,st:.98},    // Jaguar XKR: supercharged RWD grand tourer
+  m3:     {lat:.85, brk:.96, wb:2.56,tau:.82,df:0,  ov:.04,st:1.00},   // E30 M3 Evo II: light and tossable, modest grip by modern standards
+  daytona:{lat:.80, brk:.86, wb:2.29,tau:.85,df:0,  ov:.12,st:1.00},   // 1965 Cobra Daytona: very short wheelbase, narrow 60s tyres, drum-era brakes, big V8 up front
+  c5:     {lat:.90, brk:1.07,wb:2.655,tau:.95,df:0, ov:.05,st:1.00},   // 2001 Corvette C5: ~0.9 g, 60-0 ~112 ft
+  dawn:   {lat:.82, brk:.97, wb:3.11,tau:1.40,df:0, ov:.02,st:.92},    // Rolls-Royce Dawn: 2.6 t, soft and slow to respond
+  fulvia: {lat:.75, brk:.80, wb:2.33,tau:.80,df:0,  ov:-.02,st:1.00},  // Lancia Fulvia Rallye: light FWD, narrow tyres, drums/discs of the day
+  l037:   {lat:.90, brk:.95, wb:2.45,tau:.85,df:0,  ov:.05,st:1.00},   // Lancia 037 Stradale: mid-engine RWD, 1.2 t
+  prius:  {lat:.79, brk:.97, wb:2.70,tau:1.10,df:0, ov:-.02,st:1.00},  // 2012 Prius: low-rolling-resistance tyres, ~0.79 g
+  fiesta: {lat:.70, brk:.75, wb:2.28,tau:.82,df:0,  ov:-.02,st:1.00},  // 1976 Fiesta Mk1: tiny, light, skinny tyres
+  accord: {lat:.78, brk:.89, wb:2.72,tau:1.05,df:0, ov:-.02,st:1.00},  // 1996 Accord: family FWD sedan
+  ram:    {lat:.72, brk:.80, wb:3.56,tau:1.35,df:0, ov:.04,st:.88},    // Dodge Ram Rumble Bee: heavy crew-cab pickup, long wheelbase, tall
+  raptor: {lat:.70, brk:.86, wb:3.69,tau:1.30,df:0, ov:.03,st:.88}     // F-150 SVT Raptor: 2.7 t off-road truck on tarmac (dirt trails stay its home turf via DIRT_LOSS)
+};
 const VEH0={cdA:VEH.cdA,grip:VEH.grip,pw:VEH.pw}; let physId=null;
 function applyCarPhysics(){
   const id=CS.sel; if(id===physId) return; physId=id;
   const p=CAR_PHYS[id]||CAR_PHYS.gt;
   VEH.fk=p.fk; VEH.cdA=p.cdA; VEH.grip=VEH0.grip*p.fk; VEH.pw=VEH0.pw*p.fk;
+  const H=CAR_HANDLING[id]||HDL_DEF;   // handling profile (see CAR_HANDLING)
+  VEH.latK=Math.pow(H.lat/.95,.7); VEH.brake=15*Math.pow(H.brk/1.15,.8); VEH.wb=H.wb; VEH.tauK=H.tau; VEH.df=H.df; VEH.ov=H.ov; VEH.stK=H.st;
   ECFG.tot=ECFG.gears.map(g=>g*p.gk*VEH.fd);
   ECFG.ratio=ECFG.tot.map(t=>t*60/(2*Math.PI*VEH.R));
   fixGear();
