@@ -315,57 +315,63 @@
   #cine .cap.in{opacity:1;transform:none}
   #cine .cap em{display:block;font-style:normal;letter-spacing:.05em;font-size:1.9em;color:#7dffb0;margin-top:4px;font-variant-numeric:tabular-nums}
 
-  /* Shared menu visual language: match the title screen's cream buttons + red underline, with compact responsive sizing. */
-  .card{box-sizing:border-box;padding:clamp(12px,2.2vw,18px);border-radius:10px;background:rgba(12,15,20,.94);border:1px solid rgba(243,239,230,.22);box-shadow:0 12px 36px rgba(0,0,0,.42);max-height:90dvh;overflow:auto;overscroll-behavior:contain}
-  .card h1{font-size:clamp(19px,3vw,25px);letter-spacing:-.25px;margin:0 0 3px}
-  .card p{margin:3px 0 8px}
-  .card button:not(.tb),#garage button,#paintPanel button,#powerPanel button,#loadout button,#gfx button,#adm button,#lb button,#lbName button,#chMenu button,#shop button,#bm button{
-    box-sizing:border-box;position:relative;border-radius:3px 9px 3px 9px;padding:6px 11px;min-height:36px;font-size:12px;font-weight:700;letter-spacing:.035em;text-transform:uppercase;
-    border:1px solid rgba(24,24,24,.24);background:linear-gradient(180deg,#f3efe6 0%,#d8d2c5 100%);color:#292a2d;
-    box-shadow:0 3px 9px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.72);transition:filter .14s,transform .14s,border-color .14s;
+  /* Unified compact menu styling — shared generic menus only; title buttons (.tb) remain unchanged. */
+  :is(#ov,#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm,#tutorial,#garage,#paintPanel,#powerPanel) .card{
+    box-sizing:border-box; width:min(94vw,760px); max-width:760px; padding:clamp(10px,1.7vw,16px);
+    border-radius:8px; background:rgba(12,15,20,.94); border:1px solid rgba(243,239,230,.24);
+    box-shadow:0 10px 28px rgba(0,0,0,.4); max-height:calc(100dvh - 20px); overflow:auto; overscroll-behavior:contain;
   }
-  .card button:not(.tb)::after,#garage button::after,#paintPanel button::after,#powerPanel button::after,#loadout button::after,#gfx button::after,#adm button::after,#lb button::after,#lbName button::after,#chMenu button::after,#shop button::after,#bm button::after{
-    content:'';display:block;height:2px;margin:4px -2px -4px;background:linear-gradient(90deg,#b30d0d,#ff2a2a 60%,#b30d0d);opacity:.95;
+  :is(#ov,#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm,#tutorial,#garage,#paintPanel,#powerPanel) .card h1{font-size:clamp(18px,2.6vw,24px);margin:0 0 4px}
+  :is(#ov,#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm,#tutorial,#garage,#paintPanel,#powerPanel) .card p{margin:3px 0 7px}
+  :is(#ov,#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm,#tutorial,#garage,#paintPanel,#powerPanel) .card button:not(.tb):not(#smile):not(.item):not(.sw):not(.gopt):not(.sbtn):not(.admb):not(.bmbuy):not(.tipjar-donate),
+  #garage button:not(.tb),#paintPanel button:not(.tb),#powerPanel button:not(.tb),#loadout button:not(.tb),#gfx button:not(.tb),#adm button:not(.tb),#lb button:not(.tb),#lbName button:not(.tb),#chMenu button:not(.tb),#shop button:not(.tb):not(#smile):not(.item),#bm button:not(.tb):not(.bmbuy){
+    box-sizing:border-box!important; position:relative!important; border-radius:3px 9px 3px 9px!important;
+    padding:6px 10px!important; min-height:34px!important; font-size:clamp(11px,1.3vw,13px)!important;
+    font-weight:750!important; letter-spacing:.035em!important; text-transform:uppercase!important;
+    border:1px solid rgba(30,25,25,.35)!important; color:#292a2d!important;
+    background:linear-gradient(180deg,#f3efe6 0%,#d8d2c5 100%)!important;
+    box-shadow:0 2px 7px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.7)!important;
+    transition:filter .14s,transform .14s!important;
   }
-  .card button:not(.tb):hover:not(:disabled),#garage button:hover:not(:disabled),#paintPanel button:hover:not(:disabled),#powerPanel button:hover:not(:disabled),#loadout button:hover:not(:disabled),#gfx button:hover:not(:disabled),#adm button:hover:not(:disabled),#lb button:hover:not(:disabled),#lbName button:hover:not(:disabled),#chMenu button:hover:not(:disabled),#shop button:hover:not(:disabled),#bm button:hover:not(:disabled){filter:brightness(1.07);transform:translateY(-1px)}
-  .card button:not(.tb):disabled,#garage button:disabled,#paintPanel button:disabled,#powerPanel button:disabled,#loadout button:disabled,#gfx button:disabled,#adm button:disabled,#lb button:disabled,#lbName button:disabled,#chMenu button:disabled,#shop button:disabled,#bm button:disabled{opacity:.42;filter:none;transform:none;cursor:default}
-  /* Keep functional/status colors (owned, equipped, selected, destructive) distinct from the shared default. */
-  .card button.on,.gTabs .on,.lbtabs button.on,.gopt.on,.gcar.eq,.sw.eq,.sw.own,.carshop-row.owned button,.bmbuy.own,.sbtn.danger,.admb.danger{border-color:currentColor}
-  .card .sbtn,.card .admb,.card .bmbuy,.card .tipjar-donate{padding:6px 10px;min-height:34px}
-  .card .cols{gap:clamp(8px,2vw,14px);margin:8px 0}
-  .card .bmi{gap:7px;margin:9px 0}
-  .card .bmi div{padding:8px 6px}
-  .card .items{gap:7px;margin:9px 0}
-  .card .item{padding:8px 4px}
-  .card .loadrow{padding:7px 2px;gap:9px}
-  .card .sec{margin:10px 0 5px;padding-top:8px}
-  .chc{gap:8px;margin:5px 0;padding:7px 9px;border-radius:5px 10px 5px 10px}
-  .carshop-row{gap:8px;padding:8px;margin:6px 0;border-radius:6px}
-  .gcar{padding:8px 10px;border-radius:5px 10px 5px 10px}
-  .sw{border-radius:5px 9px 5px 9px;padding:6px 3px}
-  .gopt{padding:8px 10px;border-radius:5px 10px 5px 10px}
-  .lbtabs button{padding:5px 9px;min-height:32px}
-  #tutorial .card{padding:clamp(12px,2.2vw,18px)}
-  #tutorial .tutgrid{gap:7px}
-  #tutorial .tutitem{padding:8px;border-radius:6px}
+  :is(#ov,#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm,#tutorial,#garage,#paintPanel,#powerPanel) .card button:not(.tb):not(#smile):not(.item):not(.sw):not(.gopt):not(.sbtn):not(.admb):not(.bmbuy):not(.tipjar-donate)::after,
+  #garage button:not(.tb)::after,#paintPanel button:not(.tb)::after,#powerPanel button:not(.tb)::after,#loadout button:not(.tb)::after,#gfx button:not(.tb)::after,#adm button:not(.tb)::after,#lb button:not(.tb)::after,#lbName button:not(.tb)::after,#chMenu button:not(.tb)::after,#shop button:not(.tb):not(#smile):not(.item)::after,#bm button:not(.tb):not(.bmbuy)::after{
+    content:''!important; display:block!important; height:2px!important; margin:4px -2px -4px!important;
+    background:linear-gradient(90deg,#b30d0d,#ff2a2a 60%,#b30d0d)!important; opacity:.95!important;
+  }
+  :is(#ov,#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm,#tutorial,#garage,#paintPanel,#powerPanel) button:not(.tb):not(:disabled):hover{filter:brightness(1.06)!important;transform:translateY(-1px)}
+  :is(#ov,#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm,#tutorial,#garage,#paintPanel,#powerPanel) button:disabled{opacity:.45!important;filter:none!important;transform:none!important}
+  /* Active/selected tabs retain a visible red state rather than looking like plain defaults. */
+  :is(#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm) button.on,
+  :is(#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm) .on button{border-color:#b30d0d!important;box-shadow:inset 0 0 0 1px rgba(179,13,13,.2)!important}
+  .card .cols{gap:clamp(8px,1.6vw,14px);margin:8px 0}
+  .card .items{gap:6px;margin:8px 0}
+  .card .loadrow{padding:6px 2px;gap:8px}
+  .card .sec{margin:9px 0 4px;padding-top:7px}
+  .chc{gap:7px;margin:5px 0;padding:7px 8px;border-radius:4px 9px 4px 9px}
+  .carshop-row{gap:7px;padding:7px;margin:5px 0;border-radius:5px}
+  .gcar{padding:7px 9px;border-radius:4px 9px 4px 9px}
+  .lbtabs button{padding:5px 8px;min-height:30px}
+  /* Run results: compress the five actions into a flexible row that wraps cleanly. */
+  #ov .btns{display:flex;flex-wrap:wrap;justify-content:center;align-items:stretch;gap:7px;margin:8px 0 3px}
+  #ov .btns button,#ov #goBtn,#ov #shopBtn,#ov #garageBtn,#ov #chBtn,#ov #menuBtn{
+    flex:1 1 110px; min-width:0; width:auto; max-width:190px; border-radius:3px 10px 3px 10px!important;
+    padding:7px 9px!important; font-size:clamp(11px,1.4vw,14px)!important; margin:0!important;
+    background:linear-gradient(180deg,#f3efe6 0%,#d8d2c5 100%)!important; color:#292a2d!important;
+    border:1px solid rgba(24,24,24,.3)!important; font-weight:750!important; text-transform:uppercase!important;
+  }
+  #ov .card{width:min(94vw,760px);padding:clamp(10px,1.7vw,16px)}
+  #ov .how{margin-top:8px;font-size:clamp(10px,1.2vw,12px);line-height:1.45}
   @media(max-width:640px){
-    .card{width:min(96vw,100%);max-height:calc(100dvh - 16px);padding:12px;border-radius:9px}
-    .card h1{font-size:20px}
-    .card button:not(.tb),#garage button,#paintPanel button,#powerPanel button,#loadout button,#gfx button,#adm button,#lb button,#lbName button,#chMenu button,#shop button,#bm button{padding:6px 9px;min-height:38px;font-size:11px}
-    .carshop-row{gap:7px;padding:7px}
-    .carshop-row strong{font-size:13px}
-    .carshop-row button{white-space:normal;max-width:42%;}
-    #chMenu .card,#gfx .card,#tutorial .card{max-height:calc(100dvh - 16px)}
-    #tutorial .tutgrid{grid-template-columns:1fr 1fr}
+    :is(#ov,#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm,#tutorial,#garage,#paintPanel,#powerPanel) .card{width:96vw;max-height:calc(100dvh - 12px);padding:10px;border-radius:7px}
+    #ov .btns{gap:6px}
+    #ov .btns button,#ov #goBtn,#ov #shopBtn,#ov #garageBtn,#ov #chBtn,#ov #menuBtn{flex-basis:calc(50% - 6px);max-width:none;min-height:34px!important;font-size:11px!important}
+    .carshop-row{gap:6px;padding:6px}.carshop-row strong{font-size:12px}.carshop-row button{white-space:normal;max-width:44%}
+    #tutorial .tutgrid{grid-template-columns:1fr 1fr;gap:6px}
   }
   @media(max-width:420px){
-    .card{padding:10px}
-    .card h1{font-size:18px}
-    .cols{gap:8px}
-    .items{grid-template-columns:repeat(2,1fr)}
+    #ov .btns button,#ov #goBtn,#ov #shopBtn,#ov #garageBtn,#ov #chBtn,#ov #menuBtn{flex-basis:100%}
+    .card .cols{gap:6px}.items{grid-template-columns:repeat(2,1fr)}
     #tutorial .tutgrid{grid-template-columns:1fr}
-    .chc .chn{width:24px;font-size:16px}
-    .chc .chr{font-size:10px}
   }
 </style>
 </head>
