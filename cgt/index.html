@@ -434,7 +434,7 @@
     <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-bottom:8px">Challenges</div>
     <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:12px"><button class="admb" id="admListB" type="button">Unlock Challenge List B</button><button class="admb" id="admAllCh" type="button">Unlock All Challenges</button></div>
     <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-bottom:8px">Road events</div>
-    <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:12px"><button class="admb" data-ev="police" type="button">Police Chase</button><button class="admb" data-ev="convoy" type="button">Convoy</button><button class="admb" data-ev="street" type="button">Street Race</button><button class="admb" data-ev="boss" type="button">Boss: Tank</button><button class="admb" data-ev="plane" type="button">Race: Cargo Plane</button><button class="admb" data-ev="train" type="button">Race: Train</button><button class="admb" data-ev="balloon" type="button">Race: Balloons</button><button class="admb" data-ev="duster" type="button">Race: Crop Duster</button><button class="admb" data-ev="frecce" type="button">Race: Frecce Tricolori</button><button class="admb" data-ev="arcade" type="button">Arcade</button><button class="admb" data-ev="end" type="button">End Event</button></div>
+    <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:12px"><button class="admb" data-ev="police" type="button">Police Chase</button><button class="admb" data-ev="convoy" type="button">Convoy</button><button class="admb" data-ev="street" type="button">Street Race</button><button class="admb" data-ev="boss" type="button">Boss: Tank</button><button class="admb" data-ev="plane" type="button">Race: Cargo Plane</button><button class="admb" data-ev="train" type="button">Race: Train</button><button class="admb" data-ev="balloon" type="button">Race: Balloons</button><button class="admb" data-ev="duster" type="button">Race: Crop Duster</button><button class="admb" data-ev="frecce" type="button">Race: Frecce Tricolori</button><button class="admb" data-ev="arcade" type="button">Arcade</button><button class="admb" data-ev="construction" type="button">Construction</button><button class="admb" data-ev="speedlimit" type="button">Speed Limit</button><button class="admb" data-ev="end" type="button">End Event</button></div>
     <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-bottom:8px">World controls</div>
     <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap">
       <button class="admb" id="admDay" type="button">Force Day</button>
@@ -1672,7 +1672,7 @@ function layoutRow(r,chain,wall){
       c.recklessTimer=1; c.recklessFrom=c.x; c.recklessTarget=c.x; c.recklessBlend=1;
     } else { c.reckless=false; }
   }
-  tokenOnRow(r,chain,wall); coinOnRow(r,wall); arcadeOnRow(r,wall);
+  tokenOnRow(r,chain,wall); coinOnRow(r,wall); arcadeOnRow(r,wall); consOnRow(r,wall);
 }
 for(let i=0;i<NROWS;i++){ const r={z:0,pz:0,gap:1,chain:1,wall:false,hit:false,done:false,cars:[]};
   for(let j=0;j<3;j++){ const c=makeTraffic(false); trafficCars.push(c); r.cars.push(c); } rows.push(r); }
@@ -3812,7 +3812,7 @@ function physics(dt){
   yr=Math.max(-lim,Math.min(lim,v*Math.tan(dmax*steer)/VEH.wb))*(1+.5*hb);   // per-car wheelbase
   yaw+=(yr-.8*v*kappaAt(dist))*dt;                         // road turns under you; steering assist follows ~80% of it
   yaw-=yaw*Math.min(1,(2.2-1.2*hb)*(1-Math.abs(steer))*dt); yaw=Math.max(-.5,Math.min(.5,yaw));
-  tokenTick(dt); coinTick(dt); arcTick(dt); const v0=speed; driveStep(dt); if(run&&ghostLeft>0)speed=Math.max(0,speed-.12*dt); if(run&&nitrousLeft>0){nitrousLeft=Math.max(0,nitrousLeft-dt);speed=Math.min((CAR_STATS[CS.sel].topSpeedMph||205)/MPH*1.55,speed+30*dt);}
+  tokenTick(dt); coinTick(dt); arcTick(dt); consTick(dt); const v0=speed; driveStep(dt); if(run&&ghostLeft>0)speed=Math.max(0,speed-.12*dt); if(run&&nitrousLeft>0){nitrousLeft=Math.max(0,nitrousLeft-dt);speed=Math.min((CAR_STATS[CS.sel].topSpeedMph||205)/MPH*1.55,speed+30*dt);}
   accS+=(Math.max(-14,Math.min(8,(speed-v0)/Math.max(dt,.001)))-accS)*(1-Math.exp(-6*dt)); ayS+=(v*yr-ayS)*(1-Math.exp(-8*dt));
   vl+=(v*Math.sin(yaw)-vl)*(1-Math.exp(-dt/(.13*VEH.tauK+.3*hb)*(1+.2*slipK())));   // per-car tyre response   // tyres lag the heading: the car slides a little
   fwd=speed*Math.cos(yaw); px+=vl*dt;
@@ -4368,6 +4368,61 @@ function evArcade(c,dt,H){
   const P=runDist-c.P0, left=Math.max(0,c.R-P);
   if(P>=c.R){ popup('ARCADE COMPLETE · '+c.jumps+' JUMP'+(c.jumps===1?'':'S')+' · +'+c.jscore.toLocaleString()+' · COINS $'+(c.coins*.25).toFixed(2),'good'); evEnd(); return; }
   if(H) H.push('<b style="color:#ffd76a">ARCADE STYLE</b>',c.jumps+' jumps · +'+c.jscore.toLocaleString()+' · coins $'+(c.coins*.25).toFixed(2),(left/1609.34).toFixed(2)+' mi to go');
+}
+
+/* ---------------- EVENTS: CONSTRUCTION + SPEED LIMIT ---------------- */
+var CONS=null;
+function ensureCons(){
+  if(CONS) return CONS;
+  const cv=document.createElement('canvas'); cv.width=128; cv.height=64; const x=cv.getContext('2d'); x.fillStyle='#fff'; x.fillRect(0,0,128,64); x.fillStyle='#f26a0f';
+  for(let i=-2;i<8;i++){ x.beginPath(); x.moveTo(i*24,64); x.lineTo(i*24+16,64); x.lineTo(i*24+48,0); x.lineTo(i*24+32,0); x.closePath(); x.fill(); }
+  const tex=new THREE.CanvasTexture(cv); tex.encoding=THREE.sRGBEncoding;
+  const stripe=new THREE.MeshStandardMaterial({map:tex,roughness:.6,emissive:0x331400,emissiveIntensity:.5}), post=new THREE.MeshStandardMaterial({color:0xcfcfcf,roughness:.7}),
+    cone=new THREE.MeshStandardMaterial({color:0xff6a00,emissive:0x662200,emissiveIntensity:.6,roughness:.6}), pit=new THREE.MeshStandardMaterial({color:0x040404,roughness:1}),
+    rim=new THREE.MeshStandardMaterial({color:0xffb000,emissive:0x664400,emissiveIntensity:.8,roughness:.6});
+  [stripe,post,cone,pit,rim].forEach(m=>bendMat(m));
+  const items=[], bx=(w,h,d,m,px,py,pz)=>{ const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); o.position.set(px,py,pz); return o; };
+  for(let i=0;i<8;i++){ const g=new THREE.Group();   // block: a barrier with a striped board and a pair of warning cones
+    g.add(bx(2.6,.5,.7,post,0,.25,0),bx(2.6,.45,.12,stripe,0,.95,0),bx(.12,.7,.12,post,-1.1,.6,0),bx(.12,.7,.12,post,1.1,.6,0));
+    for(const cx of [-1.4,1.4]){ const c=new THREE.Mesh(new THREE.ConeGeometry(.28,.75,10),cone); c.position.set(cx,.37,-1.5); g.add(c); }
+    g.visible=false; g.traverse(o=>{ o.frustumCulled=false; }); scene.add(g); items.push({k:'b',mesh:g,row:null,lane:1,hit:false}); }
+  for(let i=0;i<8;i++){ const g=new THREE.Group();   // hole: a black pit with a hazard rim and two cones
+    const p=new THREE.Mesh(new THREE.PlaneGeometry(3,4),pit); p.rotation.x=-Math.PI/2; p.position.y=.04; g.add(p);
+    g.add(bx(3.3,.12,.22,rim,0,.07,2.1),bx(3.3,.12,.22,rim,0,.07,-2.1),bx(.22,.12,4.2,rim,-1.6,.07,0),bx(.22,.12,4.2,rim,1.6,.07,0));
+    for(const cx of [-1.4,1.4]){ const c=new THREE.Mesh(new THREE.ConeGeometry(.28,.75,10),cone); c.position.set(cx,.37,-2.7); g.add(c); }
+    g.visible=false; g.traverse(o=>{ o.frustumCulled=false; }); scene.add(g); items.push({k:'h',mesh:g,row:null,lane:1,hit:false}); }
+  return CONS={on:false,items,ev:null};
+}
+function consStop(){ if(!CONS) return; CONS.on=false; CONS.ev=null; for(const it of CONS.items){ it.row=null; it.mesh.visible=false; } }
+function consOnRow(r,wall){
+  if(!CONS) return;
+  for(const it of CONS.items) if(it.row===r){ it.row=null; it.mesh.visible=false; }   // the row was recycled: free what it carried
+  if(!CONS.on||wall||r.gap<0||CH.active||adminTrafficDisabled) return;
+  const occ=[false,false,false]; for(const c of r.cars) if(!c.gone) occ[c.x<-1.8?0:c.x>1.8?2:1]=true;
+  const free=[0,1,2].filter(i=>!occ[i]); if(free.length<2||Math.random()>.6) return;   // never close the last open lane
+  const k=Math.random()<.5?'b':'h', it=CONS.items.find(q=>q.k===k&&!q.row); if(!it) return;
+  it.row=r; it.lane=free[(Math.random()*free.length)|0]; it.hit=false; it.mesh.visible=true;
+}
+function consTick(dt){
+  if(!CONS) return; const run=state==='run';
+  for(const it of CONS.items){ const r=it.row; if(!r) continue;
+    if(r.z<-30){ it.row=null; it.mesh.visible=false; continue; }
+    const x=LANES[it.lane]; it.mesh.position.set(x,0,r.z);
+    if(!run||it.hit||JMP.y>.6) continue;
+    if(Math.abs(r.z)<(it.k==='b'?1.5:2)&&Math.abs(px-x)<2){ it.hit=true; if(CONS.ev) CONS.ev.hits++; crash(it.k==='b'?'HIT A CONSTRUCTION BLOCK':'FELL INTO A ROAD HOLE',speed*.6); if(it.k==='b') it.mesh.visible=false; } }
+}
+function evConstruction(c,dt,H){
+  const left=Math.max(0,c.T-c.t);
+  if(left<=0){ if(!c.hits){ score+=2500; popup('CONSTRUCTION ZONE CLEARED · CLEAN PASS +2,500','good'); } else popup('CONSTRUCTION ZONE CLEARED · '+c.hits+(c.hits>1?' HITS':' HIT'),'bad'); evEnd(); return; }
+  if(H) H.push('<b style="color:#ffb000">CONSTRUCTION ZONE</b>','blocks and holes in the lanes · '+c.hits+' hit'+(c.hits===1?'':'s'),Math.ceil(left)+' s to go');
+}
+function evSpeedLimit(c,dt,H){
+  const mph=speed*MPH, left=Math.max(0,c.T-c.t), live=c.t>=c.grace, over=mph-c.lim;
+  if(left<=0){ popup('SPEED LIMIT LIFTED · '+(c.lost>0?'−'+Math.round(c.lost).toLocaleString()+' IN FINES':'NO FINES'),c.lost>0?'bad':'good'); evEnd(); return; }
+  const isOver=live&&over>2;
+  if(isOver){ const p=Math.min(score,(250+45*over)*dt); score-=p; c.lost+=p; c.over+=dt; if(!c.wasOver) popup('OVER THE LIMIT · LOSING SCORE · SLOW TO '+c.lim,'bad'); }
+  c.wasOver=isOver;
+  if(H) H.push('<b style="color:'+(isOver?'#ff5b5b':'#ffd76a')+'">SPEED LIMIT '+c.lim+' MPH</b>',live?(isOver?'<span style="color:#ff5b5b">OVER BY '+Math.round(over)+' MPH · −'+Math.round(c.lost).toLocaleString()+'</span>':'under the limit · fines −'+Math.round(c.lost).toLocaleString()):'enforced in '+Math.ceil(c.grace-c.t)+' s',Math.ceil(left)+' s to go');
 }
 function forceCoin(){
   const open=rows.filter(r=>!r.wall&&r.gap>=0);
@@ -5361,6 +5416,7 @@ function evEnd(silent){
   if(EV.pol) EV.pol.g.visible=false; if(EV.plane) EV.plane.visible=false; if(EV.duster) EV.duster.visible=false; if(EV.frecce) EV.frecce.visible=false; smokeClear(); if(EV.train){ EV.train.visible=false; EV.train.userData.track.visible=false; } EV.balloonPool.forEach(g=>{g.visible=false;g.userData.balloonIndex=-1;}); EV.balloons.length=0; bossHide();
   EV.pool.forEach(t=>{ t.g.visible=false; if(!t.isTraf&&t.g.parent) t.g.parent.remove(t.g); }); EV.pool=[]; if(EV.hud) EV.hud.style.display='none'; if(EV.flash) EV.flash.style.opacity=0; EV._hs=EV._fo=EV._fp=null; EV._ht=0;
   if(c&&(c.k==='convoy'||c.k==='street')){ clearTimeout(_lzEvT); _lzEvT=setTimeout(lazyEvict,3000); }   // [leak] lazyEvict() only ran from applyCar()'s one-shot timer and skips while a convoy is active, so the GPU geometry/textures the convoy members drew (shared with the garage cars) were never released afterwards; the members are off the scene now, so free them (three re-uploads on demand)
+  if(c&&c.k==='construction') consStop();
   if(c&&c.k==='arcade') arcStop();   // hide the ramps and coins (a jump already in the air finishes normally)
   if(c&&!silent) EV.cool=EVC.afterEvent;
 }
@@ -5388,6 +5444,13 @@ function evStart(kind){
     popup((hard?'CHALLENGE RACE · ':'SHOWCASE RACE · ')+K.n+' · '+rmi+' MILES','good'); cinBegin(kind);
     { const sg=RADIO.find(t=>t.t===K.song); evPlayTheme(sg,kind==='frecce'); }   // Frecce Tricolori forces Pyramid; other showcase themes respect manual radio-off
     return true; }
+  if(kind==='construction'){
+    ensureCons(); CONS.on=true; EV.cur={k:'construction',t:0,T:45,hits:0}; CONS.ev=EV.cur;
+    popup('CONSTRUCTION AHEAD · BLOCKS AND HOLES IN THE LANES · HITTING ONE IS A CRASH','bad'); return true; }
+  if(kind==='speedlimit'){
+    const top=((CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].topSpeedMph)||150), lim=Math.max(45,Math.min(90,Math.round(top*(.4+.2*Math.random())/5)*5));
+    EV.cur={k:'speedlimit',t:0,T:60,grace:4,lim,lost:0,over:0,wasOver:false};
+    popup('SPEED LIMIT '+lim+' MPH FOR 1 MINUTE · SLOW DOWN','bad'); return true; }
   if(kind==='arcade'){
     ensureArc(); ARC.on=true;
     EV.cur={k:'arcade',t:0,wx:'clear',sunny:true,P0:runDist,R:EVC.arcadeMi*1609.34,jumps:0,jscore:0,coins:0};
@@ -5424,12 +5487,14 @@ function evOptions(){
   if(left>EVC.streetMi*1609.34+700) opts.push('street');
   if(left>EVC.raceMi*1609.34+700) opts.push('plane','train','balloon','duster','frecce');
   if(left>EVC.arcadeMi*1609.34+700&&!isBetaCar()&&!isJet()) opts.push('arcade');
+  if(left>3200&&!isBetaCar()&&!isJet()) opts.push('construction');
+  if(left>2800&&!isBetaCar()&&!isJet()) opts.push('speedlimit');
   if(left>4300&&!isBetaCar()&&!isJet()) opts.push('boss');   // boss battle: the clock is paused for it, so it only starts with plenty of road before the next exit
   return opts;
 }
 function evPick(){ const o=evOptions(); return o.length?o[(Math.random()*o.length)|0]:null; }
 /* WILDCARD (Ferrari 360 bonus): when an event is due, three different eligible events are dealt as cards; pick one with 1/2/3 or a tap (it does not pause the road). Unpicked after 8 s, a random one of the three is played. */
-const WC_INFO={police:['🚓','Police Chase',()=>'Stay above the speed threshold and outrun the cruiser for '+EVC.policeMi+' miles'],convoy:['🚘','Convoy',()=>'Roll with a convoy of shop cars and keep clear of them for a bonus'],street:['🏁','Street Race',()=>EVC.streetMi+'-mile sprint against four rivals with adaptive AI'],plane:['✈️','Cargo Plane Race',()=>'Race the cargo plane to the finish over '+EVC.raceMi+' miles'],train:['🚆','Freight Train Race',()=>'Race the freight train over '+EVC.raceMi+' miles'],duster:['🛩️','Crop Duster Race',()=>'Race the crop duster (brown smoke) over '+EVC.raceMi+' miles'],frecce:['🇮🇹','Frecce Tricolori Race',()=>'Race six display jets leaving a red, white and green trail over '+EVC.raceMi+' miles'],balloon:['🎈','Balloon Race',()=>'Overtake the balloon fleet before it reaches the finish'],arcade:['🕹️','Arcade Run',()=>'Ramps and bronze coins for style points'],boss:['💥','Boss Battle',()=>'A tank blocks the road: win the fight (the clock is paused)']};
+const WC_INFO={police:['🚓','Police Chase',()=>'Stay above the speed threshold and outrun the cruiser for '+EVC.policeMi+' miles'],convoy:['🚘','Convoy',()=>'Roll with a convoy of shop cars and keep clear of them for a bonus'],street:['🏁','Street Race',()=>EVC.streetMi+'-mile sprint against four rivals with adaptive AI'],plane:['✈️','Cargo Plane Race',()=>'Race the cargo plane to the finish over '+EVC.raceMi+' miles'],train:['🚆','Freight Train Race',()=>'Race the freight train over '+EVC.raceMi+' miles'],duster:['🛩️','Crop Duster Race',()=>'Race the crop duster (brown smoke) over '+EVC.raceMi+' miles'],frecce:['🇮🇹','Frecce Tricolori Race',()=>'Race six display jets leaving a red, white and green trail over '+EVC.raceMi+' miles'],balloon:['🎈','Balloon Race',()=>'Overtake the balloon fleet before it reaches the finish'],construction:['🚧','Construction',()=>'Blocks and holes appear in the lanes for a while; hitting one counts as a crash'],speedlimit:['🚫','Speed Limit',()=>'A one-minute speed limit: every second over it costs score'],arcade:['🕹️','Arcade Run',()=>'Ramps and bronze coins for style points'],boss:['💥','Boss Battle',()=>'A tank blocks the road: win the fight (the clock is paused)']};
 function wcHide(){ EV.wc=null; const e=$('wc'); if(e) e.classList.remove('show'); }
 function wcShow(o){
   EV.wc={o,t:8,T:8}; const row=$('wcRow'); row.innerHTML='';
@@ -5470,7 +5535,7 @@ function evTick(dt){
   c.t+=dt;
   // [alloc] was building a new H array + HTML strings + innerHTML every frame: now ~11 Hz, reusing one array, DOM written only when the text changes
   const doH=((EV._ht=(EV._ht||0)-dt)<=0); let H=null; if(doH){ EV._ht=.09; H=_evH; H.length=0; }
-  if(c.k==='police') evPolice(c,dt,H); else if(c.k==='convoy') evConvoy(c,dt,H); else if(c.k==='street') evStreetRace(c,dt,H); else if(c.k==='balloon') evBalloon(c,dt,H); else if(c.k==='boss') evBoss(c,dt,H); else if(c.k==='arcade') evArcade(c,dt,H); else evRace(c,dt,H);
+  if(c.k==='police') evPolice(c,dt,H); else if(c.k==='convoy') evConvoy(c,dt,H); else if(c.k==='street') evStreetRace(c,dt,H); else if(c.k==='balloon') evBalloon(c,dt,H); else if(c.k==='boss') evBoss(c,dt,H); else if(c.k==='arcade') evArcade(c,dt,H); else if(c.k==='construction') evConstruction(c,dt,H); else if(c.k==='speedlimit') evSpeedLimit(c,dt,H); else evRace(c,dt,H);
   if(CIN.on) return;   // an event that just began opened with its cinematic: keep the HUD hidden
   if(H&&EV.cur&&EV.hud){ const hs=H.length?H.join('<br>'):''; if(hs!==EV._hs){ EV._hs=hs; EV.hud.style.display=H.length?'block':'none'; EV.hud.innerHTML=hs; } }
 }
