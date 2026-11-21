@@ -4562,7 +4562,7 @@ document.addEventListener('visibilitychange',()=>{ if(!radio.on||!radio.cur) ret
 /* autoplay: try immediately; browsers usually block audio until the first key press / click, so that
    first input starts the radio (and engine) unless you switched them off yourself. */
 /* Mutually exclusive menu music: title, regular shop, or Black Market. */
-const titleA=new Audio('title.mp3'); titleA.loop=true; titleA.volume=.8; titleA.preload='auto';
+const titleA=new Audio('title.mp3?v='+Date.now()); titleA.loop=true; titleA.volume=.8; titleA.preload='auto';
 const shopA=new Audio('shop.mp3'); shopA.loop=true; shopA.volume=.8; shopA.preload='auto';
 const blackMarketA=new Audio('bshop.mp3'); blackMarketA.loop=true; blackMarketA.volume=.8; blackMarketA.preload='auto';
 [titleA,shopA,blackMarketA].forEach(a=>__retryMedia(a,{onRetry:()=>{ try{ syncMenuMusic(); }catch(e){} }}));
