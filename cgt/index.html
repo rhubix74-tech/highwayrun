@@ -258,7 +258,7 @@
   .rstmsg{font-size:12px;line-height:1.5;text-align:left;margin:10px 0 8px;color:#ffb3a8}
   #rstIn{width:100%;box-sizing:border-box;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.25);border-radius:8px;color:#fff;font:inherit;padding:8px 10px;letter-spacing:.2em}
   .rstrow{display:flex;gap:8px;margin-top:8px}.rstrow .sbtn{margin:0!important}
-  #ui .panel:not(#views){display:none}
+  #ui .panel:not(#views){display:none}body.renderex #views{display:none!important}
   #gOpts{display:flex;flex-direction:column;gap:8px;margin:12px 0;text-align:left}
   .gopt{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.18);border-radius:12px;color:#fff;font:inherit;padding:10px 14px;cursor:pointer;text-align:left}
   .gopt b{display:block;font-size:14px}.gopt span{display:block;font-size:12px;opacity:.65;margin-top:2px}
@@ -486,7 +486,7 @@
   <div id="lbRows"></div><div id="lbNote"></div>
   <button id="lbClose" style="background:#e8edf7;color:#0b0f16;border:0;border-radius:999px;font:inherit;font-weight:600;padding:9px 24px;cursor:pointer">Back</button></div></div>
 <div id="gfx"><div class="card"><h1>Settings</h1><p>Set everything here, before the run. Camera is the only thing you change while driving.</p>
-  <div class="gTabs"><button type="button" class="sbtn on" id="gBasicTab">Basic</button><button type="button" class="sbtn" id="gAdvancedTab">Advanced</button></div><div id="gBasic"><div class="sec">Graphics</div><div id="gOpts"></div><div class="sec">Frame rate</div><div id="fpsOpts" style="display:flex;flex-wrap:wrap;gap:6px"></div><p class="how">Locks keep the game speed identical at any frame rate; frame times are smoothed so motion stays even. A lock can't exceed what your display/GPU delivers.</p></div><div id="gAdvanced" hidden><div class="sec">Advanced graphics</div><label class="gchk"><input type="checkbox" id="advShadows"> Real-time shadows</label><label class="gchk"><input type="checkbox" id="advLights"> Car lights</label><label class="gchk"><input type="checkbox" id="advRim"> Rim lighting</label><label class="gchk">Render resolution <input type="range" id="advScale" min="50" max="100" step="5" value="100"><span id="advScaleVal">100%</span></label><label class="gchk">Tree density <input type="range" id="advTrees" min="0" max="200" step="10" value="170"><span id="advTreesVal">170</span></label><p class="how">Advanced overrides are saved separately from your graphics preset.</p></div>
+  <div class="gTabs"><button type="button" class="sbtn on" id="gBasicTab">Basic</button><button type="button" class="sbtn" id="gAdvancedTab">Advanced</button></div><div id="gBasic"><div class="sec">Graphics</div><div id="gOpts"></div><div class="sec">Frame rate</div><div id="fpsOpts" style="display:flex;flex-wrap:wrap;gap:6px"></div><p class="how">Locks keep the game speed identical at any frame rate; frame times are smoothed so motion stays even. A lock can't exceed what your display/GPU delivers.</p></div><div id="gAdvanced" hidden><div class="sec">Advanced graphics</div><label class="gchk"><input type="checkbox" id="advShadows"> Real-time shadows</label><label class="gchk"><input type="checkbox" id="advLights"> Car lights</label><label class="gchk"><input type="checkbox" id="advRim"> Rim lighting</label><label class="gchk"><input type="checkbox" id="advRenderEX"> RenderEX · Chase camera only, aggressive on-screen culling</label><label class="gchk">Render resolution <input type="range" id="advScale" min="50" max="100" step="5" value="100"><span id="advScaleVal">100%</span></label><label class="gchk">Tree density <input type="range" id="advTrees" min="0" max="200" step="10" value="170"><span id="advTreesVal">170</span></label><p class="how">Advanced overrides are saved separately from your graphics preset.</p></div>
   <label class="gchk"><input type="checkbox" id="gFps"> Show FPS</label><div id="gNote"></div>
   <div class="sec">Audio</div>
   <label class="gchk"><input type="checkbox" id="sEng"> Engine sound</label>
@@ -3441,7 +3441,7 @@ const TIME_CAP=135, BONUS_WIN=20, RUN_T=180, MPH=2.23694, speedK=()=>Math.max(.5
 var ccxMult=1;   /* Koenigsegg bonus: rolled at the start of each run, 0.5x to 3x */
 function rollCcx(){ ccxMult=1; if(CS.sel!=='ccx') return; ccxMult=Math.round((.5+Math.random()*2.5)*10)/10; const m=ccxMult; setTimeout(()=>{ try{ if(state==='run') popup((m>=2.5?'JACKPOT · ':m>=1.5?'LUCKY · ':m>=1?'':m>=.8?'UNLUCKY · ':'CURSED · ')+'SCORE x'+m.toFixed(1)+' THIS RUN',m>=1?'good':'bad'); }catch(e){} },900); }   // points scale with speed: x0.5 at 40 mph, x1 at 80, x2 at 160+
 const kmhEl=$('kmh');
-function goView(n){ if(!VIEWS2[n])return; view=n; document.querySelectorAll('#views button').forEach(b=>b.classList.toggle('on',b.dataset.v===n)); }
+function goView(n){ if(renderEX){ n='chase'; } if(!VIEWS2[n])return; view=n; document.querySelectorAll('#views button').forEach(b=>b.classList.toggle('on',b.dataset.v===n)); }
 $('views').addEventListener('click',e=>{ if(e.target.dataset.v) goView(e.target.dataset.v); });
 const keys={}, tch={l:0,r:0,g:0,b:0}, inRun=()=>state==='run'||state==='exit';   // audio / graphics hotkeys are off while driving: camera only
 addEventListener('keydown',e=>{
@@ -3455,7 +3455,7 @@ addEventListener('keydown',e=>{
   else if(e.code==='KeyG'){ if(!bootCombo()&&!inRun()) cycleGfx(); }
   else if(e.code==='KeyR'){ if(!inRun()) toggleRadio(); }
   else if(e.code==='KeyN'){ if(!inRun()) skipTrack(); }
-  else if(e.code==='KeyC'){ if(bootCombo()) return; const n=Object.keys(VIEWS2); goView(n[(n.indexOf(view)+1)%n.length]); }
+  else if(e.code==='KeyC'){ if(renderEX||bootCombo()) return; const n=Object.keys(VIEWS2); goView(n[(n.indexOf(view)+1)%n.length]); }
 });
 addEventListener('keyup',e=>{keys[e.code]=false});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false});
@@ -6157,6 +6157,12 @@ ground.receiveShadow=true;
 
 /* ---------------- graphics mode switching + adaptive resolution */
 let _lastN=-1, gfxOpen=false, admOpen=false, fpsOn=false, _gg=null, _ggN=-1, _fAcc=0, _fN=0;
+const REX_KEY='cgt_renderex'; let renderEX=false; try{renderEX=localStorage.getItem(REX_KEY)==='1';}catch(e){}
+function setRenderEX(on){ renderEX=!!on; try{store.set(REX_KEY,renderEX?'1':'0');}catch(e){} document.body.classList.toggle('renderex',renderEX); if(renderEX){ view='chase'; document.querySelectorAll('#views button').forEach(b=>b.classList.toggle('on',b.dataset.v==='chase')); }
+  const cull=o=>{ if(o.isMesh||o.isLine||o.isPoints) o.frustumCulled=renderEX; }; scene.traverse(cull);
+}
+// When RenderEX is active, newly-added scene objects receive frustum culling too.
+const _sceneAdd=scene.add.bind(scene); scene.add=function(...objects){ objects.forEach(o=>{ if(renderEX&&o&&o.traverse) o.traverse(q=>{if(q.isMesh||q.isLine||q.isPoints)q.frustumCulled=true;}); }); return _sceneAdd(...objects); };
 const ADV_KEY='cgt_gfx_advanced'; let ADV={shadows:null,lights:null,rim:null,scale:100,trees:null}; try{ADV=Object.assign(ADV,JSON.parse(localStorage.getItem(ADV_KEY)||'{}')||{});}catch(e){} function saveADV(){try{store.set(ADV_KEY,JSON.stringify(ADV));}catch(e){}}
 try{ fpsOn=localStorage.getItem('cgt_fps')==='1'; }catch(e){}
 function applyQuality(){
@@ -6205,13 +6211,14 @@ function cycleGfx(){ const o=['low','medium','high','ultra']; setGfx(o[(o.indexO
 $('gOpts').addEventListener('click',e=>{ const b=e.target.closest('.gopt'); if(b) setGfx(b.dataset.k); });
 function setGTab(advanced){$('gBasic').hidden=advanced;$('gAdvanced').hidden=!advanced;$('gBasicTab').classList.toggle('on',!advanced);$('gAdvancedTab').classList.toggle('on',advanced);}
 $('gBasicTab').addEventListener('click',()=>setGTab(false));$('gAdvancedTab').addEventListener('click',()=>setGTab(true));
-function renderADV(){ $('advShadows').checked=ADV.shadows===null?Q.shadow:ADV.shadows;$('advLights').checked=ADV.lights===null?Q.lights:ADV.lights;$('advRim').checked=ADV.rim===null?Q.rim:ADV.rim;$('advScale').value=ADV.scale;$('advScaleVal').textContent=ADV.scale+'%';$('advTrees').value=ADV.trees===null?Q.trees:ADV.trees;$('advTreesVal').textContent=$('advTrees').value;}
+function renderADV(){ $('advRenderEX').checked=renderEX; $('advShadows').checked=ADV.shadows===null?Q.shadow:ADV.shadows;$('advLights').checked=ADV.lights===null?Q.lights:ADV.lights;$('advRim').checked=ADV.rim===null?Q.rim:ADV.rim;$('advScale').value=ADV.scale;$('advScaleVal').textContent=ADV.scale+'%';$('advTrees').value=ADV.trees===null?Q.trees:ADV.trees;$('advTreesVal').textContent=$('advTrees').value;}
 function changeADV(k,v){ADV[k]=v;saveADV();applyQuality();renderADV();}
-$('advShadows').addEventListener('change',e=>changeADV('shadows',e.target.checked));$('advLights').addEventListener('change',e=>changeADV('lights',e.target.checked));$('advRim').addEventListener('change',e=>changeADV('rim',e.target.checked));$('advScale').addEventListener('input',e=>{ADV.scale=+e.target.value;$('advScaleVal').textContent=ADV.scale+'%';});$('advScale').addEventListener('change',e=>{saveADV();applyQuality();});$('advTrees').addEventListener('input',e=>{$('advTreesVal').textContent=e.target.value;});$('advTrees').addEventListener('change',e=>changeADV('trees',+e.target.value));
+$('advRenderEX').addEventListener('change',e=>setRenderEX(e.target.checked)); $('advShadows').addEventListener('change',e=>changeADV('shadows',e.target.checked));$('advLights').addEventListener('change',e=>changeADV('lights',e.target.checked));$('advRim').addEventListener('change',e=>changeADV('rim',e.target.checked));$('advScale').addEventListener('input',e=>{ADV.scale=+e.target.value;$('advScaleVal').textContent=ADV.scale+'%';});$('advScale').addEventListener('change',e=>{saveADV();applyQuality();});$('advTrees').addEventListener('input',e=>{$('advTreesVal').textContent=e.target.value;});$('advTrees').addEventListener('change',e=>changeADV('trees',+e.target.value));
 $('gFps').addEventListener('change',e=>{ fpsOn=e.target.checked; try{store.set('cgt_fps',fpsOn?'1':'0')}catch(x){} renderGfxUI(); });
 $('tGfx').addEventListener('click',()=>setGfxUI(true)); $('gClose').addEventListener('click',()=>setGfxUI(false)); $('gfxBtn').addEventListener('click',cycleGfx);
 qualityReady=true;
 applyQuality();
+setRenderEX(renderEX);
 /* ---------------- unified settings: everything except the camera is set here, not mid-run */
 const SET_KEY='cgt_set'; let SET={eng:true,radio:true,noOnc:false};
 try{ const j=JSON.parse(localStorage.getItem(SET_KEY)||'null'); if(j) SET=Object.assign(SET,j); }catch(e){}
