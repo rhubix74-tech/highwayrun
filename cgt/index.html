@@ -5118,7 +5118,7 @@ function airTick(rdt,dt){
       smokeEmit(_sv.x+(Math.random()-.5)*.5,_sv.y+(Math.random()-.5)*.4,_sv.z,c[0],c[1],c[2],big?3.4:2.0,big?3.6:2.4,big?.62:.4,(Math.random()-.5)*1.6,.5+Math.random()*.8); } }
   } else if(f){ smokeInit(); f.updateMatrixWorld(true); const J=f.userData.jets;
     for(let k=0;k<J.length;k++){ SMK.acc[k]+=rdt; let guard=0; while(SMK.acc[k]>=.035&&guard++<3){ SMK.acc[k]-=.035;
-      _sv.set(0,0,-5.6).applyMatrix4(J[k].matrixWorld); const c=SM_TRI[k];
+      _sv.set(0,0,5.6).applyMatrix4(J[k].matrixWorld); const c=SM_TRI[k];
       smokeEmit(_sv.x,_sv.y,_sv.z,c[0],c[1],c[2],2.6,3.4,.8,(Math.random()-.5)*.5,.25+Math.random()*.3); } }
   }
   if(SMK.live) smokeTick(rdt,dt);
@@ -5141,7 +5141,7 @@ function evMakeDuster(){
   g.scale.setScalar(1.15); g.traverse(o=>{ o.frustumCulled=false; if(o.material) o.material.side=THREE.DoubleSide; }); g.visible=false; scene.add(g);
   /* crop_duster_thing1.glb replaces the built-in shapes when it has loaded (they stay as the fallback); its propeller is spun about the nose axis */
   dusterModel(proto=>{ body.visible=false; const m=proto.clone(true); m.traverse(o=>{ o.frustumCulled=false; }); g.add(m);
-    g.userData.prop=m.getObjectByName('dProp')||g.userData.prop; g.userData.propAx='x'; g.userData.em=[[-5,-.4,-.5],[5,-.4,-.5],[0,.1,-.5]]; });
+    g.userData.prop=m.getObjectByName('dProp')||g.userData.prop; g.userData.propAx='x'; g.userData.em=[[-5,-.4,.5],[5,-.4,.5],[0,.1,.5]]; });
   return g;
 }
 /* crop duster model: nose toward -X, 8 m long, 12.9 m span, wheels on y=0, propeller = node 'prop' (hub at about x=-2, y=1.85). Turned to face +Z, scaled .87 (so with the group's 1.15 it is ~13 m across, as the old shapes were)
@@ -5161,7 +5161,7 @@ function dusterModel(cb){
     scn.traverse(o=>{ if(/^(wheel|leg)/i.test(o.name||'')) o.visible=false; });   // gear up: main wheels, tail wheel and the three legs
     const prop=scn.getObjectByName('prop');   // spin pivot on the hub, axis = nose axis (x)
     if(prop){ const bx=new THREE.Box3().setFromObject(prop), c=bx.getCenter(new THREE.Vector3()), pv=new THREE.Group(); pv.name='dProp'; pv.position.copy(c); scn.add(pv); pv.updateMatrixWorld(true); pv.attach(prop); }
-    const inner=new THREE.Group(); inner.add(scn); inner.rotation.y=Math.PI/2; inner.scale.setScalar(.87); inner.position.set(0,-1.22,1.44);   // nose -X -> +Z; fuselage centre (x 1.65, y 1.4) onto the origin
+    const inner=new THREE.Group(); inner.add(scn); inner.rotation.y=-Math.PI/2; inner.scale.setScalar(.87); inner.position.set(0,-1.22,-1.44);   // flipped: nose now -Z (was flying backwards); fuselage centre (x 1.65, y 1.4) onto the origin
     const proto=new THREE.Group(); proto.add(inner); DM.proto=proto; DM.state=2;
     for(const f of DM.cbs.splice(0)) try{ f(proto); }catch(e){ console.warn(e); }
   },undefined,e=>{ DM.state=0; DM.cbs.length=0; console.warn('[crop duster] crop_duster_thing1.glb failed to load - using the built-in shapes',e); });
@@ -5227,7 +5227,7 @@ function frecceModel(cb){
       if(n==='DefaultWhite'){ m=o.material.clone(); if(m.map) m.map=frecceGrey(m.map); m.metalness=.15; m.roughness=.55; m.side=THREE.DoubleSide; }
       else { m=new THREE.MeshStandardMaterial({color:0x14202b,roughness:.15,metalness:.6,transparent:true,opacity:.6,side:THREE.DoubleSide}); }
       bendMat(m); o.material=m; o.frustumCulled=false; });
-    const inner=new THREE.Group(); inner.add(scn); inner.rotation.y=Math.PI/2; inner.position.y=.5;   // nose -X -> +Z, fuselage axis onto y=0
+    const inner=new THREE.Group(); inner.add(scn); inner.rotation.y=-Math.PI/2; inner.position.y=.5;   // flipped: nose now -Z (was flying backwards), fuselage axis onto y=0
     const proto=new THREE.Group(); proto.add(inner); FM.proto=proto; FM.state=2;
     for(const f of FM.cbs.splice(0)) try{ f(proto); }catch(e){ console.warn(e); }
   },undefined,e=>{ FM.state=0; FM.cbs.length=0; console.warn('[frecce] freece_tricolor_plane_simplified.glb failed to load - using the built-in jet shapes',e); });
