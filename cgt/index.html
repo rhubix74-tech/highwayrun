@@ -3937,7 +3937,7 @@ let chMenuOpen=false;
 let chMenuL='A';
 function renderChMenu(){
   const A=chMenuL==='A', C=chMenuL==='C', arr=chArr(chMenuL), open=A||C||chBOpen(), tab=(k,t)=>'<button type="button" data-tab="'+k+'" style="margin:0 6px 8px 0;padding:6px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.25);font:inherit;font-weight:600;cursor:pointer;background:'+(chMenuL===k?'#e8edf7':'transparent')+';color:'+(chMenuL===k?'#0b0f16':'inherit')+'">'+t+'</button>';
-  $('chSub').innerHTML='<div>'+tab('A','List A')+tab('B','List B'+(chBOpen()?'':' 🔒'))+tab('C','Auxiliary')+'</div>'+(C?chDoneN('C')+' / '+arr.length+' cleared · $50 for each first clear · 7-mile showcase races against a tougher plane and train':A?chDoneN('A')+' / 25 cleared · $20 for each first clear · $1,000 when all 25 are done'+(CHS.paidAll?' (paid)':'')
+  $('chSub').innerHTML='<div>'+tab('A','List A')+tab('B','List B'+(chBOpen()?'':' 🔒'))+tab('C','Auxiliary')+'</div>'+(C?chDoneN('C')+' / '+arr.length+' cleared · $50 for each first clear · 7-mile showcase races against a tougher cargo plane, freight train, balloon fleet, crop duster and Frecce Tricolori':A?chDoneN('A')+' / 25 cleared · $20 for each first clear · $1,000 when all 25 are done'+(CHS.paidAll?' (paid)':'')
     :(open?chDoneN('B')+' / 25 cleared · $30 for each first clear · $2,500 when all 25 are done'+(CHS.paidAllB?' (paid)':''):'Locked · clear '+CH_B_GATE+' of the 25 List A challenges to open List B ('+chDoneN('A')+' / '+CH_B_GATE+')'))+'<br>Cars and songs are preset, and you don\'t need to own the car.'+(A||C?'':'<br>List B uses the cars and songs List A leaves out.');
   let h='',tier=0;
   if(open) arr.forEach((c,i)=>{
