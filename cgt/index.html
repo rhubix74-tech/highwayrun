@@ -6150,16 +6150,20 @@ function tcStart(){
 function tcStop(){
   if(!TC.on) return; TC.on=false; TC.park=false; const s=TC.saved; $('title').classList.remove('cine'); document.body.classList.remove('tcOn'); $('tcFade').style.opacity=0;
   if(s){ window.__todLock=s.tod; window.__nightLock=s.night; window.__rainLock=s.rain; adminBiomeOverride=s.bi; _lastBi=-1; adminTrafficDisabled=s.atd; trafficCars.forEach((t,i)=>{ t.g.visible=s.vis[i]!==false; });
-    if(CS.sel!==s.sel){ CS.sel=s.sel; applyCar(); }
+    // Restore the real selected car after the showcase, without changing it during shots.
+    applyCar();
     nightDirty=true; }
-  camera.position.set(0,3,-8); TC.saved=null;
+  TC.displayCar=null; camera.position.set(0,3,-8); TC.saved=null;
 }
 function tcNext(first){
   if(!TC.queue.length){ TC.queue=TC_SHOTS.map((_,i)=>i).sort(()=>Math.random()-.5); if(TC.hero) { const h=TC.queue.indexOf(0); if(h>0){ TC.queue.splice(h,1); TC.queue.unshift(0); } } }
   const sh=TC_SHOTS[TC.queue.shift()]; TC.shot=sh; TC.t=0; TC.dur=7.2; TC.park=sh.mv==='park';
   const cars=tcCars(); let id;
   if(TC.hero){ id=TC.saved.sel; TC.hero=false; } else { TC.carI=(TC.carI+1)%cars.length; id=cars[TC.carI]; if(id===CS.sel&&cars.length>1){ TC.carI=(TC.carI+1)%cars.length; id=cars[TC.carI]; } }
-  if(CS.sel!==id){ CS.sel=id; applyCar(); }
+  // Title showcase changes only the displayed car, never the player's garage selection.
+  // Keep CS.sel intact so a cinematic shot cannot overwrite the car chosen for the next run.
+  const showTC=id=>{ CARS.forEach(c=>{ c.root.visible=c.id===id; }); lazyEnsure(id,()=>{ CARS.forEach(c=>{ c.root.visible=c.id===id; }); }); };
+  if(TC.displayCar!==id){ TC.displayCar=id; showTC(id); }
   adminBiomeOverride=sh.bi; _lastBi=-1; window.__todLock=sh.tod; window.__nightLock=undefined; window.__rainLock=sh.rain; nightDirty=true; try{ updateBend(); }catch(e){}
   if(!sh.rain&&sh.bi!==2) window.__rainLock=0;
 }
