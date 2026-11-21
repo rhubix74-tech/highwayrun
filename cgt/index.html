@@ -6157,7 +6157,7 @@ ground.receiveShadow=true;
 
 /* ---------------- graphics mode switching + adaptive resolution */
 let _lastN=-1, gfxOpen=false, admOpen=false, fpsOn=false, _gg=null, _ggN=-1, _fAcc=0, _fN=0;
-const REX_KEY='cgt_renderex'; let renderEX=false; try{renderEX=localStorage.getItem(REX_KEY)==='1';}catch(e){}
+const REX_KEY='cgt_renderex'; let renderEX=false; try{ const savedREX=localStorage.getItem(REX_KEY); renderEX=savedREX===null ? (gfxMode==='low'||gfxMode==='medium') : savedREX==='1'; if(savedREX===null) store.set(REX_KEY,renderEX?'1':'0'); }catch(e){ renderEX=(gfxMode==='low'||gfxMode==='medium'); }
 function setRenderEX(on){ renderEX=!!on; try{store.set(REX_KEY,renderEX?'1':'0');}catch(e){} document.body.classList.toggle('renderex',renderEX); if(renderEX){ view='chase'; document.querySelectorAll('#views button').forEach(b=>b.classList.toggle('on',b.dataset.v==='chase')); }
   const cull=o=>{ if(o.isMesh||o.isLine||o.isPoints) o.frustumCulled=renderEX; }; scene.traverse(cull);
 }
@@ -6221,7 +6221,7 @@ applyQuality();
 setRenderEX(renderEX);
 /* ---------------- unified settings: everything except the camera is set here, not mid-run */
 const SET_KEY='cgt_set'; let SET={eng:true,radio:true,noOnc:false};
-try{ const j=JSON.parse(localStorage.getItem(SET_KEY)||'null'); if(j) SET=Object.assign(SET,j); }catch(e){}
+try{ const j=JSON.parse(localStorage.getItem(SET_KEY)||'null'); if(j) SET=Object.assign(SET,j); else { SET.noOnc=(gfxMode==='low'||gfxMode==='medium'); store.set(SET_KEY,JSON.stringify(SET)); } }catch(e){ SET.noOnc=(gfxMode==='low'||gfxMode==='medium'); }
 var noOncoming=!!SET.noOnc;   // [setting] 'Hide oncoming traffic' (Settings): only the left-side/oncoming cars; the playable side is untouched
 eng.manualOff=!SET.eng; radio.manualOff=!SET.radio;       // startRun() only switches engine / radio on when these allow it
 function saveSet(){ store.set(SET_KEY,JSON.stringify(SET)); }
