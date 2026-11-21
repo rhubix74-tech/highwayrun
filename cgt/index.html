@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap">
-<title>Carrera GT – Highway Run</title>
+<title>Highway Run</title>
 <style>
   html,body{margin:0;height:100%;background:#0b0f16;overflow:hidden;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#fff;-webkit-user-select:none;user-select:none}
   canvas{display:block}
@@ -284,7 +284,7 @@
   #tcLogo{display:none;position:absolute;right:4.5vw;bottom:9vh;z-index:2;pointer-events:none;text-align:right;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-style:italic;font-weight:800;text-transform:uppercase;transform:skewX(-10deg)}
   #title.cine #tcLogo{display:block}
   #tcLogo .l1{display:inline-block;background:rgba(10,10,12,.82);color:#fff;letter-spacing:.14em;font-size:clamp(11px,1.5vw,19px);padding:.5em 1.4em .5em 1.1em}
-  #tcLogo .l2{display:block;margin-top:.2em;background:linear-gradient(180deg,#ff3b3b,#c40d1e);color:#fff;font-size:clamp(26px,5vw,66px);line-height:1;padding:.12em .35em .1em .3em;letter-spacing:.01em;box-shadow:0 8px 26px rgba(0,0,0,.4)}
+  #tcLogo .l2{display:block;margin-top:.2em;background:linear-gradient(90deg,#ff55b8 0%,#ff8a3d 100%);color:#fff;font-size:clamp(26px,5vw,66px);line-height:1;padding:.12em .35em .1em .3em;letter-spacing:.01em;box-shadow:0 8px 26px rgba(0,0,0,.4)}
   #tcLogo .l3{display:block;margin-top:.55em;color:#fff;font-size:clamp(10px,1.4vw,18px);letter-spacing:.08em;text-shadow:0 2px 8px rgba(0,0,0,.6)}
   #assetLoad{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;background:rgba(5,8,14,.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
   #assetLoad.done{background:rgba(5,8,14,.82)}
@@ -315,6 +315,65 @@
   #cine .cap{position:absolute;left:0;right:0;bottom:15vh;text-align:center;font-weight:700;letter-spacing:.3em;font-size:clamp(14px,2.4vw,22px);text-transform:uppercase;opacity:0;transform:translateY(10px);transition:opacity .8s,transform .8s;text-shadow:0 2px 12px rgba(0,0,0,.8)}
   #cine .cap.in{opacity:1;transform:none}
   #cine .cap em{display:block;font-style:normal;letter-spacing:.05em;font-size:1.9em;color:#7dffb0;margin-top:4px;font-variant-numeric:tabular-nums}
+
+  /* Unified compact menu styling — shared generic menus only; title buttons (.tb) remain unchanged. */
+  :is(#ov,#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm,#tutorial,#garage,#paintPanel,#powerPanel) .card{
+    box-sizing:border-box; width:min(94vw,760px); max-width:760px; padding:clamp(10px,1.7vw,16px);
+    border-radius:8px; background:rgba(12,15,20,.94); border:1px solid rgba(243,239,230,.24);
+    box-shadow:0 10px 28px rgba(0,0,0,.4); max-height:calc(100dvh - 20px); overflow:auto; overscroll-behavior:contain;
+  }
+  :is(#ov,#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm,#tutorial,#garage,#paintPanel,#powerPanel) .card h1{font-size:clamp(18px,2.6vw,24px);margin:0 0 4px}
+  :is(#ov,#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm,#tutorial,#garage,#paintPanel,#powerPanel) .card p{margin:3px 0 7px}
+  :is(#ov,#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm,#tutorial,#garage,#paintPanel,#powerPanel) .card button:not(.tb):not(#smile):not(.item):not(.sw):not(.gopt):not(.sbtn):not(.admb):not(.bmbuy):not(.tipjar-donate),
+  #garage button:not(.tb),#paintPanel button:not(.tb),#powerPanel button:not(.tb),#loadout button:not(.tb),#gfx button:not(.tb),#adm button:not(.tb),#lb button:not(.tb),#lbName button:not(.tb),#chMenu button:not(.tb),#shop button:not(.tb):not(#smile):not(.item),#bm button:not(.tb):not(.bmbuy){
+    box-sizing:border-box!important; position:relative!important; border-radius:3px 9px 3px 9px!important;
+    padding:6px 10px!important; min-height:34px!important; font-size:clamp(11px,1.3vw,13px)!important;
+    font-weight:750!important; letter-spacing:.035em!important; text-transform:uppercase!important;
+    border:1px solid rgba(30,25,25,.35)!important; color:#292a2d!important;
+    background:linear-gradient(180deg,#f3efe6 0%,#d8d2c5 100%)!important;
+    box-shadow:0 2px 7px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.7)!important;
+    transition:filter .14s,transform .14s!important;
+  }
+  :is(#ov,#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm,#tutorial,#garage,#paintPanel,#powerPanel) .card button:not(.tb):not(#smile):not(.item):not(.sw):not(.gopt):not(.sbtn):not(.admb):not(.bmbuy):not(.tipjar-donate)::after,
+  #garage button:not(.tb)::after,#paintPanel button:not(.tb)::after,#powerPanel button:not(.tb)::after,#loadout button:not(.tb)::after,#gfx button:not(.tb)::after,#adm button:not(.tb)::after,#lb button:not(.tb)::after,#lbName button:not(.tb)::after,#chMenu button:not(.tb)::after,#shop button:not(.tb):not(#smile):not(.item)::after,#bm button:not(.tb):not(.bmbuy)::after{
+    content:''!important; display:block!important; height:2px!important; margin:4px -2px -4px!important;
+    background:linear-gradient(90deg,#b30d0d,#ff2a2a 60%,#b30d0d)!important; opacity:.95!important;
+  }
+  :is(#ov,#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm,#tutorial,#garage,#paintPanel,#powerPanel) button:not(.tb):not(:disabled):hover{filter:brightness(1.06)!important;transform:translateY(-1px)}
+  :is(#ov,#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm,#tutorial,#garage,#paintPanel,#powerPanel) button:disabled{opacity:.45!important;filter:none!important;transform:none!important}
+  /* Active/selected tabs retain a visible red state rather than looking like plain defaults. */
+  :is(#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm) button.on,
+  :is(#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm) .on button{border-color:#b30d0d!important;box-shadow:inset 0 0 0 1px rgba(179,13,13,.2)!important}
+  .card .cols{gap:clamp(8px,1.6vw,14px);margin:8px 0}
+  .card .items{gap:6px;margin:8px 0}
+  .card .loadrow{padding:6px 2px;gap:8px}
+  .card .sec{margin:9px 0 4px;padding-top:7px}
+  .chc{gap:7px;margin:5px 0;padding:7px 8px;border-radius:4px 9px 4px 9px}
+  .carshop-row{gap:7px;padding:7px;margin:5px 0;border-radius:5px}
+  .gcar{padding:7px 9px;border-radius:4px 9px 4px 9px}
+  .lbtabs button{padding:5px 8px;min-height:30px}
+  /* Run results: compress the five actions into a flexible row that wraps cleanly. */
+  #ov .btns{display:flex;flex-wrap:wrap;justify-content:center;align-items:stretch;gap:7px;margin:8px 0 3px}
+  #ov .btns button,#ov #goBtn,#ov #shopBtn,#ov #garageBtn,#ov #chBtn,#ov #menuBtn{
+    flex:1 1 110px; min-width:0; width:auto; max-width:190px; border-radius:3px 10px 3px 10px!important;
+    padding:7px 9px!important; font-size:clamp(11px,1.4vw,14px)!important; margin:0!important;
+    background:linear-gradient(180deg,#f3efe6 0%,#d8d2c5 100%)!important; color:#292a2d!important;
+    border:1px solid rgba(24,24,24,.3)!important; font-weight:750!important; text-transform:uppercase!important;
+  }
+  #ov .card{width:min(94vw,760px);padding:clamp(10px,1.7vw,16px)}
+  #ov .how{margin-top:8px;font-size:clamp(10px,1.2vw,12px);line-height:1.45}
+  @media(max-width:640px){
+    :is(#ov,#shop,#bm,#chMenu,#loadout,#lb,#lbName,#gfx,#adm,#tutorial,#garage,#paintPanel,#powerPanel) .card{width:96vw;max-height:calc(100dvh - 12px);padding:10px;border-radius:7px}
+    #ov .btns{gap:6px}
+    #ov .btns button,#ov #goBtn,#ov #shopBtn,#ov #garageBtn,#ov #chBtn,#ov #menuBtn{flex-basis:calc(50% - 6px);max-width:none;min-height:34px!important;font-size:11px!important}
+    .carshop-row{gap:6px;padding:6px}.carshop-row strong{font-size:12px}.carshop-row button{white-space:normal;max-width:44%}
+    #tutorial .tutgrid{grid-template-columns:1fr 1fr;gap:6px}
+  }
+  @media(max-width:420px){
+    #ov .btns button,#ov #goBtn,#ov #shopBtn,#ov #garageBtn,#ov #chBtn,#ov #menuBtn{flex-basis:100%}
+    .card .cols{gap:6px}.items{grid-template-columns:repeat(2,1fr)}
+    #tutorial .tutgrid{grid-template-columns:1fr}
+  }
 </style>
 </head>
 <body>
@@ -358,7 +417,7 @@
   <div class="best">Clean streak <span id="nextB">0</span></div>
   <div class="ex">EXIT in <span id="gExit">10.00</span> mi · cash out <span id="gCash">$0.00</span></div>
   <div class="best">Best <span id="bestP">0</span> pts · <span id="bestM">0.0</span> mi</div></div>
-<div id="title"><div id="tcFade"></div><div id="tcLogo"><span class="l1">Carrera GT</span><span class="l2">Highway Run</span><span class="l3">Press start</span></div><div id="tmenu"><button class="tb" id="tStart"><span>Start run</span></button><button class="tb alt" id="tChal"><span>Challenges<small id="tChalV"></small></span></button><button class="tb alt" id="tShop"><span>Shop<small id="tWal">$0.00</small></span></button><button class="tb alt" id="tGarage"><span>Garage</span></button><button class="tb alt" id="tShow"><span>Showroom</span></button><button class="tb alt" id="tGfx"><span>Settings<small id="tGfxV"></small></span></button><button class="tb alt" id="tLb"><span>Leaderboards<small id="tLbV"></small></span></button><button class="tb alt" id="tHelp"><span>Scores &amp; help</span></button></div></div>
+<div id="title"><div id="tcFade"></div><div id="tcLogo"><span class="l2">Highway Run</span><span class="l3">Press start</span></div><div id="tmenu"><button class="tb" id="tStart"><span>Start run</span></button><button class="tb alt" id="tChal"><span>Challenges<small id="tChalV"></small></span></button><button class="tb alt" id="tShop"><span>Shop<small id="tWal">$0.00</small></span></button><button class="tb alt" id="tGarage"><span>Garage</span></button><button class="tb alt" id="tShow"><span>Showroom</span></button><button class="tb alt" id="tGfx"><span>Settings<small id="tGfxV"></small></span></button><button class="tb alt" id="tLb"><span>Leaderboards<small id="tLbV"></small></span></button><button class="tb alt" id="tHelp"><span>Scores &amp; help</span></button></div></div>
 <div id="cine"><div class="bar top"></div><div class="bar bot"></div><div class="cap" id="cineCap"></div></div>
 <button id="admBtn" hidden>ADMIN</button>
 <div id="adm"><div class="card"><h1>Admin</h1><p>Edit wallet · nothing is saved while admin mode is on</p><div id="admW" class="nb"></div>
@@ -368,7 +427,7 @@
     <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-bottom:8px">Challenges</div>
     <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:12px"><button class="admb" id="admListB" type="button">Unlock Challenge List B</button><button class="admb" id="admAllCh" type="button">Unlock All Challenges</button></div>
     <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-bottom:8px">Road events</div>
-    <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:12px"><button class="admb" data-ev="police" type="button">Police Chase</button><button class="admb" data-ev="convoy" type="button">Convoy</button><button class="admb" data-ev="street" type="button">Street Race</button><button class="admb" data-ev="boss" type="button">Boss: Tank</button><button class="admb" data-ev="plane" type="button">Race: Cargo Plane</button><button class="admb" data-ev="train" type="button">Race: Train</button><button class="admb" data-ev="balloon" type="button">Race: Balloons</button><button class="admb" data-ev="arcade" type="button">Arcade</button><button class="admb" data-ev="end" type="button">End Event</button></div>
+    <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:12px"><button class="admb" data-ev="police" type="button">Police Chase</button><button class="admb" data-ev="convoy" type="button">Convoy</button><button class="admb" data-ev="street" type="button">Street Race</button><button class="admb" data-ev="boss" type="button">Boss: Tank</button><button class="admb" data-ev="plane" type="button">Race: Cargo Plane</button><button class="admb" data-ev="train" type="button">Race: Train</button><button class="admb" data-ev="balloon" type="button">Race: Balloons</button><button class="admb" data-ev="duster" type="button">Race: Crop Duster</button><button class="admb" data-ev="frecce" type="button">Race: Frecce Tricolori</button><button class="admb" data-ev="arcade" type="button">Arcade</button><button class="admb" data-ev="end" type="button">End Event</button></div>
     <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-bottom:8px">World controls</div>
     <div style="display:flex;gap:7px;justify-content:center;flex-wrap:wrap">
       <button class="admb" id="admDay" type="button">Force Day</button>
@@ -2809,9 +2868,15 @@ lazyCar('raptor','ford_f150_svt_raptor_r.glb',gltf=>{
   const GLASS=['Windscreenok0011Mtl','Doorrfok1Mtl','Windscreenok0021Mtl'], seenM=new Set();
   gltf.scene.traverse(o=>{ if(!o.isMesh||!o.material||seenM.has(o.material)) return; seenM.add(o.material); const m=o.material, n=m.name||'';
     if(m.transparent&&m.opacity>=.99&&!GLASS.includes(n)&&!/^Light/.test(n)){ m.transparent=false; m.depthWrite=true; m.alphaTest=0; } });
+  // [fix] the body was matched only by the exact names Paint1Mtl / Paint2Mtl; if the file's material names differ, nothing was ever classed as paint and the truck stayed silver
+  // whatever you picked. Now: any material with "paint" in its name, else the biggest non-wheel/glass/light material (the body shell). The choice is logged to the console.
+  const mc=new Map(); gltf.scene.traverse(o=>{ if(o.isMesh&&o.material){ const n=o.material.name||''; mc.set(n,(mc.get(n)||0)+(o.geometry.attributes.position?o.geometry.attributes.position.count:0)); } });
+  let paintNames=[...mc.keys()].filter(n=>/paint/i.test(n));
+  if(!paintNames.length){ const skip=/wheel|tyre|tire|hub|rim|glass|windscreen|windshield|light|lamp|chrome|interior|seat|rubber|brake|rotor|caliper|badge|logo|mirror|plate|black/i; let best='',bv=0; mc.forEach((v,n)=>{ if(!skip.test(n)&&!GLASS.includes(n)&&v>bv){ best=n; bv=v; } }); if(best) paintNames=[best]; }
+  console.info('[RAPTOR] paint materials:',paintNames.join(', ')||'NONE','| all materials:',[...mc.keys()].join(', '));
   gcLoad(gltf,{tag:'RAPTOR',root:raptorRoot,wheels:raptorWheels,paintMats:raptorPaintMats,patch:raptorPatch,sync:syncRaptorPaint,wb:3.69,len:5.9,
     kind:o=>{ const mn=o.userData.mn||'', nm=o.name||'';
-      if(mn==='Paint1Mtl'||mn==='Paint2Mtl') return 'paint';
+      if(paintNames.includes(mn)) return 'paint';
       if(mn==='Wheel0031Mtl') return 'tire';
       if(mn==='Wheel0021Mtl'||mn==='Wheel0011Mtl'||mn==='Hublf1Mtl') return 'rim';
       if(GLASS.includes(mn)) return 'window';
@@ -3467,7 +3532,7 @@ function applyPaint(d){ const f=FIN[d.fin]||FIN.gloss, m=M.paint;
   const dual=d.id==='dualpaint', f2=dual?(FIN[d.fin2]||FIN.metal):f;
   PAINT_U.dualOn.value=dual?1:0; PAINT_U.dualColor.value.set(dual?d.c2:'#000000'); PAINT_U.dualRough.value=f2.r; PAINT_U.dualMetal.value=f2.m; PAINT_U.dualCC.value=Q.coat?f2.cc:0; PAINT_U.dualCCR.value=f2.ccr;
   if(dual&&m.clearcoat===0&&PAINT_U.dualCC.value>0) m.clearcoat=.001;   // keep the clearcoat code path compiled so the other side can use it
-  m.onBeforeCompile=paintPatchCarrera; m.customProgramCacheKey=PAINT_KEY; m.needsUpdate=true; syncEnzoPaint(); syncZondaPaint(); syncCobraPaint(); syncAeroPaint(); syncChironPaint(); syncM3Paint(); syncXkrPaint(); syncF360Paint(); syncCcxPaint(); syncR34Paint(); syncRaptorPaint(); syncFulviaPaint(d); }
+  m.onBeforeCompile=paintPatchCarrera; m.customProgramCacheKey=PAINT_KEY; m.needsUpdate=true; syncEnzoPaint(); syncZondaPaint(); syncCobraPaint(); syncAeroPaint(); syncChironPaint(); syncM3Paint(); syncXkrPaint(); syncF360Paint(); syncCcxPaint(); syncR34Paint(); syncRaptorPaint(); syncFulviaPaint(d); }   // [fix] the Raptor was never re-synced here, so it kept its first colour whatever you picked
 const dotCss=d=>d.fin==='carbon'?'repeating-linear-gradient(45deg,#1b1d21 0 3px,#33363c 3px 6px)':d.id==='scoutpaint'?"repeating-linear-gradient(45deg,rgba(40,110,35,.25) 0 4px,transparent 4px 8px),#398b35":d.fin==='chrome'?'linear-gradient(135deg,#fff,#8f97a4 45%,#f6f8fb)':'radial-gradient(circle at 30% 28%,rgba(255,255,255,'+(d.fin==='matte'?.12:.5)+'),transparent 40%),'+d.c;
 function spend(c){ if(wallet<c) return false; wallet-=c; try{store.set('cgt_cash',String(wallet))}catch(e){} renderWallet(); return true; }
 function renderPaint(keepScroll){
@@ -3571,7 +3636,7 @@ function crash(label,rel){
   score-=pen; mult=1; clean=0; tStreak=0; const prot037=CS.sel==='l037'&&!(MP.on&&MP.mode==='battle')&&Math.random()<.2; if(!(MP.on&&MP.mode==='battle')&&!prot037) timeLeft=Math.max(0,timeLeft-crashTime()); inv=1.6; shake=1; weave=0; lastGap=-1;
   popup((pen?'−'+pen.toLocaleString()+'  ':'')+(MP.on&&MP.mode==='battle'?'':prot037?'TIME PROTECTED  ':'−'+crashTime()+'s  ')+label,prot037?'good':'bad');
   $('flash').style.opacity=.55; setTimeout(()=>{$('flash').style.opacity=0},120); pop(.9,3);
-  try{ const pc=EV.cur; if(pc&&(pc.k==='plane'||pc.k==='train')){ pc.slowT=3; popup((pc.k==='plane'?'THE CARGO PLANE':'THE FREIGHT TRAIN')+' EASES OFF','good'); }   // crashing slows the showcase opponent for a moment
+  try{ const pc=EV.cur; if(pc&&RK[pc.k]){ pc.slowT=3; popup('THE '+RK[pc.k].n+' EASES OFF','good'); }   // crashing slows the showcase opponent for a moment
   if(pc&&pc.k==='police'){ pc.gr=12; pc.gap=Math.max(pc.gap,45); popup('THE POLICE HANG BACK · GET YOUR SPEED UP','good'); } }catch(e){}   // a crash gives you time to rebuild a gap
 }
 /* TIME is earned by clean driving: every thread / wall cleared adds seconds, and the reward grows with an unbroken streak (up to 3.7 s per row).
@@ -3832,7 +3897,9 @@ CHALLENGES_B.forEach(c=>{ c.list='B'; c.pen=[0,5,8,10,15,20][c.tier]; });
 const CHALLENGES_C=[
  {id:'C1',tier:3,name:'Storm Chaser',car:'xkr',   song:null,time:120,exitMi:12,g:{race:true},race:{k:'plane',mi:7,hard:true}},
  {id:'C2',tier:3,name:'Train in Vain',car:'fulvia',song:null,time:120,exitMi:12,dens:1,g:{race:true},race:{k:'train',mi:7,hard:true}},
- {id:'C3',tier:4,name:'37 Versus 037',car:'l037',song:null,time:120,exitMi:12,g:{race:true},race:{k:'balloon',mi:7,hard:true,n:37}}
+ {id:'C3',tier:4,name:'37 Versus 037',car:'l037',song:null,time:120,exitMi:12,g:{race:true},race:{k:'balloon',mi:7,hard:true,n:37}},
+ {id:'C4',tier:4,name:'Il Tricolore Aereo',car:'f360',song:null,time:120,exitMi:12,g:{race:true},race:{k:'frecce',mi:7,hard:true}},
+ {id:'C5',tier:3,name:'North By Northwest',car:'raptor',song:null,time:120,exitMi:12,g:{race:true},race:{k:'duster',mi:7,hard:true}}
 ];
 CHALLENGES_C.forEach(c=>{ c.list='C'; c.pen=10; });
 
@@ -3856,7 +3923,7 @@ function chGoal(d){ const g=Object.assign({},d.g); if(g.top){ const simulated=si
 function chText(d){
   const g=chGoal(d), p=[], ex=g.exit;
   if(g.race&&d.race.k==='balloon') return 'Overtake all '+d.race.n+' balloons before any of them reaches the finish, over '+d.race.mi+' miles · spread-out fleet · smarter balloons that run when you close in · the clock holds during the race · each crash −'+d.pen+' s';
-  if(g.race) return 'Beat the '+(d.race.k==='plane'?'cargo plane':'freight train')+' to the finish over '+d.race.mi+' miles · tougher AI · the clock holds during the race · each crash −'+d.pen+' s';
+  if(g.race) return 'Beat the '+RK[d.race.k].n.toLowerCase()+' to the finish over '+d.race.mi+' miles · tougher AI · the clock holds during the race · each crash −'+d.pen+' s';
   if(ex){ const em=d.exitMi||(d.car==='zonda'?5:10); let t='Take the exit '+em+' mi ahead';
     if(ex.frac) t+=' with '+Math.round(ex.frac*100)+'% of your time left'; if(ex.min) t+=' with '+ex.min+' s left'; if(ex.gain) t+=' with more time than you started with'; p.push(t); }
   if(g.speed) p.push('Reach '+g.speed+' mph'+(g.top?' ('+Math.round(g.top*100)+'% of its real top speed)':''));
@@ -3946,7 +4013,7 @@ function chHudUpdate(){
   if(g.clock){ goals.push('Clock up to '+g.clock+' s'); progress.push('Clock '+Math.ceil(timeLeft)+' / '+g.clock+' s'); }
   if(g.noBrake) goals.push('No braking');
   if(g.race&&CH.def.race.k==='balloon'){ const rc=CH.def.race, ev=EV.cur&&EV.cur.k==='balloon'?EV.cur:null; goals.push('Overtake all '+rc.n+' balloons over '+rc.mi+' miles'); progress.push(ev?ev.passed+' / '+ev.n+' overtaken':'Race starts in a few seconds'); }
-  else if(g.race){ const rc=CH.def.race, ev=EV.cur&&EV.cur.hard?EV.cur:null; goals.push('Beat the '+(rc.k==='plane'?'cargo plane':'freight train')+' over '+rc.mi+' miles'); progress.push(ev?(ev.Q>runDist-ev.P0?'Behind by '+Math.round(ev.Q-(runDist-ev.P0))+' m':'Ahead by '+Math.round((runDist-ev.P0)-ev.Q)+' m'):'Race starts in a few seconds'); }
+  else if(g.race){ const rc=CH.def.race, ev=EV.cur&&EV.cur.hard?EV.cur:null; goals.push('Beat the '+RK[rc.k].n.toLowerCase()+' over '+rc.mi+' miles'); progress.push(ev?(ev.Q>runDist-ev.P0?'Behind by '+Math.round(ev.Q-(runDist-ev.P0))+' m':'Ahead by '+Math.round((runDist-ev.P0)-ev.Q)+' m'):'Race starts in a few seconds'); }
   if(g.noCrash){ goals.push('No crashes'); progress.push(st.cr?'CRASHED':'No crashes'); } else progress.push('Crash penalty −'+CH.def.pen+' s');
   const h='<b>#'+CH.def.id+' · '+CH.def.name+'</b><div class="chHudGoal"><strong>GOAL</strong> '+goals.join(' · ')+'</div><div class="chHudProgress"><strong>PROGRESS</strong> '+progress.join(' · ')+'</div>';
   const el=$('chHud'); if(el._h!==h){ el.innerHTML=h; el._h=h; }
@@ -3956,7 +4023,7 @@ let chMenuOpen=false;
 let chMenuL='A';
 function renderChMenu(){
   const A=chMenuL==='A', C=chMenuL==='C', arr=chArr(chMenuL), open=A||C||chBOpen(), tab=(k,t)=>'<button type="button" data-tab="'+k+'" style="margin:0 6px 8px 0;padding:6px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.25);font:inherit;font-weight:600;cursor:pointer;background:'+(chMenuL===k?'#e8edf7':'transparent')+';color:'+(chMenuL===k?'#0b0f16':'inherit')+'">'+t+'</button>';
-  $('chSub').innerHTML='<div>'+tab('A','List A')+tab('B','List B'+(chBOpen()?'':' 🔒'))+tab('C','Auxiliary')+'</div>'+(C?chDoneN('C')+' / '+arr.length+' cleared · $50 for each first clear · 7-mile showcase races against a tougher plane and train':A?chDoneN('A')+' / 25 cleared · $20 for each first clear · $1,000 when all 25 are done'+(CHS.paidAll?' (paid)':'')
+  $('chSub').innerHTML='<div>'+tab('A','List A')+tab('B','List B'+(chBOpen()?'':' 🔒'))+tab('C','Auxiliary')+'</div>'+(C?chDoneN('C')+' / '+arr.length+' cleared · $50 for each first clear · 7-mile showcase races against a tougher cargo plane, freight train, balloon fleet, crop duster and Frecce Tricolori':A?chDoneN('A')+' / 25 cleared · $20 for each first clear · $1,000 when all 25 are done'+(CHS.paidAll?' (paid)':'')
     :(open?chDoneN('B')+' / 25 cleared · $30 for each first clear · $2,500 when all 25 are done'+(CHS.paidAllB?' (paid)':''):'Locked · clear '+CH_B_GATE+' of the 25 List A challenges to open List B ('+chDoneN('A')+' / '+CH_B_GATE+')'))+'<br>Cars and songs are preset, and you don\'t need to own the car.'+(A||C?'':'<br>List B uses the cars and songs List A leaves out.');
   let h='',tier=0;
   if(open) arr.forEach((c,i)=>{
@@ -4491,6 +4558,7 @@ function engineTick(dt){
    Songs you add with + are measured in the browser and corrected the same way. */
 const RADIO=[
  {f:'audio15.mp3',t:'You',a:'Lane 8',d:214,g:9.2},
+ {f:'audio16.mp3',t:'Pyramid',a:'Astral',d:316,g:0},
  {f:'audio14.mp3',t:'Ingrid Is a Hybrid',a:'Dusky',d:257,g:3.8},
  {f:'audio13.mp3',t:'Hydra',a:'Fred V & Grafix',d:246,g:2.3},
  {f:'audio12.mp3',t:'Paddling Out',a:'Miike Snow',d:223,g:-2.1},
@@ -4581,7 +4649,7 @@ document.addEventListener('visibilitychange',()=>{ if(!radio.on||!radio.cur) ret
 /* autoplay: try immediately; browsers usually block audio until the first key press / click, so that
    first input starts the radio (and engine) unless you switched them off yourself. */
 /* Mutually exclusive menu music: title, regular shop, or Black Market. */
-const titleA=new Audio('title.mp3'); titleA.loop=true; titleA.volume=.8; titleA.preload='auto';
+const titleA=new Audio('title2.mp3?v='+Date.now()); titleA.loop=true; titleA.volume=.8; titleA.preload='auto';
 const shopA=new Audio('shop.mp3'); shopA.loop=true; shopA.volume=.8; shopA.preload='auto';
 const blackMarketA=new Audio('bshop.mp3'); blackMarketA.loop=true; blackMarketA.volume=.8; blackMarketA.preload='auto';
 [titleA,shopA,blackMarketA].forEach(a=>__retryMedia(a,{onRetry:()=>{ try{ syncMenuMusic(); }catch(e){} }}));
@@ -4829,6 +4897,98 @@ function evMakePlane(){
   if(PLANE.tpl) evPlaneApply(g); else PLANE.wait.push(g);   // the AC-130 model replaces the placeholder shapes as soon as it is loaded
   return g;
 }
+
+/* ================= SHOWCASE: CROP DUSTER + FRECCE TRICOLORI =================
+   Two more flying opponents that use the same rubber-banded race as the cargo plane / train (evRace, table RK below), each with a smoke trail:
+   the crop duster leaves brown smoke from its spray booms, the six display jets leave a green / white / red tricolour. */
+const RK={   // per-opponent race tuning. vmin/vf: floor and target as fractions of the car's rated top speed / of the pace reach (same meaning as the old plane/train numbers); cap: the AI never exceeds this fraction of the car's top speed, so holding top speed always wins
+  plane:{n:'CARGO PLANE',w:'plane',air:1,vmin:.72,vf:1.0,acc:1.65,dec:2.25,cap:0,wx:'rain',song:'Hydra'},
+  train:{n:'FREIGHT TRAIN',w:'train',air:0,vmin:.68,vf:.95,acc:1.45,dec:2.0,cap:0,wx:'clear',song:'Train in Vain'},
+  duster:{n:'CROP DUSTER',w:'duster',air:1,vmin:.5,vf:.8,acc:1.9,dec:2.6,cap:.8,wx:'clear',song:'A Moment Apart'},
+  frecce:{n:'FRECCE TRICOLORI',w:'jets',air:1,vmin:.7,vf:.88,acc:2.3,dec:2.8,cap:.88,wx:'clear',song:'Pyramid'}};
+/* --- smoke: one pooled THREE.Points (soft round puffs, per-puff colour / size / alpha). Puffs live in straight world coordinates, scroll back with the road
+   and are bent onto the road on the CPU, exactly like the aircraft (so they hang in the air where the aircraft was, bends and hills included). */
+const SMK={n:720,i:0,live:false,pts:null,mat:null,acc:[0,0,0,0,0,0,0,0]};
+function smokeInit(){
+  if(SMK.pts) return; const n=SMK.n;
+  SMK.px=new Float32Array(n); SMK.py=new Float32Array(n); SMK.pz=new Float32Array(n); SMK.vx=new Float32Array(n); SMK.vy=new Float32Array(n);
+  SMK.age=new Float32Array(n).fill(99); SMK.life=new Float32Array(n).fill(1); SMK.s0=new Float32Array(n); SMK.a0=new Float32Array(n); SMK.rgb=new Float32Array(n*3);
+  SMK.pos=new Float32Array(n*3); SMK.col=new Float32Array(n*3); SMK.sz=new Float32Array(n); SMK.al=new Float32Array(n);
+  const geo=new THREE.BufferGeometry(), dyn=(a,k)=>new THREE.BufferAttribute(a,k).setUsage(THREE.DynamicDrawUsage);
+  geo.setAttribute('position',dyn(SMK.pos,3)); geo.setAttribute('aColor',dyn(SMK.col,3)); geo.setAttribute('aSize',dyn(SMK.sz,1)); geo.setAttribute('aAlpha',dyn(SMK.al,1));
+  SMK.mat=new THREE.ShaderMaterial({uniforms:{uScale:{value:600}},transparent:true,depthWrite:false,fog:false,
+    vertexShader:'attribute vec3 aColor; attribute float aSize; attribute float aAlpha; uniform float uScale; varying vec3 vC; varying float vA;\nvoid main(){ vec4 mv=modelViewMatrix*vec4(position,1.); gl_Position=projectionMatrix*mv; float d=max(.1,-mv.z); gl_PointSize=min(480.,aSize*uScale/d); vC=aColor; vA=aAlpha*smoothstep(2.,14.,d); }',
+    fragmentShader:'varying vec3 vC; varying float vA;\nvoid main(){ float r=length(gl_PointCoord-.5)*2.; float a=1.-smoothstep(.12,1.,r); a*=a*vA; if(a<.004) discard; gl_FragColor=vec4(vC,a); }'});
+  SMK.pts=new THREE.Points(geo,SMK.mat); SMK.pts.frustumCulled=false; SMK.pts.renderOrder=5; SMK.pts.visible=false; scene.add(SMK.pts);
+}
+function smokeEmit(x,y,z,r,g,b,size,life,alpha,vx,vy){
+  const i=SMK.i; SMK.i=(i+1)%SMK.n; SMK.px[i]=x; SMK.py[i]=y; SMK.pz[i]=z; SMK.vx[i]=vx; SMK.vy[i]=vy; SMK.age[i]=0; SMK.life[i]=life; SMK.s0[i]=size; SMK.a0[i]=alpha;
+  SMK.rgb[i*3]=r; SMK.rgb[i*3+1]=g; SMK.rgb[i*3+2]=b; SMK.live=true; SMK.pts.visible=true;
+}
+function smokeTick(rdt,dt){
+  if(!SMK.pts||!SMK.live) return; const n=SMK.n, sc=speed*dt; let any=false;
+  for(let i=0;i<n;i++){
+    if(SMK.age[i]>=SMK.life[i]){ if(SMK.sz[i]!==0){ SMK.sz[i]=0; SMK.al[i]=0; } continue; }
+    SMK.age[i]+=rdt; SMK.pz[i]-=sc; SMK.px[i]+=SMK.vx[i]*rdt; SMK.py[i]+=SMK.vy[i]*rdt;
+    const u=SMK.age[i]/SMK.life[i], z=SMK.pz[i];
+    if(u>=1||z<-20){ SMK.age[i]=SMK.life[i]; SMK.sz[i]=0; SMK.al[i]=0; continue; }
+    any=true; const zc=z<-48?-48:z>432?432:z;
+    SMK.pos[i*3]=SMK.px[i]+bendXAt(zc); SMK.pos[i*3+1]=SMK.py[i]+yAt(zc); SMK.pos[i*3+2]=z;
+    SMK.col[i*3]=SMK.rgb[i*3]; SMK.col[i*3+1]=SMK.rgb[i*3+1]; SMK.col[i*3+2]=SMK.rgb[i*3+2];
+    SMK.sz[i]=SMK.s0[i]*(1+1.9*u); const f=1-u; SMK.al[i]=SMK.a0[i]*f*f*Math.min(1,SMK.age[i]/.12);
+  }
+  const g=SMK.pts.geometry; g.attributes.position.needsUpdate=true; g.attributes.aColor.needsUpdate=true; g.attributes.aSize.needsUpdate=true; g.attributes.aAlpha.needsUpdate=true;
+  SMK.mat.uniforms.uScale.value=renderer.domElement.height*camera.projectionMatrix.elements[5]*.5;
+  if(!any){ SMK.live=false; SMK.pts.visible=false; }
+}
+function smokeClear(){ if(!SMK.pts) return; SMK.age.fill(99); SMK.sz.fill(0); SMK.al.fill(0); SMK.live=false; SMK.pts.visible=false; SMK.acc.fill(0); }
+const _sv=new THREE.Vector3(), SM_BROWN=[[.48,.33,.2],[.56,.4,.25],[.42,.29,.18]], SM_TRI=[[0,.57,.28],[0,.57,.28],[1,1,1],[1,1,1],[.81,.17,.22],[.81,.17,.22]];   // Italian flag: green, white, red
+function airTick(rdt,dt){
+  const d=EV.duster&&EV.duster.visible?EV.duster:null, f=!d&&EV.frecce&&EV.frecce.visible?EV.frecce:null;
+  if(d){ if(d.userData.prop) d.userData.prop.rotation.z+=rdt*70;
+    smokeInit(); d.updateMatrixWorld(true); const E=d.userData.em;
+    for(let k=0;k<E.length;k++){ SMK.acc[k]+=rdt; let guard=0; while(SMK.acc[k]>=.04&&guard++<3){ SMK.acc[k]-=.04;
+      _sv.set(E[k][0],E[k][1],E[k][2]).applyMatrix4(d.matrixWorld); const c=SM_BROWN[(Math.random()*3)|0], big=k<2;
+      smokeEmit(_sv.x+(Math.random()-.5)*.5,_sv.y+(Math.random()-.5)*.4,_sv.z,c[0],c[1],c[2],big?3.4:2.0,big?3.6:2.4,big?.62:.4,(Math.random()-.5)*1.6,.5+Math.random()*.8); } }
+  } else if(f){ smokeInit(); f.updateMatrixWorld(true); const J=f.userData.jets;
+    for(let k=0;k<J.length;k++){ SMK.acc[k]+=rdt; let guard=0; while(SMK.acc[k]>=.035&&guard++<3){ SMK.acc[k]-=.035;
+      _sv.set(0,0,-5.2).applyMatrix4(J[k].matrixWorld); const c=SM_TRI[k];
+      smokeEmit(_sv.x,_sv.y,_sv.z,c[0],c[1],c[2],2.6,3.4,.8,(Math.random()-.5)*.5,.25+Math.random()*.3); } }
+  }
+  if(SMK.live) smokeTick(rdt,dt);
+}
+function evMakeDuster(){
+  const g=new THREE.Group(), body=new THREE.Group(); g.add(body);
+  const yel=evMat(0xf4c20d,.55,.1), red=evMat(0xc22a1a,.6,.1), dk=evMat(0x1d1f22,.6,.4), gl=evMat(0x1c2c3c,.2,.6), sil=evMat(0xb7bcc2,.35,.7);
+  const cyl=(rt,rb,h,m,x,y,z,rx)=>{ const o=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,12),m); o.rotation.x=rx===undefined?Math.PI/2:rx; o.position.set(x,y,z); body.add(o); return o; };
+  const box=(w,h,d,m,x,y,z)=>{ const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m); o.position.set(x,y,z); body.add(o); return o; };
+  cyl(.64,.36,6.4,yel,0,0,-.2); cyl(.66,.66,1.3,dk,0,0,3.5);                 // fuselage, engine cowling
+  const sp=new THREE.Mesh(new THREE.ConeGeometry(.3,.7,10),red); sp.rotation.x=Math.PI/2; sp.position.set(0,0,4.5); body.add(sp);
+  const prop=new THREE.Group(); prop.position.set(0,0,4.3); prop.add(new THREE.Mesh(new THREE.BoxGeometry(.2,3.7,.06),dk)); const b2=new THREE.Mesh(new THREE.BoxGeometry(.2,3.7,.06),dk); b2.rotation.z=Math.PI/2; prop.add(b2); body.add(prop); g.userData.prop=prop;
+  box(1.05,.95,2.1,yel,0,.95,1.5); box(1.1,.16,2.14,red,0,1.46,1.5);          // hopper
+  box(.95,.8,1.5,gl,0,.88,-.7);                                                 // cockpit
+  box(11.4,.22,1.9,yel,0,.05,.5); box(.55,.24,1.92,red,5.62,.05,.5); box(.55,.24,1.92,red,-5.62,.05,.5);   // wing
+  box(4,.14,1.2,yel,0,.12,-3.2); box(.14,1.7,1.3,yel,0,.95,-3.25); box(.16,.5,1.0,red,0,1.75,-3.3);        // tail
+  box(9.2,.07,.07,dk,0,-.3,-.45);                                               // spray boom
+  for(const sx of [-1,1]){ cyl(.36,.36,.26,dk,sx*1.05,-1.0,1.05,0).rotation.z=Math.PI/2; box(.1,1.0,.1,sil,sx*.75,-.5,1.05).rotation.z=sx*.25; }   // fixed gear
+  g.userData.em=[[-4.5,-.3,-.9],[4.5,-.3,-.9],[0,.1,-.4]];                      // smoke: two spray-boom ends (thick), a thin exhaust trail
+  g.scale.setScalar(1.15); g.traverse(o=>{ o.frustumCulled=false; if(o.material) o.material.side=THREE.DoubleSide; }); g.visible=false; scene.add(g); return g;
+}
+function evMakeFrecce(){
+  const g=new THREE.Group(), blue=evMat(0x8a9099,.45,.3), wht=evMat(0xf0f2f5,.5,.1), dk=evMat(0x1b1e22,.6,.4), gl=evMat(0x0f1c2a,.15,.7), grn=evMat(0x009246,.6,0), red=evMat(0xce2b37,.6,0), hot=new THREE.MeshBasicMaterial({color:0xff9a3a});
+  const sh=new THREE.Shape(); sh.moveTo(0,1.9); sh.lineTo(5.2,-.9); sh.lineTo(5.2,-1.9); sh.lineTo(0,-1.5); sh.closePath();
+  const wg=new THREE.ExtrudeGeometry(sh,{depth:.16,bevelEnabled:false}).rotateX(Math.PI/2), fg=new THREE.CylinderGeometry(.85,.65,8,12).rotateX(Math.PI/2), ng=new THREE.ConeGeometry(.85,3.2,12).rotateX(Math.PI/2),
+    tg=new THREE.CylinderGeometry(.5,.42,1,10).rotateX(Math.PI/2), cg=new THREE.SphereGeometry(.7,10,8), tk=new THREE.CylinderGeometry(.28,.28,3,8).rotateX(Math.PI/2), fin=new THREE.BoxGeometry(.14,2.3,1.9), st=new THREE.BoxGeometry(.16,.5,1.4), ig=new THREE.BoxGeometry(.4,.55,1.7), dg=new THREE.CircleGeometry(.4,10).rotateY(Math.PI);
+  const mk=()=>{ const j=new THREE.Group(), add=(geo,m,x,y,z,sx)=>{ const o=new THREE.Mesh(geo,m); o.position.set(x,y,z); if(sx) o.scale.set(sx[0],sx[1],sx[2]); j.add(o); return o; };
+    add(fg,blue,0,0,0); add(ng,wht,0,0,5.6); add(tg,dk,0,0,-4.4); add(dg,hot,0,0,-4.92); add(cg,gl,0,.7,1.4,[.8,.7,1.8]);
+    for(const sx of [-1,1]){ add(ig,blue,sx*.85,0,1.5); add(wg,blue,0,-.15,-.2,[sx,1,1]); add(tk,wht,sx*5.3,-.05,-.4); add(wg,blue,0,.1,-3.9,[.45*sx,1,.45]); }
+    add(fin,blue,0,1.5,-3.6); add(st,grn,0,1.15,-3.6); add(st,wht,0,1.65,-3.6); add(st,red,0,2.15,-3.6);   // tricolour tail stripes
+    return j; };
+  /* arrowhead of six (lead, two pairs, a tail-end), 5.6 m apart so the wings never touch; left-to-right x order = green, green, white, white, red, red (see SM_TRI) */
+  const slots=[[-11.2,0,-9],[-5.6,0,-4.5],[0,0,0],[0,0,-9],[5.6,0,-4.5],[11.2,0,-9]], jets=[];
+  slots.forEach(sl=>{ const j=mk(); j.scale.setScalar(.6); j.position.set(sl[0],sl[1],sl[2]); g.add(j); jets.push(j); });
+  g.userData.jets=jets; g.traverse(o=>{ o.frustumCulled=false; if(o.material&&o.material.isMeshStandardMaterial) o.material.side=THREE.DoubleSide; }); g.visible=false; scene.add(g); return g;
+}
 function evMakeTrain(){
   const g=new THREE.Group(), loco=new THREE.Mesh(new THREE.BoxGeometry(3.4,3.8,20,1,1,6),evMat(0xc2371b,.5,.3)), cab=new THREE.Mesh(new THREE.BoxGeometry(3.4,1.2,6,1,1,2),evMat(0x1a1c20)); loco.position.set(0,2.6,0); cab.position.set(0,4.9,-6); g.add(loco,cab);
   const cols=[0x3b6ea5,0xb5b8bd,0x9a6b2f,0x2e7d4f,0xd6a227,0x6b4a8a,0x3b6ea5];
@@ -4934,8 +5094,8 @@ function evBalloon(c,dt,H){
   if(H) H.push('<b style="color:#ffd76a">RACE: BALLOONS</b> · '+c.passed+' / '+c.balloons.length+' overtaken',(c.R/1609.34).toFixed(0)+'-mile stretch · '+remain+' remaining · '+(left/1609.34).toFixed(2)+' mi to finish');
 }
 /* ---- state machine ---- */
-function evPlayTheme(track){
-  if(!track||track.bad||radio.manualOff) return;
+function evPlayTheme(track,force=false){
+  if(!track||track.bad||(!force&&radio.manualOff)) return;
   // Showcase music temporarily borrows the radio element; remember exactly what was playing.
   if(!EV.theme) EV.theme={on:radio.on,track:radio.cur,time:radio.a.currentTime||0,loop:radio.a.loop,src:radio.a.currentSrc||radio.a.src,manualOff:!!radio.manualOff};
   if(!radio.on) setRadio(true);
@@ -4955,7 +5115,7 @@ function evRestoreTheme(){
 }
 function evEnd(silent){
   wcHide(); cinEnd(); evRestoreTheme(); const c=EV.cur; EV.cur=null; EV.pending=null; evQuiet=false; evSiren(false);
-  if(EV.pol) EV.pol.g.visible=false; if(EV.plane) EV.plane.visible=false; if(EV.train){ EV.train.visible=false; EV.train.userData.track.visible=false; } EV.balloonPool.forEach(g=>{g.visible=false;g.userData.balloonIndex=-1;}); EV.balloons.length=0; bossHide();
+  if(EV.pol) EV.pol.g.visible=false; if(EV.plane) EV.plane.visible=false; if(EV.duster) EV.duster.visible=false; if(EV.frecce) EV.frecce.visible=false; smokeClear(); if(EV.train){ EV.train.visible=false; EV.train.userData.track.visible=false; } EV.balloonPool.forEach(g=>{g.visible=false;g.userData.balloonIndex=-1;}); EV.balloons.length=0; bossHide();
   EV.pool.forEach(t=>{ t.g.visible=false; if(!t.isTraf&&t.g.parent) t.g.parent.remove(t.g); }); EV.pool=[]; if(EV.hud) EV.hud.style.display='none'; if(EV.flash) EV.flash.style.opacity=0; EV._hs=EV._fo=EV._fp=null; EV._ht=0;
   if(c&&(c.k==='convoy'||c.k==='street')){ clearTimeout(_lzEvT); _lzEvT=setTimeout(lazyEvict,3000); }   // [leak] lazyEvict() only ran from applyCar()'s one-shot timer and skips while a convoy is active, so the GPU geometry/textures the convoy members drew (shared with the garage cars) were never released afterwards; the members are off the scene now, so free them (three re-uploads on demand)
   if(c&&c.k==='arcade') arcStop();   // hide the ramps and coins (a jump already in the air finishes normally)
@@ -4973,16 +5133,16 @@ function evStart(kind){
   if(kind==='street'){ const ids=CV_IDS.filter(id=>id!==CS.sel).sort(()=>Math.random()-.5).slice(0,4); ids.forEach(id=>lazyEnsure(id)); EV.cur={k:'street',ph:'form',t:0,ids,cars:[],P0:runDist,R:EVC.streetMi*1609.34,avgV:Math.max(12,speed),finished:0,skill:streetSkill}; evQuiet=true; popup('STREET RACE · 5 MILES · FOUR RIVALS','good'); return true; }
   if(kind==='convoy'){ const ids=SET.cvTraf?[]:CV_IDS.slice().sort(()=>Math.random()-.5).slice(0,3); ids.forEach(id=>lazyEnsure(id));   // start fetching the three shop cars now; they join after the road clears
     EV.cur={k:'convoy',ph:'form',t:0,bonus:0,cars:[],ids}; evQuiet=true; popup('CONVOY AHEAD · ROAD CLEARING','good'); return true; }
-  if(kind==='plane'||kind==='train'){ const air=kind==='plane';
-    if(air&&!EV.plane) EV.plane=evMakePlane(); if(!air&&!EV.train) EV.train=evMakeTrain();
-    const o=air?EV.plane:EV.train, top=((CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].topSpeedMph)||150)/MPH;
+  if(kind==='plane'||kind==='train'||kind==='duster'||kind==='frecce'){ const K=RK[kind], air=!!K.air;
+    if(!EV[kind]) EV[kind]=kind==='plane'?evMakePlane():kind==='train'?evMakeTrain():kind==='duster'?evMakeDuster():evMakeFrecce();
+    const o=EV[kind], top=((CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].topSpeedMph)||150)/MPH;
     const reach=Math.min(top,evThrMs()*1.15);
-    // Per-car rated minimum: the plane holds a little more pace than the train.
+    // Per-opponent tuning (table RK): the plane holds a little more pace than the train; the crop duster is the gentle one, the Frecce Tricolori the hard one (never above 88% of the car's top speed; simulated: every car wins by holding about 88% of its top speed or more, the crop duster needs only ~80%)
     const rc=(CH.active&&CH.def&&CH.def.race)||null, hard=!!(rc&&rc.hard), rmi=rc?rc.mi:EVC.raceMi;
-    const vMin=top*(air?.72:.68), vTarget=Math.max(vMin,reach*(air?1.0:.95))*(hard?1.03:1);   // balance: opponents were too slow, so the player won too often
-    EV.cur={k:kind,t:0,wx:air?'rain':'clear',P0:runDist,Q:0,v0:speed,vt:vTarget,vMin,aiV:speed,o,R:rmi*1609.34,mi:rmi,hard,topMs:top}; o.visible=true; if(!air) o.userData.track.visible=true;
-    popup((hard?'CHALLENGE RACE · ':'SHOWCASE RACE · ')+(air?'CARGO PLANE':'FREIGHT TRAIN')+' · '+rmi+' MILES','good'); cinBegin(kind);
-    { const sg=RADIO.find(t=>t.t===(air?'Hydra':'Train in Vain')); evPlayTheme(sg); }   // temporary showcase theme; restore the previous radio state at event end
+    const vMin=top*K.vmin, vTarget=Math.max(vMin,reach*K.vf)*(hard?1.03:1);   // balance: opponents were too slow, so the player won too often
+    EV.cur={k:kind,t:0,wx:K.wx,P0:runDist,Q:0,v0:speed,vt:vTarget,vMin,aiV:speed,o,R:rmi*1609.34,mi:rmi,hard,topMs:top,cap:K.cap?Math.min(.965,K.cap+(hard?.08:0)):0}; o.visible=true; if(kind==='train') o.userData.track.visible=true;
+    popup((hard?'CHALLENGE RACE · ':'SHOWCASE RACE · ')+K.n+' · '+rmi+' MILES','good'); cinBegin(kind);
+    { const sg=RADIO.find(t=>t.t===K.song); evPlayTheme(sg,kind==='frecce'); }   // Frecce Tricolori forces Pyramid; other showcase themes respect manual radio-off
     return true; }
   if(kind==='arcade'){
     ensureArc(); ARC.on=true;
@@ -5018,14 +5178,14 @@ function evOptions(){
   if(mph>=thr&&left>EVC.policeMi*1609.34+400) opts.push('police');          // the police only come for you above the speed threshold
   if(left>2600) opts.push('convoy');
   if(left>EVC.streetMi*1609.34+700) opts.push('street');
-  if(left>EVC.raceMi*1609.34+700) opts.push('plane','train','balloon');
+  if(left>EVC.raceMi*1609.34+700) opts.push('plane','train','balloon','duster','frecce');
   if(left>EVC.arcadeMi*1609.34+700&&!isBetaCar()&&!isJet()) opts.push('arcade');
   if(left>4300&&!isBetaCar()&&!isJet()) opts.push('boss');   // boss battle: the clock is paused for it, so it only starts with plenty of road before the next exit
   return opts;
 }
 function evPick(){ const o=evOptions(); return o.length?o[(Math.random()*o.length)|0]:null; }
 /* WILDCARD (Ferrari 360 bonus): when an event is due, three different eligible events are dealt as cards; pick one with 1/2/3 or a tap (it does not pause the road). Unpicked after 8 s, a random one of the three is played. */
-const WC_INFO={police:['🚓','Police Chase',()=>'Stay above the speed threshold and outrun the cruiser for '+EVC.policeMi+' miles'],convoy:['🚘','Convoy',()=>'Roll with a convoy of shop cars and keep clear of them for a bonus'],street:['🏁','Street Race',()=>EVC.streetMi+'-mile sprint against four rivals with adaptive AI'],plane:['✈️','Cargo Plane Race',()=>'Race the cargo plane to the finish over '+EVC.raceMi+' miles'],train:['🚆','Freight Train Race',()=>'Race the freight train over '+EVC.raceMi+' miles'],balloon:['🎈','Balloon Race',()=>'Overtake the balloon fleet before it reaches the finish'],arcade:['🕹️','Arcade Run',()=>'Ramps and bronze coins for style points'],boss:['💥','Boss Battle',()=>'A tank blocks the road: win the fight (the clock is paused)']};
+const WC_INFO={police:['🚓','Police Chase',()=>'Stay above the speed threshold and outrun the cruiser for '+EVC.policeMi+' miles'],convoy:['🚘','Convoy',()=>'Roll with a convoy of shop cars and keep clear of them for a bonus'],street:['🏁','Street Race',()=>EVC.streetMi+'-mile sprint against four rivals with adaptive AI'],plane:['✈️','Cargo Plane Race',()=>'Race the cargo plane to the finish over '+EVC.raceMi+' miles'],train:['🚆','Freight Train Race',()=>'Race the freight train over '+EVC.raceMi+' miles'],duster:['🛩️','Crop Duster Race',()=>'Race the crop duster (brown smoke) over '+EVC.raceMi+' miles'],frecce:['🇮🇹','Frecce Tricolori Race',()=>'Race six display jets leaving a red, white and green trail over '+EVC.raceMi+' miles'],balloon:['🎈','Balloon Race',()=>'Overtake the balloon fleet before it reaches the finish'],arcade:['🕹️','Arcade Run',()=>'Ramps and bronze coins for style points'],boss:['💥','Boss Battle',()=>'A tank blocks the road: win the fight (the clock is paused)']};
 function wcHide(){ EV.wc=null; const e=$('wc'); if(e) e.classList.remove('show'); }
 function wcShow(o){
   EV.wc={o,t:8,T:8}; const row=$('wcRow'); row.innerHTML='';
@@ -5228,6 +5388,12 @@ function cinSfx(kind){
     } else if(kind==='plane'){
       const n=noise(6), bp=c.createBiquadFilter(), g=c.createGain(); bp.type='bandpass'; bp.Q.value=.8; bp.frequency.setValueAtTime(900,t0); bp.frequency.exponentialRampToValueAtTime(380,t0+3.6); bp.frequency.exponentialRampToValueAtTime(220,t0+6);
       g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(.55,t0+1.7); g.gain.linearRampToValueAtTime(.05,t0+6); n.connect(bp); bp.connect(g); g.connect(A.master); n.start(t0);
+    } else if(kind==='duster'){
+      [92,138].forEach((f,i)=>{ const o=c.createOscillator(), g=c.createGain(), lp=c.createBiquadFilter(); o.type='sawtooth'; lp.type='lowpass'; lp.frequency.value=520; o.frequency.setValueAtTime(f,t0); o.frequency.linearRampToValueAtTime(f*1.18,t0+2.6); o.frequency.linearRampToValueAtTime(f*.9,t0+6);
+        g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(.05,t0+2.4); g.gain.linearRampToValueAtTime(0,t0+6.2); o.connect(lp); lp.connect(g); g.connect(A.master); o.start(t0); o.stop(t0+6.3); });
+    } else if(kind==='frecce'){
+      const n=noise(6), bp=c.createBiquadFilter(), g=c.createGain(); bp.type='bandpass'; bp.Q.value=1.1; bp.frequency.setValueAtTime(2600,t0); bp.frequency.exponentialRampToValueAtTime(700,t0+3.4); bp.frequency.exponentialRampToValueAtTime(380,t0+6);
+      g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(.7,t0+2.3); g.gain.linearRampToValueAtTime(.04,t0+6); n.connect(bp); bp.connect(g); g.connect(A.master); n.start(t0);
     } else if(kind==='arcade'){
       [523,659,784,1047,1319].forEach((f,i)=>{ const o=c.createOscillator(), g=c.createGain(); o.type='square'; o.frequency.value=f; g.gain.setValueAtTime(0,t0+.5+i*.28); g.gain.linearRampToValueAtTime(.03,t0+.52+i*.28); g.gain.exponentialRampToValueAtTime(.001,t0+.8+i*.28); o.connect(g); g.connect(A.master); o.start(t0+.5+i*.28); o.stop(t0+.85+i*.28); });
     } else if(kind==='boss'){
@@ -5247,12 +5413,12 @@ function cinPortal(){
   add(5,10,9,-9.5,5,3); add(5,10,9,9.5,5,3); add(26,3.4,9,0,8.3,3); add(1.4,.5,9,-6.7,6.7,3); add(1.4,.5,9,6.7,6.7,3);
   g.add(hole); g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; scene.add(g); return CIN.portal=g;
 }
-const _cinTitles={train:['Freight Train','Race it '+'5 miles · beat it to the finish'],plane:['Cargo Plane','Race it 5 miles · beat it to the finish'],balloon:['Balloon Fleet','Overtake every balloon · beat the fleet to the finish'],police:['Police Pursuit','Stay above the speed limit to escape'],convoy:['Convoy','Drive with them · stay in formation'],street:['Street Race','5 miles · four rivals · first across the line wins'],arcade:['Arcade Style','Hit the ramps · grab the coins · land it clean'],boss:['Boss Battle','Destroy the tank · dodge the marked lane']};
+const _cinTitles={train:['Freight Train','Race it '+'5 miles · beat it to the finish'],plane:['Cargo Plane','Race it 5 miles · beat it to the finish'],duster:['Crop Duster','Race it 5 miles · it leaves a trail of dust'],frecce:['Frecce Tricolori','Race six display jets · red, white and green'],balloon:['Balloon Fleet','Overtake every balloon · beat the fleet to the finish'],police:['Police Pursuit','Stay above the speed limit to escape'],convoy:['Convoy','Drive with them · stay in formation'],street:['Street Race','5 miles · four rivals · first across the line wins'],arcade:['Arcade Style','Hit the ramps · grab the coins · land it clean'],boss:['Boss Battle','Destroy the tank · dodge the marked lane']};
 const CIN_PZ=88;   // distance of the convoy tunnel portal
 function cinBegin(kind){
   const d=cinDom(), c=EV.cur; if(!c||state!=='run') return;
   document.body.classList.add('cin'); CIN.on=true; CIN.k=kind; CIN.t=0; CIN.roll=0; CIN.fov=0; CIN.cars=null;
-  CIN.dur={train:6.4,plane:6.6,police:5.6,convoy:6.8,balloon:6.2,street:6.8,arcade:5.6,boss:6.6}[kind]; CIN.bs=CIN.dur-2.1;
+  CIN.dur={train:6.4,plane:6.6,police:5.6,convoy:6.8,balloon:6.2,street:6.8,arcade:5.6,boss:6.6,duster:6.4,frecce:6.6}[kind]; CIN.bs=CIN.dur-2.1;
   if(EV.hud){ EV.hud.style.display='none'; EV._hs=null; } evSiren(false);
   d.top.style.height=d.bot.style.height='11vh'; d.skip.style.opacity=MP.on?0:.85; d.skip.style.pointerEvents=MP.on?'none':'auto';   // no skipping in multiplayer: both drivers sit through the same cinematic
   const tt=_cinTitles[kind]; d.ttl.textContent=tt[0]; d.sub.textContent=tt[1];
@@ -5266,7 +5432,7 @@ function cinEnd(){
   if(CIN.dom){ const d=CIN.dom; d.top.style.height=d.bot.style.height='0'; d.ttl.style.opacity=0; d.ttl.style.transform='translateX(-18px)'; d.sub.style.opacity=0; d.skip.style.opacity=0; }
   camera.up.set(0,1,0); if(CIN.portal) CIN.portal.visible=false;
   if(was&&EV.cur&&(CIN.k==='convoy'||CIN.k==='street')&&CIN.cars){ CIN.cars.forEach(o=>{ o.t.x=o.x; o.t.z=o.z; o.t.g.visible=true; }); EV.cur.t=0; }
-  if(was&&EV.cur&&(CIN.k==='plane'||CIN.k==='train')&&EV.cur.k===CIN.k&&!EV.cur.hard&&!EV.cur.hs){ EV.cur.hs=1; EV.cur.Q+=100; }   /* showcase plane/train: a 100 m head start the moment you regain control (challenge races, which have their own tuned AI, are left alone) */
+  if(was&&EV.cur&&RK[CIN.k]&&EV.cur.k===CIN.k&&!EV.cur.hard&&!EV.cur.hs){ EV.cur.hs=1; EV.cur.Q+=100; }   /* showcase plane/train: a 100 m head start the moment you regain control (challenge races, which have their own tuned AI, are left alone) */
   evSiren(false); if(EV.flash) EV.flash.style.opacity=0;
   CIN.cars=null;
 }
@@ -5287,6 +5453,17 @@ function cinTick(dt){
     const x=bz(14,-2,36), y=bz(15,5,24), z=bz(-150,50,-6), tx=dz(14,-2,36), ty=dz(15,5,24), tz=dz(-150,50,-6);
     o.position.set(x,y,z); o.rotation.set(-Math.atan2(ty,Math.hypot(tx,tz)),Math.atan2(tx,tz),-tx*.012,'YXZ');
     _rw(px+3,.9,-22,_cP); _cL.set(x+bendXAt(z),y+yAt(z),z); C.fov=62-14*_sm(0,5,t); C.roll=.05;
+  } else if(k==='duster'){
+    const o=EV.duster, bz=(a,b,c2)=>(1-u)*(1-u)*a+2*(1-u)*u*b+u*u*c2, dz=(a,b,c2)=>2*(1-u)*(b-a)+2*u*(c2-b);
+    const x=bz(-16,-4,3), y=bz(7,10,11), z=bz(-150,40,34), tx=dz(-16,-4,3), ty=dz(7,10,11), tz=dz(-150,40,34);   // swoops in low from behind, over the car, out ahead
+    o.position.set(x,y,z); o.rotation.set(-Math.atan2(ty,Math.hypot(tx,tz)),Math.atan2(tx,tz),-tx*.02,'YXZ');
+    _rw(px+4,.9,-20,_cP); _cL.set(x+bendXAt(z),y+yAt(z),z); C.fov=60-12*_sm(0,5,t); C.roll=.04;
+  } else if(k==='frecce'){
+    const o=EV.frecce, bz=(a,b,c2)=>(1-u)*(1-u)*a+2*(1-u)*u*b+u*u*c2, dz=(a,b,c2)=>2*(1-u)*(b-a)+2*u*(c2-b);
+    const x=bz(0,0,1), y=bz(25,23,22), z=bz(-220,20,60), tz=dz(-220,20,60);   // the whole formation screams overhead and pulls ahead
+    o.position.set(x,y,z); o.rotation.set(-.03,0,Math.sin(t*1.1)*.03);
+    _rw(px-3,.9,-16,_cP); _cL.set(x+bendXAt(z),y+yAt(z),z); C.fov=72-26*_sm(0,5.2,t); C.roll=-.05;
+    if(shake<.12&&z>-60&&z<10) shake=.12;
   } else if(k==='arcade'){
     const a=.3+2.7*_sm(0,4.4,t);   // orbit from in front of the car, round the right side, to behind it
     _rw(px+7.5*Math.sin(a),1.2+1.4*_sm(1.5,4.4,t),7.5*Math.cos(a),_cP); _rw(px,.9,0,_cL); C.fov=50-8*_sm(0,4,t); C.roll=.06*(1-_sm(2,4.4,t));
@@ -5443,10 +5620,10 @@ function evStreetRace(c,dt,H){
 }
 
 function evRace(c,dt,H){
-  const air=c.k==='plane', P=runDist-c.P0, ramp=Math.min(1,c.t/10);
+  const K=RK[c.k], air=!!K.air, P=runDist-c.P0, ramp=Math.min(1,c.t/10);
   // Keep a modest late-race fade so the finish remains contestable without giving away the race.
   const raceMi=c.mi||EVC.raceMi, fs=(raceMi-1.5)*1609.34, fade=c.Q<=fs?0:Math.min(1,(c.Q-fs)/500), f=c.hard?1.09-.13*fade*fade*(3-2*fade):1.07-.06*fade*fade*(3-2*fade);   // hard (challenge) AI: a bit quicker on the way, but it tires to 96% in the last 1.5 mi so a clean run can always take it
-  if(fade>0&&!c.faded){ c.faded=true; popup((air?'THE CARGO PLANE':'THE FREIGHT TRAIN')+' IS FADING · FINAL MILE!','good'); }
+  if(fade>0&&!c.faded){ c.faded=true; popup(('THE '+K.n)+' IS FADING · FINAL MILE!','good'); }
 
   // Gap assistance is deliberately restrained and smoothed through AI acceleration.
   // If the opponent is ahead, it eases off slightly; if the player is ahead, it can
@@ -5466,8 +5643,9 @@ function evRace(c,dt,H){
   // - more than 80 m ahead of the opponent: it chases at a little above your speed, harder the further you are ahead
   if(gapQ>120) targetV=Math.min(targetV,Math.max(c.vMin*.6,speed*(1-Math.min(.12,(gapQ-120)/800))));
   else if(gapQ<-80){ chase=true; targetV=Math.max(targetV,speed*((c.hard?1.035:1.02)+Math.min(.2,(-gapQ-80)/400))); }
+  if(c.cap) targetV=Math.min(targetV,c.topMs*c.cap);   // winnability (crop duster / Frecce): these opponents never out-run what the car itself can do, whatever the rubber band asks for
   if(!Number.isFinite(c.aiV)) c.aiV=Math.max(0,c.v0);
-  const accel=(air?1.65:1.45)*(chase?1.6:1)*(c.hard?1.15:1), decel=air?2.25:2.0; // m/s²: gradual pickup, slightly quicker lift-off
+  const accel=K.acc*(chase?1.6:1)*(c.hard?1.15:1), decel=K.dec; // m/s²: gradual pickup, slightly quicker lift-off
   const dv=targetV-c.aiV;
   c.aiV+=Math.max(-decel*dt,Math.min(accel*dt,dv));
   const v=Math.max(0,c.aiV);
@@ -5476,7 +5654,15 @@ function evRace(c,dt,H){
   const rel=c.Q-P-6, o=c.o;
   // Draw the opponent at its true relative distance; do not clamp its race progress to the player.
   const dz=Math.max(-420,Math.min(430,rel));
-  if(air){
+  if(c.k==='duster'){
+    // low and lazy: weaves over the road about 11 m up (clear of the tree line), banking into each swing; its brown smoke is emitted by airTick()
+    const pz=Math.max(24,Math.min(95,rel*.45+40)), sw=Math.sin(c.t*.5);
+    o.position.set(2+sw*3,11+Math.sin(c.t*.8)*.8,pz); o.rotation.set(Math.sin(c.t*.8)*.03,Math.cos(c.t*.5)*.1,-Math.cos(c.t*.5)*.2);
+  } else if(c.k==='frecce'){
+    // six jets in a tight arrowhead high over the road centre (the formation is ~34 m wide, so it stays well inside the building line)
+    const pz=Math.max(36,Math.min(110,rel*.45+55));
+    o.position.set(Math.sin(c.t*.25)*2,22+Math.sin(c.t*.5)*.8,pz); o.rotation.set(0,0,Math.sin(c.t*.25)*.05);
+  } else if(air){
     // Keep the plane visible above the road while its apparent depth follows the actual race gap.
     if(o.scale.x!==.62) o.scale.setScalar(.62);
     const pz=Math.max(24,Math.min(95,rel*.45+40));
@@ -5487,12 +5673,12 @@ function evRace(c,dt,H){
     o.rotation.set(0,0,0);   // see the cinematic: the bend shader already conforms the train to the road, a tilt lifted the nose / sank the tail against the flat track
     o.userData.track.position.set(-24,0,0);
   }
-  if(P>=c.R&&CH.active){ popup('YOU WON THE RACE','good'); const lead=Math.round(P-c.Q); evEnd(true); chFinish(true,'Beat the '+(air?'cargo plane':'freight train')+' by '+lead+' m'); return; }
-  if(c.Q>=c.R&&CH.active){ popup((air?'THE CARGO PLANE':'THE FREIGHT TRAIN')+' BEAT YOU TO THE FINISH','bad'); const lead=Math.round(c.Q-P); evEnd(true); chFinish(false,'The '+(air?'cargo plane':'freight train')+' beat you to the finish by '+lead+' m.'); return; }
+  if(P>=c.R&&CH.active){ popup('YOU WON THE RACE','good'); const lead=Math.round(P-c.Q); evEnd(true); chFinish(true,'Beat the '+K.n.toLowerCase()+' by '+lead+' m'); return; }
+  if(c.Q>=c.R&&CH.active){ popup(('THE '+K.n)+' BEAT YOU TO THE FINISH','bad'); const lead=Math.round(c.Q-P); evEnd(true); chFinish(false,'The '+K.n.toLowerCase()+' beat you to the finish by '+lead+' m.'); return; }
   if(P>=c.R){ const b=Math.max(10000,Math.round(score*.25)); score+=b; timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+10); popup('YOU WON THE RACE  +'+b.toLocaleString()+'  ·  +10s','good'); evEnd(); return; }
-  if(c.Q>=c.R){ popup((air?'THE CARGO PLANE':'THE FREIGHT TRAIN')+' BEAT YOU TO THE FINISH','bad'); evEnd(); return; }
+  if(c.Q>=c.R){ popup(('THE '+K.n)+' BEAT YOU TO THE FINISH','bad'); evEnd(); return; }
   const lead=P-c.Q, mi=Math.min(c.mi||EVC.raceMi,P/1609.34);
-  if(H)H.push('<b style="color:#ffd76a">RACE · '+(air?'CARGO PLANE':'FREIGHT TRAIN')+'</b>',mi.toFixed(2)+' / '+(c.mi||EVC.raceMi)+' mi · '+(lead>=0?'<span style="color:#8fe3a2">you lead by '+Math.round(lead)+' m</span>':'<span style="color:#ff9b8f">'+(air?'plane':'train')+' leads by '+Math.round(-lead)+' m</span>'));
+  if(H)H.push('<b style="color:#ffd76a">RACE · '+K.n+'</b>',mi.toFixed(2)+' / '+(c.mi||EVC.raceMi)+' mi · '+(lead>=0?'<span style="color:#8fe3a2">you lead by '+Math.round(lead)+' m</span>':'<span style="color:#ff9b8f">'+K.w+' leads by '+Math.round(-lead)+' m</span>'));
 }
 
 const _setEm=(a,v)=>{ for(let i=0;i<a.length;i++) a[i].emissiveIntensity=v; };   // [alloc] shared by the per-frame tail-light update (no per-call closures)
@@ -5613,6 +5799,7 @@ function frame(){
 
   try{ if(MP.on) mpTick(rdt); }catch(e){ console.error('[mp]',e); }
   try{ if(EV.plane&&EV.plane.visible) evPlaneSpin(EV.plane,rdt); }catch(e){}
+  try{ airTick(rdt,dt); }catch(e){}
   try{
     if(CIN.on){
       cinTick(rdt);
@@ -5817,10 +6004,14 @@ const TC_BLOCK=['chMenu','garage','shop','bm','loadout','mpm','mpRes','showroom'
 let _tcBlk=null;
 function tcBlocked(){ if(!_tcBlk) _tcBlk=TC_BLOCK.map(id=>document.getElementById(id)).filter(Boolean); for(let i=0;i<_tcBlk.length;i++) if(_tcBlk[i].classList.contains('show')) return true; return false; }
 function tcWant(){
-  if(!titleOn||state!=='menu'||SET.classicTitle||paintView||shopOpen||bmOpen||loadoutOpen||SR.on) return false;
+  // Keep the title cinematic alive while menu overlays are open. Menu overlays pause
+  // the shot progression, but do not tear down / restore the world scene.
+  if(!titleOn||state!=='menu'||SET.classicTitle) return false;
   const ov=document.getElementById('assetLoad'); if(ov&&ov.style.display!=='none') return false;   // wait for the "Preparing your drive" screen to be dismissed
-  return !tcBlocked();
+  return true;
 }
+function tcMenuPaused(){ return paintView||shopOpen||bmOpen||loadoutOpen||SR.on||tcBlocked(); }
+
 function tcCars(){ const ids=CARS.filter(c=>CS.owned.includes(c.id)&&c.id!=='jet'&&c.id!=='tjet'&&c.id!=='beta'&&(!LAZY[c.id]||LAZY[c.id].st>=2||c.id===TC.saved.sel)).map(c=>c.id); return ids.length?ids:[TC.saved.sel]; }
 function tcStart(){
   TC.saved={sel:CS.sel,tod:window.__todLock,night:window.__nightLock,rain:window.__rainLock,bi:adminBiomeOverride,atd:adminTrafficDisabled,vis:trafficCars.map(t=>t.g.visible),speed:speed};
@@ -5850,6 +6041,9 @@ function tcFrame(dt){
   const want=tcWant();
   if(want&&!TC.on){ tcStart(); } else if(!want&&TC.on){ tcStop(); }
   if(!TC.on) return;
+  // Freeze the current title shot behind menu overlays; resume from the same
+  // frame when the overlay closes instead of rebuilding the cinematic scene.
+  if(tcMenuPaused()) return;
   const sh=TC.shot; TC.t+=dt;
   // fade: black at the cut, open again just after (the new biome / car need a moment to appear)
   const f=TC.t<.9?1-Math.min(1,Math.max(0,(TC.t-.35)/.5)):(TC.t>TC.dur-.55?Math.min(1,(TC.t-(TC.dur-.55))/.5):0);
@@ -5861,8 +6055,7 @@ function tcFrame(dt){
   _lk.set(px+sh.la[0]+(sh.lb[0]-sh.la[0])*e, sh.la[1]+(sh.lb[1]-sh.la[1])*e+jh, sh.la[2]+(sh.lb[2]-sh.la[2])*e);
   TC.fovNow=sh.f[0]+(sh.f[1]-sh.f[0])*e;
 }
-// opening a menu that needs the real scene (or starting a run) must see the player's own car / weather first
-['tStart','tChal','tShop','tGarage','tShow','tMp'].forEach(id=>{ const b=document.getElementById(id); if(b) b.addEventListener('click',()=>{ if(TC.on) tcStop(); },true); });
+// Menus keep the cinematic scene underneath; only starting a run tears it down.
 const _rsrTC=requestStartRun; requestStartRun=function(){ if(TC.on) tcStop(); return _rsrTC.apply(this,arguments); };
 
 const _sg=setGfxUI; setGfxUI=function(on){ _sg(on); if(on){ renderSet(); $('rstBox').hidden=true; $('rstIn').value=''; $('rstGo').disabled=true; } };
@@ -6219,7 +6412,7 @@ function mpStartRun(){
 /* shared event schedule: a PRNG seeded from the room code gives both clients the same sequence of (time, kind). Times are wall-clock seconds since the match
    started, so a laggy client's game clock can't drift the schedule. No server support needed. */
 function mpRng(seed){ let a=seed>>>0; return ()=>{ a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
-const MP_EV_KINDS=['police','convoy','plane','train','balloon','street','arcade'];
+const MP_EV_KINDS=['police','convoy','plane','train','balloon','street','arcade','duster','frecce'];
 function mpEvInit(){ let h=2166136261; const s=(MP.code||'')+MP.mode; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619); } MP.evR=mpRng(h); MP.evT0=performance.now(); MP.evAt=0; MP.evN=0; MP.evKind=''; mpEvNext(); }
 function mpEvNext(){ const r=MP.evR; MP.evN++; MP.evAt+=MP.evN===1?70+r()*40:150+r()*90; MP.evKind=MP_EV_KINDS[(r()*MP_EV_KINDS.length)|0]; }
 /* ---- per-frame: stream my state, draw their car, HUD ---- */
@@ -6302,9 +6495,9 @@ addEventListener('beforeunload',()=>{ if(MP.ws) try{ MP.ws.close(); }catch(e){} 
 var _raf, _lastSlot=0, _dtSm=0, _rafI=16.7, _lastRaf=0;
 function _disposeTree(root){ if(!root) return; root.traverse(o=>{ if(o.geometry) o.geometry.dispose(); const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[]; for(let i=0;i<ms.length;i++){ const m=ms[i]; if(!m) continue; for(const k in m){ const t=m[k]; if(t&&t.isTexture) t.dispose(); } m.dispose(); } }); }   // geometry + material + every texture on it
 function evDestroy(){ evEnd(true);   // events: remove + free the cruiser, showcase plane/train and convoy pool (rebuilt on demand if the game keeps running)
-  const objs=[EV.pol&&EV.pol.g, EV.plane, EV.train, EV.train&&EV.train.userData.track]; for(let i=0;i<EV.pool.length;i++) objs.push(EV.pool[i].g);
+  const objs=[EV.pol&&EV.pol.g, EV.plane, EV.train, EV.train&&EV.train.userData.track, EV.duster, EV.frecce, SMK.pts]; for(let i=0;i<EV.pool.length;i++) objs.push(EV.pool[i].g);
   for(let i=0;i<objs.length;i++){ const o=objs[i]; if(!o) continue; if(o.parent) o.parent.remove(o); _disposeTree(o); }
-  EV.pol=null; EV.plane=null; EV.train=null; EV.pool.length=0; EV.polReq=false; if(EV.hud&&EV.hud.parentNode) EV.hud.style.display='none'; }
+  EV.pol=null; EV.plane=null; EV.train=null; EV.duster=null; EV.frecce=null; SMK.pts=null; SMK.live=false; EV.pool.length=0; EV.polReq=false; if(EV.hud&&EV.hud.parentNode) EV.hud.style.display='none'; }
 window.__cgtDestroy=function(){
   cancelAnimationFrame(_raf);
   try{ evDestroy(); }catch(e){} try{ clearRocket(); }catch(e){} try{ ghostVisual(false); }catch(e){}
