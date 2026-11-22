@@ -4482,6 +4482,7 @@ function modProg(id){   /* [value, needed, text] for an unlock spec */
 function modsSave(){ try{ store.set('cgt_mods',JSON.stringify(MD)); }catch(e){ try{ localStorage.setItem('cgt_mods',JSON.stringify(MD)); }catch(_){} } }
 function modsUnlock(id){ if(!MOD_DEF[id]||MD.un.includes(id)) return; MD.un.push(id); modsSave(); try{ popup('MODIFIER UNLOCKED · '+MOD_DEF[id].n.toUpperCase(),'good'); }catch(e){} }
 function modsRecheck(){ for(const id of MOD_ORDER){ if(MD.un.includes(id)) continue; const p=modProg(id); if(p[0]>=p[1]) modsUnlock(id); } modsSave(); }
+function modsUsable(){ return !isBetaCar()&&CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].leaderboard; }   /* menu + effects also work in admin mode (progress and records still only count when ranked) */
 function modsRanked(){ return !ADMIN&&!isBetaCar()&&CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].leaderboard; }
 function modsOnExit(){ if(CH.active||!modsRanked()) return; MD.exits++; modsRecheck(); }
 function modsOnRun(){ if(!modsRanked()||CH.active) return; MD.runs++; if(miles>0){ MD.miles+=miles; MD.carMi[CS.sel]=(MD.carMi[CS.sel]||0)+miles; } MD.best=Math.max(MD.best||0,Math.floor(score)); if(runCrashes===0&&miles>=2) MD.cleanRuns++; modsRecheck(); }
@@ -4495,7 +4496,7 @@ function modsRender(){
     return '<div class="mrow'+(on?' on':'')+(un?'':' lock')+'" data-mod="'+id+'"><div class="mbx">'+(un?(on?'✓':''):'🔒')+'</div><div class="mt"><div class="mn">'+d.n+'</div><div class="md">'+d.d+'</div></div><div class="mb">'+(un?(d.b>=0?'+':'−')+Math.abs(d.b)+'%':p[2]+pr)+'</div></div>'; }).join('');
 }
 var _modCb=null;
-function modsGate(cb){ if(CH.active||MP.on||!modsRanked()||!MD.un.length){ cb(); return; } _modCb=cb; modsRender(); $('mods').classList.add('show'); }
+function modsGate(cb){ if(CH.active||MP.on||!modsUsable()||!MD.un.length){ cb(); return; } _modCb=cb; modsRender(); $('mods').classList.add('show'); }
 $('modList').addEventListener('click',e=>{ const r=e.target.closest('[data-mod]'); if(!r||!MD.un.includes(r.dataset.mod)) return; const id=r.dataset.mod, i=MD.sel.indexOf(id); if(i>=0) MD.sel.splice(i,1); else MD.sel.push(id); modsSave(); const st=$('modList').scrollTop; modsRender(); $('modList').scrollTop=st; });
 $('modBack').addEventListener('click',()=>{ $('mods').classList.remove('show'); _modCb=null; });
 $('modGo').addEventListener('click',()=>{ $('mods').classList.remove('show'); const cb=_modCb; _modCb=null; if(cb) cb(); });
@@ -4503,7 +4504,7 @@ const MOD_BIOME={dirt:8,snow:2,desert:5,city:3,scrap:7,coast:1}, MOD_TOD={night:
 const MOD_FORCE={wanted:{k:'police',at:45},trap:{k:'speedlimit',at:30,every:150},bossr:{k:'boss',at:90},racer:{k:'balloon',at:50},arcade:{k:'arcade',at:40}};
 function modsEls(){ if(document.getElementById('modVig')) return; const v=document.createElement('div'); v.id='modVig'; const b=document.createElement('div'); b.id='modBars'; document.body.append(v,b); }
 function modsBegin(){
-  runCrashes=0; modsEnd(); if(CH.active||MP.on||!modsRanked()) return;
+  runCrashes=0; modsEnd(); if(CH.active||MP.on||!modsUsable()) return;
   const act=MD.sel.filter(i=>MD.un.includes(i)); if(!act.length) return; modsEls();
   MODS={act,bonus:Math.max(-.5,act.reduce((a,i)=>a+MOD_DEF[i].b,0)/100),_s:0,set:{},pend:{fuse:act.includes('fuse'),extra:act.includes('extra')},force:[]};
   if(window.__nightLock===undefined&&window.__todLock===undefined){ if(act.includes('night')){ window.__nightLock=1; MODS.set.night=1; nightDirty=true; } else if(act.includes('dusk')){ window.__todLock=18.5; MODS.set.tod=1; nightDirty=true; } else if(act.includes('dawn')){ window.__todLock=6.3; MODS.set.tod=1; nightDirty=true; } }
