@@ -4496,7 +4496,7 @@ function modsRender(){
     return '<div class="mrow'+(on?' on':'')+(un?'':' lock')+'" data-mod="'+id+'"><div class="mbx">'+(un?(on?'✓':''):'🔒')+'</div><div class="mt"><div class="mn">'+d.n+'</div><div class="md">'+d.d+'</div></div><div class="mb">'+(un?(d.b>=0?'+':'−')+Math.abs(d.b)+'%':p[2]+pr)+'</div></div>'; }).join('');
 }
 var _modCb=null;
-function modsGate(cb){ if(CH.active||MP.on||!modsUsable()||!MD.un.length){ cb(); return; } _modCb=cb; modsRender(); $('mods').classList.add('show'); }
+function modsGate(cb){ if(CH.active||MP.on||!modsUsable()){ cb(); return; } _modCb=cb; modsRender(); $('mods').classList.add('show'); }
 $('modList').addEventListener('click',e=>{ const r=e.target.closest('[data-mod]'); if(!r||!MD.un.includes(r.dataset.mod)) return; const id=r.dataset.mod, i=MD.sel.indexOf(id); if(i>=0) MD.sel.splice(i,1); else MD.sel.push(id); modsSave(); const st=$('modList').scrollTop; modsRender(); $('modList').scrollTop=st; });
 $('modBack').addEventListener('click',()=>{ $('mods').classList.remove('show'); _modCb=null; });
 $('modGo').addEventListener('click',()=>{ $('mods').classList.remove('show'); const cb=_modCb; _modCb=null; if(cb) cb(); });
