@@ -161,6 +161,22 @@
   #powerPanel .pup .pd{flex:1;font-size:13px}.pup small{display:block;opacity:.65;margin-top:3px}
   #powerPanel .pup button,#loadout button{border:1px solid rgba(255,255,255,.25);border-radius:999px;background:rgba(255,255,255,.1);color:#fff;padding:7px 12px;font:inherit;font-size:12px;cursor:pointer}
   #powerPanel .pup button:disabled{opacity:.35;cursor:default}
+  #mods{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(3,4,8,.88);backdrop-filter:blur(8px);z-index:13}#mods.show{display:flex}
+  #mods .mbox{width:min(520px,94vw);background:#0d0f14;border:1px solid #3a3322;box-shadow:0 0 0 1px #000,0 18px 60px rgba(0,0,0,.7);padding:16px 14px 14px;color:#e9dfc4}
+  #mods h1{margin:0 0 2px;text-align:center;font:700 20px/1.2 Georgia,'Times New Roman',serif;letter-spacing:.18em;text-transform:uppercase;color:#f3e3b0}
+  #mods .msub{text-align:center;font-size:12px;color:#a99f84;margin-bottom:10px}#mods .msub b{color:#ffd76a}
+  #modList{max-height:min(54vh,420px);overflow-y:auto;border-top:1px solid #2b2618;border-bottom:1px solid #2b2618;padding:6px 4px 6px 0;scrollbar-width:thin;scrollbar-color:#8a7a42 #15130c}
+  #modList::-webkit-scrollbar{width:8px}#modList::-webkit-scrollbar-track{background:#15130c}#modList::-webkit-scrollbar-thumb{background:#8a7a42;border-radius:4px}
+  .mrow{display:flex;align-items:center;gap:12px;padding:10px 10px;margin:4px 0;background:#14120b;border:1px solid #2e2a1b;cursor:pointer;user-select:none}
+  .mrow:hover{border-color:#8a7a42}.mrow.on{background:#201b0c;border-color:#d8b64a}
+  .mrow .mbx{flex:0 0 22px;height:22px;border:2px solid #8a7a42;display:flex;align-items:center;justify-content:center;font-size:16px;color:#ffd76a}
+  .mrow .mt{flex:1;min-width:0}.mrow .mn{font:700 14px/1.2 Georgia,serif;letter-spacing:.1em;text-transform:uppercase;color:#f3e3b0}.mrow .md{font-size:12px;color:#b5ab90;margin-top:2px}
+  .mrow .mb{flex:0 0 auto;font:700 13px/1 Georgia,serif;color:#ffd76a}
+  .mrow.lock{opacity:.5;cursor:default}.mrow.lock:hover{border-color:#2e2a1b}.mrow.lock .mbx{border-color:#4a4330;color:#8a7a42;font-size:13px}.mrow.lock .mb{color:#a99f84;font:12px/1.2 system-ui,sans-serif;max-width:150px;text-align:right}
+  #mods .mbtns{display:flex;gap:10px;justify-content:center;margin-top:12px}#mods button{border:1px solid #8a7a42;background:#1b170a;color:#f3e3b0;padding:9px 22px;font:700 13px Georgia,serif;letter-spacing:.14em;text-transform:uppercase;cursor:pointer}#mods button:hover{background:#2a2410}#mods #modGo{background:#7a6420;border-color:#d8b64a}
+  body.modf>canvas:first-child{filter:var(--modf)!important}body.mod-mirror>canvas:first-child{transform:scaleX(-1)}body.mod-nohud #gauge{visibility:hidden}
+  #modVig{position:fixed;inset:0;pointer-events:none;z-index:4;display:none;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 28%,rgba(0,0,0,.92) 78%)}body.mod-tunnel #modVig{display:block}
+  #modBars{position:fixed;inset:0;pointer-events:none;z-index:4;display:none;background:linear-gradient(#000 0,#000 15%,transparent 15%,transparent 85%,#000 85%)}body.mod-cinema #modBars{display:block}
   #loadout{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(5,8,14,.82);backdrop-filter:blur(9px);z-index:12}
   #loadout.show{display:flex}#loadout .card{max-width:470px;text-align:left}
   #loadout h1{text-align:center}#loadout p{text-align:center}
@@ -512,7 +528,8 @@
     <div id="ppFoot"><div id="ppName"></div><div id="ppNote"></div>
       <div id="ppCustom" hidden><input type="color" id="ppCol" aria-label="Custom colour"><select id="ppFin" aria-label="Finish"><option value="metal">Metallic</option><option value="gloss">Gloss</option><option value="matte">Matte</option><option value="chrome">Mirror</option></select><div id="dualControls" hidden style="gap:8px;align-items:center;flex-wrap:wrap"><label>Other side <input type="color" id="ppCol2" aria-label="Other side colour"></label><select id="ppFin2" aria-label="Other side finish"><option value="metal">Metallic</option><option value="gloss">Gloss</option><option value="matte">Matte</option><option value="chrome">Mirror</option></select></div></div>
       <div id="ppBtns"><button id="ppBuy" type="button">Buy</button><button id="ppBack" type="button">Back</button></div></div></div></div>
-<div id="loadout"><div class="card"><h1>Run Loadout</h1><p>Equip any power-ups you own. Each equipped item is consumed when the run starts.</p><div id="loadRows"></div><div id="loadoutBtns"><button id="loadCancel" type="button">Back</button><button id="loadStart" type="button">Start run</button></div><div class="how" style="text-align:center">Press E during a run to activate Nitrous Oxide or Ghost Chassis. They cannot be equipped together. Insurance and x2 Points activate automatically.</div></div></div>
+<div id="mods"><div class="mbox"><h1>Modifiers</h1><div class="msub" id="modSub"></div><div id="modList"></div><div class="mbtns"><button id="modBack" type="button">Back</button><button id="modGo" type="button">Start run</button></div></div></div>
+<div id="loadout"><div class="card"><h1>Run Loadout</h1><p>Equip any power-ups you own. Each equipped item is consumed when the run starts.</p><div id="loadRows"></div><div id="loadoutBtns"><button id="loadCancel" type="button">Back</button><button id="loadStart" type="button">Start run</button></div><div class="how" style="text-align:center">Press E during a run to activate Nitrous Oxide or Ghost Chassis. They cannot be equipped together. Insurance and x2 Points activate automatically.</div><div class="how" id="modHint" style="text-align:center;color:#ffd76a"></div></div></div>
 <div id="powerHud"></div>
 <div id="garage"><div class="gp"><div id="gHead"><h2>Garage</h2><div id="gCount"></div></div><div id="gList"></div><div><button id="gBack" type="button">Back</button></div></div></div>
 <div id="pops"></div><div id="flash"></div>
@@ -1064,8 +1081,8 @@ function biomeFrame(){
   // Biome scenery/materials crossfade through biomeWeights(). Keep atmospheric
   // fog continuous here; do not flash the entire world to black at a biome seam.
   scene.fog.color.copy(SK.fog).convertSRGBToLinear();
-  scene.fog.near=fogN0;
-  scene.fog.far=fogF0;
+  scene.fog.near=fogN0*modFog();
+  scene.fog.far=fogF0*modFog();
 }
 
 /* ------------------------------------------------------------------ highway tunnels
@@ -1638,7 +1655,7 @@ for(let i=0;i<4;i++){const t=makeTraffic(true);respawn(t,true);trafficCars.push(
 let DIFF=0, brkAssist=0, adminDifficulty=1, adminInfiniteClock=false; const DIFF_MILES=4;
 var m3Calm=0, jagEv=0;   // jagEv: 1 while the XKR is selected (twice as many random events)   // 1 while the M3 is selected: no reckless drivers
 var aeroDens=0, chDens=0;   // chDens: challenge-only traffic boost (the Train in Vain challenge)   // 1 while the Aero is selected (var: layoutRow runs before CS exists)
-const wallChance=()=>(aeroDens?.6:1)*.16*Math.min(1,Math.max(0,(DIFF-.2)/.6))*(1+1.2*HARD);   // walls get ~2x as common by mile 20
+const wallChance=()=>(modHas('walls')?2.2:1)*(aeroDens?.6:1)*.16*Math.min(1,Math.max(0,(DIFF-.2)/.6))*(1+1.2*HARD);   // walls get ~2x as common by mile 20
 let VT=22, HARD=0; let ROW_GAP=90; const NROWS=5, rows=[];
 /* Slower cars (Prius, Fulvia...) get tighter traffic rows so a run keeps a similar density of gaps per second: the 90 m spacing shrinks with the square root of how far the car's top speed is under the average of the scoring cars (never wider than 90 m, never under 60%). */
 function rowGapFor(id){ try{ const v=Object.values(CAR_STATS).filter(c=>c.points&&c.topSpeedMph>0).map(c=>c.topSpeedMph), avg=v.reduce((a,b)=>a+b,0)/v.length, t=(CAR_STATS[id]||{}).topSpeedMph; if(!(t>0)||!(avg>0)) return 90; return 90*Math.min(1,Math.max(.6,Math.sqrt(t/avg))); }catch(e){ return 90; } }
@@ -1666,9 +1683,9 @@ function layoutRow(r,chain,wall){
   for(let i=0;i<r.cars.length;i++){ const c=r.cars[i];   // [alloc] was a forEach closure per row
     const on=i<lanes.length; c.gone=!on; c.g.visible=on; c.crashT=0; c.ph=0; c.off=on?stg[i]:0; c.g.rotation.y=0; c.z=c.pz=r.z+c.off;
     if(on){
-      c.x=(wall?_WX:LANES)[lanes[i]]; c.v=VT+sp[i]; c.g.position.set(c.x,0,r.z+c.off);
+      c.x=(wall?_WX:LANES)[lanes[i]]; c.v=VT+sp[i]+(modHas('fast')?9:0); c.g.position.set(c.x,0,r.z+c.off);
       // Each newly spawned active traffic car has a 1-in-150 chance of being a reckless driver.
-      c.reckless=!m3Calm&&Math.random()<1/150; c.recklessLanes=wall?_WX:LANES;
+      c.reckless=!m3Calm&&Math.random()<(modHas('reckless')?1/30:1/150); c.recklessLanes=wall?_WX:LANES;
       c.recklessTimer=1; c.recklessFrom=c.x; c.recklessTarget=c.x; c.recklessBlend=1;
     } else { c.reckless=false; }
   }
@@ -2857,14 +2874,14 @@ function gcLoad(gltf,cf){
    The file is in metres with its length along X and the nose at -X, so it is turned a quarter circle to nose +Z. 'body_color' (and the roof panel 'mat_1') is the paintable shell. */
 const CCX_LAMP=mkLamp(0,[0,0,0],[1,1,1],[0,0,0],[1,1,1]); CCX_LAMP.tri.value=1;
 const ccxPatch=makePaintPatch(CCX_LAMP), ccxPaintMats=[];
-function syncCcxPaint(){ for(const m of ccxPaintMats){ m.copy(M.paint); m.map=null; m.normalMap=null; m.clearcoatNormalMap=null; m.needsUpdate=true; } }
+function syncCcxPaint(){ for(const m of ccxPaintMats){ m.copy(M.paint); m.map=null; m.normalMap=null; m.clearcoatNormalMap=null; m.side=THREE.DoubleSide; m.needsUpdate=true; }   /* roof has flipped-winding triangles that showed as holes */ }
 lazyCar('ccx','koenigsegg_ccx_-_100_followers_special.glb',gltf=>{
   gcLoad(gltf,{tag:'CCX',root:ccxRoot,wheels:ccxWheels,paintMats:ccxPaintMats,patch:ccxPatch,sync:syncCcxPaint,wb:2.66,len:4.19,
     rotY:sc=>{ let ex=0,n=0; const b=new THREE.Box3(), inv=new THREE.Matrix4().copy(sc.matrixWorld).invert(); sc.traverse(o=>{ if(o.isMesh&&o.material&&o.material.name==='exhuast'){ o.geometry.computeBoundingBox(); b.copy(o.geometry.boundingBox).applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv,o.matrixWorld)); ex+=(b.min.x+b.max.x)/2; n++; } }); return (n&&ex<0)?-Math.PI/2:Math.PI/2; },   /* exhausts are at +X in the file, so the nose (-X) turns to +Z */
     kind:o=>{ const mn=o.userData.mn||'';
       if(mn==='tyre') return 'tire'; if(mn==='rims') return 'rim'; if(mn==='brake_dics') return 'rotor'; if(mn==='brake_calipers') return 'caliper';
-      if(mn==='glass') return 'window'; if(mn==='interior'||mn==='leather'||mn==='logos_interior'||mn==='mat_38'||mn==='mat_21') return 'interior';   /* mat_38/mat_21 are roof-panel layers lying flush under the paint and z-fought through it as black triangles */
-      if(mn==='body_color'||mn==='mat_1') return 'paint'; if(mn==='badges'||mn==='logo') return 'badge'; return ''; },
+      if(mn==='glass') return 'window'; if(mn==='interior'||mn==='leather'||mn==='logos_interior') return 'interior';   /* mat_38/mat_21 are roof-panel layers lying flush under the paint and z-fought through it as black triangles */
+      if(mn==='body_color'||mn==='mat_1'||mn==='mat_38'||mn==='mat_21') return 'paint';   /* mat_38/mat_21 are the roof inset panels: painting them same as the roof closes the holes and hides any z-fighting */ if(mn==='badges'||mn==='logo') return 'badge'; return ''; },
     lamp:bb=>({hx:.62,hy:.52,hz:bb.max.z-.4,tx:.6,ty:.55,tz:bb.min.z+.12})});
 },undefined,err=>console.error('Could not load Koenigsegg CCX model',err));
 
@@ -3331,7 +3348,7 @@ function applyNight(){
   skyU.uGlow.value=1-.9*ov; skyU.uWarm.value=(1-gauss(el,0,.5))*smooth(-.3,.02,el)*(1-.85*ov);
   L=smooth(.3,.65,nL);
   scene.fog.color.copy(SK.fog).convertSRGBToLinear();
-  fogN0=(60-30*n)*(1-.5*ov); fogF0=(450-170*n)*(1-.4*ov); scene.fog.near=fogN0; scene.fog.far=fogF0;
+  fogN0=(60-30*n)*(1-.5*ov); fogF0=(450-170*n)*(1-.4*ov); scene.fog.near=fogN0*modFog(); scene.fog.far=fogF0*modFog();
   hemi.color.copy(SK.hemiS); hemi.groundColor.copy(SK.hemiG); hemi.intensity=(.3-.17*n)*(1-.15*ov);
   sun.color.copy(SK.sun); sun.intensity=SK.sunI*(1-.6*ov);
   sunO.copy(_sd).lerp(_md,smooth(.35,.8,n)).normalize().multiplyScalar(10); sunO.y=Math.max(sunO.y,1.2);   // sun by day, moon at night; never lights from below
@@ -3435,10 +3452,12 @@ var MP={on:false,mode:'',link:false};   // multiplayer state (filled in by the m
 let state='menu', score=0, miles=0, mult=1, clean=0, timeLeft=180, soundAsked=false;
 const CAR_BONUS={raptor:'Baja Spec · Perfect Control and x1.5 Points on Dirt Trails',ccx:'Fortune · Random Score Multiplier Each Run, 0.5x (Unlucky) to 3x (Lucky)',r34:'Heavy Toll · A Crash Costs Triple Time (60 s) But No Score',f360:'Wildcard · Choose Your Next Event From 3 Random Cards',xkr:'Increased Events · Twice as Many Random Events',nsx:'Gold Coins ($35) Can Be Found on the Road',m3:'No Reckless Drivers · Close Passes Add +0.75 s',chiron:'x10 Score While Above 250 MPH',dawn:'x2 Cash-Out Money · x2 Rain Chance',c5:'Radio Pick · Choose Your Starting Music Track for Every Run (in the Garage)',l037:'1 in 5 Chance to Skip the Time Penalty on a Crash (Score Is Still Lost)',fulvia:'Perfect Traction in Rain · Slight Speed Boost in Sun · x1.5 Time Bonuses',prius:'Free Power-Up Every Run: Nitrous or Insurance (your choice) · +15 s Starting Time · x1.5 Time Bonuses',jet:'Flies Above Traffic · No Exit · Unranked · Red Token Reward',fiesta:'Immune to Crashes With Other Fiestas',accord:'Immune to Crashes With Other Accords',ram:'Immune to Crashes With Other Rams',aero:'Reduced Traffic Density',daytona:'1 in 10 Chance to Double Each Time Bonus',zonda:'Exits Every 5 Miles Instead of 10',gt:'No Bonus, Starter Car',enzo:'Less Score Lost in Crashes',viper:'2 Uses of Single-Use Power-Ups',charger:'+30 Seconds Starting Time & Only −10 s per Crash'};
 const puMax=()=>CS.sel==='viper'?2:1, puLeft=u=>puMax()>1?' ('+(puMax()-u)+' LEFT)':'';
-const startBonus=()=>CH.active?0:CS.sel==='charger'?30:CS.sel==='prius'?15:0, crashKeep=()=>CS.sel==='enzo'?.6:1, crashTime=()=>CH.active?(CH.def.pen||10)*(CS.sel==='r34'?3:1):CS.sel==='charger'?10:CS.sel==='r34'?60:20;   // seconds lost per crash (Charger: half)
+const startBonus=()=>CH.active?0:CS.sel==='charger'?30:CS.sel==='prius'?15:0, crashKeep=()=>(CS.sel==='enzo'?.6:1)*(modHas('brittle')?2:1)*(modHas('costly')?3:1)*(modHas('stakes')?1000:1), crashTime=()=>(modHas('brittle')?2:1)*(modHas('timemoney')?3:1)*(CH.active?(CH.def.pen||10)*(CS.sel==='r34'?3:1):CS.sel==='charger'?10:CS.sel==='r34'?60:20);   // seconds lost per crash (Charger: half)
 var chironX10=false;
+const MULT_CAP=15, capMult=m=>ADMIN?m:Math.min(MULT_CAP,m), puK=()=>(runPU.x4?4:runPU.double?2:1);   /* nothing may push the total score multiplier past x15 (Chiron x10 etc.) */
 const TIME_CAP=135, BONUS_WIN=20, RUN_T=180, MPH=2.23694, speedK=()=>Math.max(.5,Math.min(2,speed*MPH/80))*(CS.sel==='chiron'&&speed*MPH>250?10:1)*(CS.sel==='ccx'?ccxMult:CS.sel==='raptor'?1+.5*BW.w[8]:1);
-var ccxMult=1;   /* Koenigsegg bonus: rolled at the start of each run, 0.5x to 3x */
+var ccxMult=1;
+function totK(){ return capMult(mult*puK()*(CS.sel==='chiron'&&speed*MPH>250?10:1)*(CS.sel==='ccx'?ccxMult:CS.sel==='raptor'?1+.5*BW.w[8]:1))*Math.max(.5,Math.min(2,speed*MPH/80)); }   /* Koenigsegg bonus: rolled at the start of each run, 0.5x to 3x */
 function rollCcx(){ ccxMult=1; if(CS.sel!=='ccx') return; ccxMult=Math.round((.5+Math.random()*2.5)*10)/10; const m=ccxMult; setTimeout(()=>{ try{ if(state==='run') popup((m>=2.5?'JACKPOT · ':m>=1.5?'LUCKY · ':m>=1?'':m>=.8?'UNLUCKY · ':'CURSED · ')+'SCORE x'+m.toFixed(1)+' THIS RUN',m>=1?'good':'bad'); }catch(e){} },900); }   // points scale with speed: x0.5 at 40 mph, x1 at 80, x2 at 160+
 const kmhEl=$('kmh');
 function goView(n){ if(renderEX){ n='chase'; } if(!VIEWS2[n])return; view=n; document.querySelectorAll('#views button').forEach(b=>b.classList.toggle('on',b.dataset.v===n)); }
@@ -3519,9 +3538,9 @@ $('loadRows').addEventListener('change',e=>{const id=e.target.dataset.equipPu;if
     $('loadRows').insertAdjacentHTML('afterbegin','<div class="loadrow"><span class="li">🌱</span><span class="ld"><b>Prius bonus: free power-up</b><small>One free power-up at the start of every run. Pick which. It never uses your stock.</small></span><span>'+b('nitrous','💨 Nitrous')+b('insurance','🛡️ Insurance')+'</span></div>'); };
   if(!window._priusFreeBound){ window._priusFreeBound=true;   // [leak] a new click listener was added to #loadRows on every renderLoadout() (and each click re-rendered, so handlers multiplied); now bound once
   $('loadRows').addEventListener('click',e=>{ const b=e.target.closest('[data-free]'); if(!b) return; priusFree=b.dataset.free==='insurance'?'insurance':'nitrous'; store.set('cgt_prius_free',priusFree); renderLoadout(); }); } }
-function requestStartRun(){ if(loadoutOpen||state==='run'||state==='exit')return; if(CH.ovMode){ startChallenge(CH.nextI,CH.nextL); return; } renderLoadout();loadoutOpen=true;$('loadout').classList.add('show'); }
+function requestStartRun(){ if(loadoutOpen||state==='run'||state==='exit')return; if(CH.ovMode){ startChallenge(CH.nextI,CH.nextL); return; } renderLoadout();modsHint();loadoutOpen=true;$('loadout').classList.add('show'); }
 $('loadCancel').addEventListener('click',()=>{loadoutOpen=false;$('loadout').classList.remove('show');});
-$('loadStart').addEventListener('click',()=>{if(!loadoutOpen)return;loadoutOpen=false;$('loadout').classList.remove('show');startRun();});
+$('loadStart').addEventListener('click',()=>{if(!loadoutOpen)return;loadoutOpen=false;$('loadout').classList.remove('show');modsGate(()=>startRun());});
 
 /* secret: tiny pixel smiley in the shop corner -> "ask me:" -> answer "anything" -> black market (placeholder, prices in cents) */
 /* "Beta Car" = playable version of the legacy boxy traffic car (see buildBeta). Purchasable here; once owned it shows up in the Garage.
@@ -3709,14 +3728,15 @@ function startRun(){ if(typeof arcReset==='function') arcReset();
   setExitMi();
   ghostLeft=0;ghostUsed=0;ghostVisual(false);runPU={insurance:false,nitrous:false,double:false,ghost:false,rocket:false};rocketCooldown=0;clearRocket();const freePU=CS.sel==='prius'?priusFree:null; for(const p of POWERUPS){if(p.id==='rocket'){if(PU.rocketUnlocked&&PU.equipped.rocket)runPU.rocket=true;}else if(PU.equipped[p.id]&&(PU.stock[p.id]||0)>0){runPU[p.id]=true;if(p.id!==freePU)PU.stock[p.id]--;}PU.equipped[p.id]=false;}if(runPU.rocket){runPU={insurance:false,nitrous:false,double:false,ghost:false,rocket:true};}else if(freePU&&!(freePU==='nitrous'&&runPU.ghost)){runPU[freePU]=true;}savePU();insuranceSpent=0;nitrousLeft=0;nitrousUsed=0;$('powerHud').classList.remove('show');
   biomeBase=dist; biomeSeed=Math.random(); _bc=[0]; _lastBi=-1;      // biomes restart: open highway first, then a fresh random order
-  leaveTitle(); goView('chase'); if(window.__rainLock===undefined) rainPlan(); state='run'; syncMenuMusic(); score=0; rollCcx(); miles=0; mult=1; clean=0; timeLeft=Math.min(RUN_T,TIME_CAP)+startBonus(); speed=20; yaw=0; px=0; vl=0; steer=0; inv=2.5;
+  leaveTitle(); goView('chase'); modsBegin(); if(window.__rainLock===undefined) rainPlan(); state='run'; syncMenuMusic(); score=0; rollCcx(); miles=0; mult=1; clean=0; timeLeft=Math.min(RUN_T,TIME_CAP)+startBonus(); speed=20; yaw=0; px=0; vl=0; steer=0; inv=2.5;
   runDist=0; exitT=0; $('cine').classList.remove('on'); $('cineCap').classList.remove('in'); firstCam=true;
-  trafficCars.forEach(t=>{ if(t.oncoming){ respawn(t,true); t.g.visible=true; } }); ROW_GAP=rowGapFor(CS.sel); resetRows(); weave=0; tStreak=0; lastGap=-1; nextBonus=100000; runT=0; bHeat=0; lastBT=-999; evReset(); fixGear(); $('ov').classList.add('hide');
+  trafficCars.forEach(t=>{ if(t.oncoming){ respawn(t,true); t.g.visible=true; } }); ROW_GAP=rowGapFor(CS.sel)*(modHas('tight')?.7:modHas('wide')?1.3:1); resetRows(); weave=0; tStreak=0; lastGap=-1; nextBonus=100000; runT=0; bHeat=0; lastBT=-999; evReset(); fixGear(); $('ov').classList.add('hide');
   if(!eng.on&&!eng.manualOff) setSound(true);
   if(CS.sel==='c5'&&!radio.manualOff){ const _t=c5Chosen(); if(_t){ if(!radio.on) setRadio(true); radio.a.loop=false; playTrack(_t); } }   // Corvette bonus: your own starting track
   if(!radio.manualOff){ if(!radio.on) setRadio(true); else if(radio.a.paused) radio.a.play().catch(()=>{}); }
 }
 function recordRun(){                       // high-score tables; returns the "new record" notes
+  modsOnRun();
   if(!CAR_STATS[CS.sel].leaderboard) return []; // Black Market cars never write local or online records
   const sc=Math.floor(score), nb=[];
   if(sc>0&&sc>(HS.pts[0]||0)) nb.push('New points record!');
@@ -3734,6 +3754,7 @@ function showOver(title,html,cashed){
     (function tick(){ const f=Math.min(1,(performance.now()-t0)/1300), e=1-Math.pow(1-f,3); el.textContent='+'+money(Math.round(exitCash*e)); if(f<1&&state==='over') requestAnimationFrame(tick); })(); }
 }
 function endRun(why){
+  modsEnd();
   ghostLeft=0;ghostVisual(false);
   if(CH.active){ chEnd(why); return; }
   if(why==='exit'){ if(isBetaCar()){ state='over'; showOver('Black Market run','<b>UNRANKED</b><div class="nb">'+(CS.sel==='tjet'?"Toucs' Ship":CS.sel==='jet'?"Scout's Ship":'Beta Car')+' · no cash or leaderboard records</div>',false); return; } state='over'; const sc=Math.floor(score); showOver('Cashed out!','<b>+'+money(exitCash)+'</b><div class="nb">'+sc.toLocaleString()+' pts banked · '+miles.toFixed(2)+' mi</div>',true); return; }
@@ -3750,7 +3771,8 @@ const CINE_T=7;
 function startExit(E){
   if(CH.active){ chExit(E); return; }
   if(!CAR_STATS[CS.sel].leaderboard) return; // no cash-out or banking for the Beta Car
-  state='exit'; exitAt=E; exitT=0; exitCash=centsFor(Math.floor(score)); addCash(exitCash); recordRun();
+  modsOnExit();
+  state='exit'; exitAt=E; exitT=0; exitCash=Math.round(centsFor(Math.floor(score))*modCash()); addCash(exitCash); recordRun(); modsEnd();
   mult=1; weave=0; shake=0; inv=0;
   camFrom={p:camera.position.clone(),l:_lk.clone(),fov:camera.fov};
   trafficCars.forEach(t=>{ t.g.visible=false; });
@@ -3763,7 +3785,7 @@ function crash(label,rel){
   if(CH.active&&chCrash()) return;
   const rm=Math.max(0,rel)*MPH, pct=Math.min(.4,.08+rm*.004);      // 8-40% of your current score, harder the faster you hit
   const pen=CS.sel==='r34'?0:Math.min(Math.floor(score),Math.round((1000+rm*30+score*pct)*crashKeep()));
-  score-=pen; mult=1; clean=0; tStreak=0; const prot037=CS.sel==='l037'&&!(MP.on&&MP.mode==='battle')&&Math.random()<.2; if(!(MP.on&&MP.mode==='battle')&&!prot037) timeLeft=Math.max(0,timeLeft-crashTime()); inv=1.6; shake=1; weave=0; lastGap=-1;
+  score-=pen; mult=1; clean=0; tStreak=0; const prot037=CS.sel==='l037'&&!(MP.on&&MP.mode==='battle')&&Math.random()<.2; if(!(MP.on&&MP.mode==='battle')&&!prot037) timeLeft=Math.max(0,timeLeft-crashTime()); inv=1.6; shake=1; weave=0; lastGap=-1; runCrashes++; if(modHas('sudden')) timeLeft=0;
   popup((pen?'−'+pen.toLocaleString()+'  ':'')+(MP.on&&MP.mode==='battle'?'':prot037?'TIME PROTECTED  ':'−'+crashTime()+'s  ')+label,prot037?'good':'bad');
   $('flash').style.opacity=.55; setTimeout(()=>{$('flash').style.opacity=0},120); pop(.9,3);
   try{ const pc=EV.cur; if(pc&&RK[pc.k]){ pc.slowT=3; popup('THE '+RK[pc.k].n+' EASES OFF','good'); }   // crashing slows the showcase opponent for a moment
@@ -3772,11 +3794,11 @@ function crash(label,rel){
 /* TIME is earned by clean driving: every thread / wall cleared adds seconds, and the reward grows with an unbroken streak (up to 3.7 s per row).
    A crash or a missed gap breaks the streak, and a crash also costs 4 s. At full difficulty a row passes every 90/(speed - traffic) s, so a long
    streak at ~100+ mph earns more time than it burns - in theory you can go forever - while sloppy driving slowly bleeds the clock. */
-function gainTime(base){ if(isBetaCar()) return 0; if(MP.on&&MP.mode==='battle'){ tStreak++; return 0; } tStreak++; let g=base+.3*Math.min(8,tStreak-1); if(CS.sel==='prius'||CS.sel==='fulvia') g*=1.5; if(CS.sel==='daytona'&&Math.random()<.1){ g*=2; popup('LUCKY · TIME BONUS DOUBLED','good'); } timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+g); return g; }
+function gainTime(base){ if(isBetaCar()) return 0; if(MP.on&&MP.mode==='battle'){ tStreak++; return 0; } tStreak++; let g=base+.3*Math.min(8,tStreak-1); if(CS.sel==='prius'||CS.sel==='fulvia') g*=1.5; if(CS.sel==='daytona'&&Math.random()<.1){ g*=2; popup('LUCKY · TIME BONUS DOUBLED','good'); } if(modHas('stingy')) g*=.5; timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+g); return g; }
 function threadGap(r){
   if(isBetaCar()) return;
   const ch=lastGap>=0&&r.gap!==lastGap; weave=ch?Math.min(9,weave+1):1;   // cap is 9 so the 'Maximum Weave' challenge (WEAVE x9) is reachable lastGap=r.gap;
-  const b=Math.round(400*mult*((runPU.x4?4:runPU.double?2:1))*weave*speedK()); score+=b;
+  const b=Math.round(400*weave*totK()); score+=b;
   if(CH.active){ CH.st.th++; CH.st.wm=Math.max(CH.st.wm,weave); } const ts=gainTime(1.3); popup((weave>1?'WEAVE x'+weave:'THREAD THE GAP')+'  +'+b.toLocaleString()+(ts>0?'  ·  +'+ts.toFixed(1)+'s':''),'good');
 }
 // Scout's RPG: a reusable rocket, one shot every 90 seconds.
@@ -3790,6 +3812,7 @@ function updateRocket(dt){if(rocketCooldown>0)rocketCooldown=Math.max(0,rocketCo
 
 let _phKey=-1; const _phEl=$('powerHud');
 function physics(dt){
+  modsFrame(dt);
   const run=state==='run', k=keys; let thr=0,br=0,st=0,hb=0;
   if(run){
     thr=(k.KeyW||k.ArrowUp||tch.g)?1:0; br=(k.KeyS||k.ArrowDown||tch.b)?1:0;
@@ -3832,9 +3855,9 @@ function physics(dt){
   if(run&&off&&!wasOff) popup('OFF ROAD','bad'); wasOff=off;
   if(run){
     const mph=speed*MPH;
-    if(!isBetaCar()&&mph>40&&!off) score+=3*Math.pow((mph-40)/8,2)*mult*((runPU.x4?4:runPU.double?2:1))*(CS.sel==='chiron'&&mph>250?10:1)*dt;
+    if(!isBetaCar()&&mph>40&&!off) score+=3*Math.pow((mph-40)/8,2)*capMult(mult*puK()*(CS.sel==='chiron'&&mph>250?10:1))*dt;
     if(CS.sel==='chiron'){ const on=mph>250; if(on&&!chironX10) popup('250+ MPH · x10 SCORE','good'); chironX10=on; }
-    miles+=fwd*dt/1609.34; clean+=dt; mult=(1+Math.min(4,Math.floor(clean/8)))*(raining()?1.5:1)*(MP.link?1.25:1);   // rain: x1.5 on the multiplier
+    miles+=fwd*dt/1609.34; clean+=dt; mult=(1+Math.min(4,Math.floor(clean/8)))*(raining()?1.5:1)*(MP.link?1.25:1); if(modHas('cap')) mult=Math.min(3,mult);   // rain: x1.5 on the multiplier
     if(CH.active&&chTick(dt)) return;
     if(!isBetaCar()){ const kE=exitK(), lz=runDist-kE*EX; if(lz>-10&&lz<40&&px<-5.2){ startExit(kE*EX); if(state!=='run') return; } }   // challenge runs that ignore the exit keep the clock running   // in the exit lane at the gore: take the exit
     while(false){    // +10 s every 100k pts; each bonus earned within BONUS_WIN s of the last one makes the next gap 40% bigger (up to x3.4), and it cools off again when you slow down
@@ -3849,7 +3872,7 @@ function updateHud(){
   const _n=performance.now(); if(_n-_hudAt<90) return; _hudAt=_n;     // ~11 Hz is plenty for text
   kmhEl.textContent=Math.round(speed*MPH); if(CH.active) chHudUpdate();
   { const c=todText(tod)+' · '+todStage(tod)+(rainK>.12?' · Rain':''); if($('clk').textContent!==c) $('clk').textContent=c; $('gRain').textContent=raining()?'RAIN x1.5':''; }
-  $('gScore').textContent=isBetaCar()?'—':Math.floor(score).toLocaleString(); { const cx=(CS.sel==='chiron'&&chironX10&&state==='run'); const cm=state!=='run'?1:CS.sel==='ccx'?ccxMult:CS.sel==='raptor'?Math.round((1+.5*BW.w[8])*100)/100:1; $('gMult').textContent=isBetaCar()?'UNRANKED':'x'+(Math.round(mult*((runPU.x4?4:runPU.double?2:1))*(cx?10:1)*cm*100)/100)+(cx?' ⚡x10 SPEED':'')+(cm!==1?(cm>1?' 🍀':' ☁'):''); $('gMult').style.color=cx?'#ffd23c':cm<1?'#ff7a7a':cm>1?'#7dffb0':''; $('gMult').style.textShadow=cx?'0 0 10px #ffb300':''; }
+  $('gScore').textContent=isBetaCar()?'—':Math.floor(score).toLocaleString(); { const cx=(CS.sel==='chiron'&&chironX10&&state==='run'); const cm=state!=='run'?1:CS.sel==='ccx'?ccxMult:CS.sel==='raptor'?Math.round((1+.5*BW.w[8])*100)/100:1; $('gMult').textContent=isBetaCar()?'UNRANKED':'x'+(Math.round(capMult(mult*puK()*(cx?10:1)*cm)*100)/100)+(cx?' ⚡x10 SPEED':'')+(cm!==1?(cm>1?' 🍀':' ☁'):''); $('gMult').style.color=cx?'#ffd23c':cm<1?'#ff7a7a':cm>1?'#7dffb0':''; $('gMult').style.textShadow=cx?'0 0 10px #ffb300':''; }
   $('gMiles').textContent=miles.toFixed(2); $('nextB').textContent=isBetaCar()?'BLACK MARKET · NO POINTS':tStreak+'  (+'+(1.3+.3*Math.min(8,tStreak)).toFixed(1)+' s next)';
   $('gExit').textContent=Math.max(0,((Math.floor(runDist/EX)+1)*EX-runDist)/1609.34).toFixed(2); $('gCash').textContent=isBetaCar()?'$0.00':money(centsFor(Math.floor(Math.max(0,score))));
   const t=Math.ceil(timeLeft); $('gTime').textContent=adminInfiniteClock?'∞':Math.floor(t/60)+':'+String(t%60).padStart(2,'0');
@@ -3961,8 +3984,8 @@ function applyCarPhysics(){
    Rally-bred / all-wheel-drive / tall cars are negative (a little BETTER than on tarmac), road-only supercars up to +.8 (roughly a heavy shower), so nobody is ever in real trouble. */
 const DIRT_LOSS={c5:.55,fulvia:-.4,l037:-.35,ram:-.3,r34:-.25,fiesta:-.1,nsx:.1,m3:.15,accord:.1,charger:.3,prius:.35,xkr:.4,chiron:.45,daytona:.5,dawn:.5,gt:.6,viper:.6,f360:.6,ccx:.6,raptor:-1,enzo:.7,zonda:.75,aero:.8};
 const dirtLoss=()=>BW.w[8]*(DIRT_LOSS[CS.sel]||0);
-const slipK=()=>rainK*(CS.sel==='fulvia'?0:1)+dirtLoss();
-const dirtDrive=()=>1-.06*dirtLoss();      // the same surface also trims (or adds to) traction-limited drive force by up to ~5 %
+const slipK=()=>rainK*(CS.sel==='fulvia'?0:1)+dirtLoss()+(modHas('ice')?.45:0);
+const dirtDrive=()=>(1-.06*dirtLoss())*(modHas('weak')?.82:modHas('boost')?1.12:1);      // the same surface also trims (or adds to) traction-limited drive force by up to ~5 %
 function sunBoost(){   // 0..1 sunshine for the Fulvia's bonus: clear daytime sky, fading out at dawn/dusk, with rain and the snowy forest
   if(CS.sel!=='fulvia') return 0;
   const d=(EV.cur&&EV.cur.sunny)?1:Math.max(0,Math.min(1,(tod-7.5)/1.5))*Math.max(0,Math.min(1,(18.5-tod)/1.5));
@@ -4370,6 +4393,151 @@ function evArcade(c,dt,H){
   if(H) H.push('<b style="color:#ffd76a">ARCADE STYLE</b>',c.jumps+' jumps · +'+c.jscore.toLocaleString()+' · coins $'+(c.coins*.25).toFixed(2),(left/1609.34).toFixed(2)+' mi to go');
 }
 
+
+/* ---------------- RUN MODIFIERS (Doors-style list before a run) ----------------
+   50 modifiers. Each active one adds its % to every point earned (some "boons" are negative). They unlock from the counters in MD (exits, miles, race wins...); effects are applied by
+   modsBegin()/modsFrame() or read through modHas() at the relevant spot, and removed by modsEnd(). */
+const MOD_DEF={
+  /* environment & look */
+  night:{n:'Night Shift',d:'The whole run happens after dark.',b:20,u:['exits',3]},
+  rain:{n:'Downpour',d:'It never stops raining. Grip suffers.',b:20,u:['exits',3]},
+  dusk:{n:'Golden Hour',d:'Stuck in the low light of dusk.',b:5,u:['exits',5]},
+  dawn:{n:'Early Bird',d:'The sun never gets above the horizon.',b:5,u:['miles',25]},
+  noir:{n:'Noir',d:'The world drains of colour.',b:10,u:['exits',7]},
+  blur:{n:'Blurry Vision',d:'Everything is slightly out of focus.',b:20,u:['carMi',25,'m3']},
+  fog:{n:'Pea Soup',d:'Thick fog: you see very little road ahead.',b:20,u:['score',50000]},
+  tunnel:{n:'Tunnel Vision',d:'The edges of your view fade to black.',b:20,u:['runs',10]},
+  mirror:{n:'Mirror World',d:'The whole road is flipped left to right.',b:40,u:['score',250000]},
+  shaky:{n:'Rough Ride',d:'The camera never stops shaking.',b:15,u:['carMi',20,'ram']},
+  cinema:{n:'Letterbox',d:'Black bars squeeze your view into a widescreen strip.',b:10,u:['wins',3]},
+  nohud:{n:'Dashboard Off',d:'No speedometer. Drive by feel.',b:10,u:['cleanRuns',3]},
+  /* where */
+  dirt:{n:'Dirt Detour',d:'The entire run is on the Dirt Trail.',b:20,u:['carMi',25,'c5']},
+  snow:{n:'Snowed In',d:'The entire run is in the Snowy Forest.',b:20,u:['carMi',20,'l037']},
+  desert:{n:'Dry Heat',d:'The entire run is in the Desert.',b:15,u:['carMi',20,'viper']},
+  city:{n:'Concrete Jungle',d:'The entire run is in Metro City.',b:15,u:['exits',9]},
+  scrap:{n:'Scrap Run',d:'The entire run is in the Scrapyard.',b:15,u:['exits',11]},
+  coast:{n:'Cliffside',d:'The entire run is on the Coastal Cliffs.',b:15,u:['carMi',20,'xkr']},
+  /* traffic */
+  rush:{n:'Rush Hour',d:'Much denser traffic in every row.',b:25,u:['exits',3]},
+  reckless:{n:'Reckless Drivers',d:'Traffic swerves between lanes five times as often.',b:25,u:['score',100000]},
+  walls:{n:'Wall to Wall',d:'Full-width walls of cars are more than twice as common.',b:25,u:['exits',15]},
+  fast:{n:'Fast Lane',d:'Traffic moves 20 mph faster, so overtakes are harder.',b:30,u:['carMi',30,'charger']},
+  tight:{n:'Tight Rows',d:'Rows of traffic come 30% closer together.',b:25,u:['cons',2]},
+  wide:{n:'Open Road',d:'Rows are 30% further apart. A breather.',b:-10,u:['miles',100]},
+  light:{n:'Light Traffic',d:'Far fewer cars on the road.',b:-15,u:['runs',5]},
+  /* clock */
+  fuse:{n:'Short Fuse',d:'You start with 45 fewer seconds on the clock.',b:30,u:['winCar',1,'duster_fulvia','Beat the crop duster in the Fulvia']},
+  drain:{n:'Rapid Drain',d:'The clock runs 50% faster.',b:30,u:['score',150000]},
+  stingy:{n:'Stingy Clock',d:'Clean driving earns half as much time.',b:25,u:['carMi',25,'f360']},
+  extra:{n:'Extra Time',d:'Start with 30 extra seconds.',b:-15,u:['lim',1]},
+  sudden:{n:'Sudden Death',d:'The first crash ends your run.',b:80,u:['score',500000]},
+  /* crashes & score */
+  brittle:{n:'Brittle',d:'Crashes cost double score and double time.',b:35,u:['carMi',50,'viper']},
+  costly:{n:'Costly Crashes',d:'Crashes cost triple score.',b:30,u:['carMi',20,'enzo']},
+  timemoney:{n:'Time Is Money',d:'Crashes cost triple time.',b:20,u:['carMi',20,'daytona']},
+  cap:{n:'Multiplier Cap',d:'Your multiplier can never go above x3.',b:20,u:['winKind',1,'plane','Beat the cargo plane']},
+  stakes:{n:'High Stakes',d:'Any crash wipes your whole score.',b:60,u:['winKind',1,'train','Beat the freight train']},
+  /* handling */
+  ice:{n:'Slippery',d:'Tyres have far less grip, wet or dry.',b:25,u:['carMi',25,'f360']},
+  weak:{n:'Low Power',d:'Engine output is cut by 18%.',b:15,u:['carMi',20,'dawn']},
+  boost:{n:'Overdrive',d:'Engine output is up 12%. A boon.',b:-10,u:['miles',200]},
+  nobrake:{n:'No Brakes',d:'The brake pedal is gone. Lift and steer.',b:40,u:['cleanRuns',8]},
+  wind:{n:'Crosswind',d:'A gusty wind keeps pushing you sideways.',b:20,u:['carMi',20,'aero']},
+  /* events */
+  busy:{n:'Busy Road',d:'Random events trigger twice as often.',b:20,u:['exits',10]},
+  road:{n:'Roadwork Crew',d:'Construction blocks and holes litter the lanes all run.',b:20,u:['cons',1]},
+  wanted:{n:'Wanted',d:'The police chase starts about 45 seconds in.',b:30,u:['carMi',40,'gt']},
+  trap:{n:'Speed Trap',d:'Speed-limit zones come around again and again.',b:30,u:['lim',3]},
+  bossr:{n:'Boss Rush',d:'A tank blocks the road about 90 seconds in.',b:35,u:['score',200000]},
+  racer:{n:'Race Day',d:'A balloon race starts about 50 seconds in.',b:10,u:['wins',6]},
+  arcade:{n:'Arcade Mode',d:'Ramps and coins start about 40 seconds in.',b:10,u:['carMi',20,'zonda']},
+  quiet:{n:'Quiet Roads',d:'No random events at all. A boon.',b:-10,u:['runs',3]},
+  /* cash */
+  tax:{n:'Tax Man',d:'Exit payouts are cut in half.',b:30,u:['exits',25]},
+  dividends:{n:'Dividends',d:'Exit payouts are 50% bigger.',b:-20,u:['miles',150]}
+};
+const MOD_ORDER=Object.keys(MOD_DEF);
+var MD={exits:0,un:[],sel:[],carMi:{},miles:0,best:0,wins:0,winKind:{},winCar:{},cons:0,lim:0,cleanRuns:0,runs:0}, MODS=null, runCrashes=0;
+try{ const q=JSON.parse(localStorage.getItem('cgt_mods')||'null'); if(q) MD=Object.assign(MD,q); }catch(e){}
+function modHas(id){ return !!(MODS&&MODS.act&&MODS.act.indexOf(id)>=0); }
+function modFog(){ return modHas('fog')?.3:1; }
+function modCash(){ return modHas('tax')?.5:modHas('dividends')?1.5:1; }
+function modCar(id){ const c=CARS.find(q=>q.id===id); return c?c.name:id; }
+function modProg(id){   /* [value, needed, text] for an unlock spec */
+  const u=MOD_DEF[id].u, t=u[0], n=u[1], x=u[2]; let v=0, txt='';
+  if(t==='exits'){ v=MD.exits; txt='Take '+n+' exits'; }
+  else if(t==='miles'){ v=MD.miles; txt='Drive '+n+' miles in total'; }
+  else if(t==='carMi'){ v=MD.carMi[x]||0; txt='Drive '+n+' miles in the '+modCar(x); }
+  else if(t==='score'){ v=MD.best; txt='Score '+n.toLocaleString()+' in one run'; }
+  else if(t==='wins'){ v=MD.wins; txt='Win '+n+' showcase races'; }
+  else if(t==='winKind'){ v=MD.winKind[x]||0; txt=u[3]; }
+  else if(t==='winCar'){ v=MD.winCar[x]||0; txt=u[3]; }
+  else if(t==='cons'){ v=MD.cons; txt='Clear '+n+' Construction event'+(n>1?'s':'')+' with no hits'; }
+  else if(t==='lim'){ v=MD.lim; txt='Finish '+n+' Speed Limit event'+(n>1?'s':'')+' with no fines'; }
+  else if(t==='cleanRuns'){ v=MD.cleanRuns; txt='Finish '+n+' runs without a crash (2+ mi)'; }
+  else if(t==='runs'){ v=MD.runs; txt='Finish '+n+' runs'; }
+  return [v,n,txt];
+}
+function modsSave(){ try{ store.set('cgt_mods',JSON.stringify(MD)); }catch(e){ try{ localStorage.setItem('cgt_mods',JSON.stringify(MD)); }catch(_){} } }
+function modsUnlock(id){ if(!MOD_DEF[id]||MD.un.includes(id)) return; MD.un.push(id); modsSave(); try{ popup('MODIFIER UNLOCKED · '+MOD_DEF[id].n.toUpperCase(),'good'); }catch(e){} }
+function modsRecheck(){ for(const id of MOD_ORDER){ if(MD.un.includes(id)) continue; const p=modProg(id); if(p[0]>=p[1]) modsUnlock(id); } modsSave(); }
+function modsRanked(){ return !ADMIN&&!isBetaCar()&&CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].leaderboard; }
+function modsOnExit(){ if(CH.active||!modsRanked()) return; MD.exits++; modsRecheck(); }
+function modsOnRun(){ if(!modsRanked()||CH.active) return; MD.runs++; if(miles>0){ MD.miles+=miles; MD.carMi[CS.sel]=(MD.carMi[CS.sel]||0)+miles; } MD.best=Math.max(MD.best||0,Math.floor(score)); if(runCrashes===0&&miles>=2) MD.cleanRuns++; modsRecheck(); }
+function modsOnRaceWin(kind){ if(!modsRanked()) return; MD.wins++; MD.winKind[kind]=(MD.winKind[kind]||0)+1; MD.winCar[kind+'_'+CS.sel]=1; modsRecheck(); }
+function modsHint(){ const e=$('modHint'); if(!e) return; e.textContent=MD.un.length?'Next: choose run modifiers ('+MD.sel.filter(i=>MD.un.includes(i)).length+' selected).':'Take '+Math.max(0,3-MD.exits)+' more exit'+(3-MD.exits===1?'':'s')+' to unlock run modifiers.'; }
+function modsRender(){
+  const act=MD.sel.filter(i=>MD.un.includes(i)), tot=act.reduce((a,i)=>a+MOD_DEF[i].b,0);
+  $('modSub').innerHTML=(act.length?act.length+' active · <b>'+(tot>=0?'+':'−')+Math.abs(tot)+'% score</b>':'Pick any modifiers for bonus score')+' · '+MD.un.length+'/'+MOD_ORDER.length+' unlocked';
+  const order=MOD_ORDER.filter(i=>MD.un.includes(i)).concat(MOD_ORDER.filter(i=>!MD.un.includes(i)));
+  $('modList').innerHTML=order.map(id=>{ const d=MOD_DEF[id], un=MD.un.includes(id), on=un&&MD.sel.includes(id), p=modProg(id), pr=p[1]>1?' ('+Math.min(p[1],Math.floor(p[0]*10)/10)+'/'+p[1]+')':'';
+    return '<div class="mrow'+(on?' on':'')+(un?'':' lock')+'" data-mod="'+id+'"><div class="mbx">'+(un?(on?'✓':''):'🔒')+'</div><div class="mt"><div class="mn">'+d.n+'</div><div class="md">'+d.d+'</div></div><div class="mb">'+(un?(d.b>=0?'+':'−')+Math.abs(d.b)+'%':p[2]+pr)+'</div></div>'; }).join('');
+}
+var _modCb=null;
+function modsGate(cb){ if(CH.active||MP.on||!modsRanked()||!MD.un.length){ cb(); return; } _modCb=cb; modsRender(); $('mods').classList.add('show'); }
+$('modList').addEventListener('click',e=>{ const r=e.target.closest('[data-mod]'); if(!r||!MD.un.includes(r.dataset.mod)) return; const id=r.dataset.mod, i=MD.sel.indexOf(id); if(i>=0) MD.sel.splice(i,1); else MD.sel.push(id); modsSave(); const st=$('modList').scrollTop; modsRender(); $('modList').scrollTop=st; });
+$('modBack').addEventListener('click',()=>{ $('mods').classList.remove('show'); _modCb=null; });
+$('modGo').addEventListener('click',()=>{ $('mods').classList.remove('show'); const cb=_modCb; _modCb=null; if(cb) cb(); });
+const MOD_BIOME={dirt:8,snow:2,desert:5,city:3,scrap:7,coast:1}, MOD_TOD={night:null,dusk:18.5,dawn:6.3};
+const MOD_FORCE={wanted:{k:'police',at:45},trap:{k:'speedlimit',at:30,every:150},bossr:{k:'boss',at:90},racer:{k:'balloon',at:50},arcade:{k:'arcade',at:40}};
+function modsEls(){ if(document.getElementById('modVig')) return; const v=document.createElement('div'); v.id='modVig'; const b=document.createElement('div'); b.id='modBars'; document.body.append(v,b); }
+function modsBegin(){
+  runCrashes=0; modsEnd(); if(CH.active||MP.on||!modsRanked()) return;
+  const act=MD.sel.filter(i=>MD.un.includes(i)); if(!act.length) return; modsEls();
+  MODS={act,bonus:Math.max(-.5,act.reduce((a,i)=>a+MOD_DEF[i].b,0)/100),_s:0,set:{},pend:{fuse:act.includes('fuse'),extra:act.includes('extra')},force:[]};
+  if(window.__nightLock===undefined&&window.__todLock===undefined){ if(act.includes('night')){ window.__nightLock=1; MODS.set.night=1; nightDirty=true; } else if(act.includes('dusk')){ window.__todLock=18.5; MODS.set.tod=1; nightDirty=true; } else if(act.includes('dawn')){ window.__todLock=6.3; MODS.set.tod=1; nightDirty=true; } }
+  if(act.includes('rain')&&window.__rainLock===undefined){ window.__rainLock=.85; MODS.set.rain=1; }
+  if(act.includes('rush')){ chDens=2.5; MODS.set.rush=1; } else if(act.includes('light')){ chDens=-3; MODS.set.rush=1; }
+  if(act.includes('road')){ ensureCons(); CONS.on=true; }
+  for(const id in MOD_BIOME) if(act.includes(id)){ MODS.set.biome=adminBiomeOverride; adminBiomeOverride=MOD_BIOME[id]; _lastBi=-1; break; }
+  const fl=[]; if(act.includes('noir')) fl.push('grayscale(1) contrast(1.1)'); if(act.includes('blur')) fl.push('blur(1.8px)');
+  if(fl.length){ document.body.style.setProperty('--modf',fl.join(' ')); document.body.classList.add('modf'); }
+  for(const c of ['mirror','tunnel','cinema','nohud']) if(act.includes(c)) document.body.classList.add('mod-'+c);
+  for(const id in MOD_FORCE) if(act.includes(id)) MODS.force.push(Object.assign({next:MOD_FORCE[id].at},MOD_FORCE[id]));
+  popup('MODIFIERS · '+act.length+' ACTIVE · '+(MODS.bonus>=0?'+':'−')+Math.abs(Math.round(MODS.bonus*100))+'% SCORE','good');
+}
+function modsEnd(){
+  const M=MODS; if(!M) return; MODS=null;
+  if(M.set.night){ window.__nightLock=undefined; nightDirty=true; } if(M.set.tod){ window.__todLock=undefined; nightDirty=true; }
+  if(M.set.rain) window.__rainLock=undefined; if(M.set.rush) chDens=0;
+  if(M.set.biome!==undefined){ adminBiomeOverride=M.set.biome; _lastBi=-1; }
+  document.body.classList.remove('modf','mod-mirror','mod-tunnel','mod-cinema','mod-nohud');
+  if(M.act.includes('road')&&!(EV.cur&&EV.cur.k==='construction')) consStop();
+}
+function modsFrame(dt){
+  const M=MODS; if(!M||state!=='run') return;
+  if(M.pend.fuse){ M.pend.fuse=false; timeLeft=Math.max(30,timeLeft-45); } if(M.pend.extra){ M.pend.extra=false; timeLeft+=30; }
+  const d=score-M._s; if(d>0) score+=d*M.bonus; M._s=score;
+  const A=M.act, boss=EV.cur&&EV.cur.k==='boss';
+  if(A.includes('drain')&&!boss) timeLeft-=dt*.5;
+  if(A.includes('cap')&&mult>3) mult=3;
+  if(A.includes('nobrake')){ keys.KeyS=false; keys.ArrowDown=false; if(typeof tch!=='undefined') tch.b=0; }
+  if(A.includes('wind')) px+=Math.sin(runT*.55)*Math.sin(runT*.23+1)*1.6*dt;
+  if(A.includes('shaky')) shake=Math.max(shake,.14);
+  if(A.includes('quiet')&&!EV.cur) EV.cool=Math.max(EV.cool,60);
+  if(M.force.length&&!EV.cur&&!EV.pending&&!EV.wc&&runT>3){ for(const f of M.force){ if(runT>=f.next){ if(evOptions().includes(f.k)&&evStart(f.k)) f.next=f.every?runT+f.every:1e9; else f.next=runT+8; break; } } }
+}
 /* ---------------- EVENTS: CONSTRUCTION + SPEED LIMIT ---------------- */
 var CONS=null;
 function ensureCons(){
@@ -4393,7 +4561,7 @@ function ensureCons(){
     g.visible=false; g.traverse(o=>{ o.frustumCulled=false; }); scene.add(g); items.push({k:'h',mesh:g,row:null,lane:1,hit:false}); }
   return CONS={on:false,items,ev:null};
 }
-function consStop(){ if(!CONS) return; CONS.on=false; CONS.ev=null; for(const it of CONS.items){ it.row=null; it.mesh.visible=false; } }
+function consStop(){ if(!CONS) return; CONS.on=modHas('road'); CONS.ev=null; for(const it of CONS.items){ it.row=null; it.mesh.visible=false; } }
 function consOnRow(r,wall){
   if(!CONS) return;
   for(const it of CONS.items) if(it.row===r){ it.row=null; it.mesh.visible=false; }   // the row was recycled: free what it carried
@@ -4413,12 +4581,12 @@ function consTick(dt){
 }
 function evConstruction(c,dt,H){
   const left=Math.max(0,c.T-c.t);
-  if(left<=0){ if(!c.hits){ score+=2500; popup('CONSTRUCTION ZONE CLEARED · CLEAN PASS +2,500','good'); } else popup('CONSTRUCTION ZONE CLEARED · '+c.hits+(c.hits>1?' HITS':' HIT'),'bad'); evEnd(); return; }
+  if(left<=0){ if(!c.hits){ MD.cons++; modsRecheck(); score+=2500; popup('CONSTRUCTION ZONE CLEARED · CLEAN PASS +2,500','good'); } else popup('CONSTRUCTION ZONE CLEARED · '+c.hits+(c.hits>1?' HITS':' HIT'),'bad'); evEnd(); return; }
   if(H) H.push('<b style="color:#ffb000">CONSTRUCTION ZONE</b>','blocks and holes in the lanes · '+c.hits+' hit'+(c.hits===1?'':'s'),Math.ceil(left)+' s to go');
 }
 function evSpeedLimit(c,dt,H){
   const mph=speed*MPH, left=Math.max(0,c.T-c.t), live=c.t>=c.grace, over=mph-c.lim;
-  if(left<=0){ popup('SPEED LIMIT LIFTED · '+(c.lost>0?'−'+Math.round(c.lost).toLocaleString()+' IN FINES':'NO FINES'),c.lost>0?'bad':'good'); evEnd(); return; }
+  if(left<=0){ if(c.lost<=0){ MD.lim++; modsRecheck(); } popup('SPEED LIMIT LIFTED · '+(c.lost>0?'−'+Math.round(c.lost).toLocaleString()+' IN FINES':'NO FINES'),c.lost>0?'bad':'good'); evEnd(); return; }
   const isOver=live&&over>2;
   if(isOver){ const p=Math.min(score,(250+45*over)*dt); score-=p; c.lost+=p; c.over+=dt; if(!c.wasOver) popup('OVER THE LIMIT · LOSING SCORE · SLOW TO '+c.lim,'bad'); }
   c.wasOver=isOver;
@@ -5287,14 +5455,15 @@ function frecceModel(cb){
     for(const f of FM.cbs.splice(0)) try{ f(proto); }catch(e){ console.warn(e); }
   },undefined,e=>{ FM.state=0; FM.cbs.length=0; console.warn('[frecce] freece_tricolor_plane_simplified.glb failed to load - using the built-in jet shapes',e); });
 }
+const TR_S=.7;   /* train model scale (uniform, so wheels stay round) */
 function evMakeTrain(){
   const g=new THREE.Group(), loco=new THREE.Mesh(new THREE.BoxGeometry(3.4,3.8,20,1,1,6),evMat(0xc2371b,.5,.3)), cab=new THREE.Mesh(new THREE.BoxGeometry(3.4,1.2,6,1,1,2),evMat(0x1a1c20)); loco.position.set(0,2.6,0); cab.position.set(0,4.9,-6); g.add(loco,cab);
   const cols=[0x3b6ea5,0xb5b8bd,0x9a6b2f,0x2e7d4f,0xd6a227,0x6b4a8a,0x3b6ea5];
   const wagons=[]; cols.forEach((c,i)=>{ const w=new THREE.Mesh(new THREE.BoxGeometry(3.3,3.6,14,1,1,5),evMat(c,.6,.1)); w.position.set(0,2.5,-21-i*15.5); g.add(w); wagons.push(w); /* 3 m further back: room for the full-length engine */ });
-  const lw=new THREE.Group(); g.add(lw);   /* axle wheels under the box-engine fallback only: hidden once trainhead.glb (which has no wheels any more) is in use */
+  const lw=new THREE.Group(); g.add(lw); const wgrp=new THREE.Group(); g.add(wgrp);   /* axle wheels under the box-engine fallback only: hidden once trainhead.glb (which has no wheels any more) is in use */
   /* wheels: the engine model only has one wheel and the wagon boxes hover .15 above the rails, so every vehicle gets axle pairs (shared geometry/material) running on the rails */
   { const wg=new THREE.CylinderGeometry(1,1,.14,14).rotateZ(Math.PI/2), wm=evMat(0x15171a,.5,.6);
-    const axle=(z,r,y)=>{ for(const sx of [-.72,.72]){ const w=new THREE.Mesh(wg,wm); w.scale.set(1,r,r); w.position.set(sx,y,z); g.add(w); } };
+    const axle=(z,r,y)=>{ for(const sx of [-.72,.72]){ const w=new THREE.Mesh(wg,wm); w.scale.set(1,r,r); w.position.set(sx,y,z); wgrp.add(w); } };
     [8,6.3,4.6,.4,-1.3,-6.8,-8.5,-10.2].forEach(z=>{ for(const sx of [-.72,.72]){ const w=new THREE.Mesh(wg,wm); w.scale.set(1,.6,.6); w.position.set(sx,1.15,z); lw.add(w); } });
     wagons.forEach(w=>{ axle(w.position.z+4.5,.36,.91); axle(w.position.z-4.5,.36,.91); }); }
   g.traverse(o=>{ o.frustumCulled=false; }); g.visible=false; scene.add(g);
@@ -5302,18 +5471,25 @@ function evMakeTrain(){
      Raw model: nose toward +X, ~22.3 long x 6.2 wide; turned so the nose points +Z, nose kept at z=+10 */
   console.info('[train] requesting trainhead.glb from',new URL('trainhead.glb',document.baseURI).href);
   new THREE.GLTFLoader().load('trainhead.glb',gltf=>{ console.info('[train] trainhead.glb loaded: engine model in use');
-    const m=gltf.scene, S=.6, SL=1;
-    /* the model's wheels are one mesh ('Cylinder', 1280 vertices): remove it (fallback: the only high-poly mesh) */
-    { const ms=[]; m.traverse(o=>{ if(o.isMesh) ms.push(o); }); let w=ms.find(o=>/^Cylinder/.test(o.name)); if(!w){ w=ms.reduce((a,b)=>(!a||b.geometry.attributes.position.count>a.geometry.attributes.position.count)?b:a,null); if(w&&w.geometry.attributes.position.count<1000) w=null; } if(w&&w.parent) w.parent.remove(w); else console.warn('[train] wheel mesh not found'); }
+    const m=gltf.scene, S=TR_S;
     lw.visible=false;
-    /* raw model (wheels removed): nose +X at 10.978, tail at about -12.45, lowest vertex raw y=-0.631 (the underframe). It is turned to face +Z and set so that lowest point rests on the rail head (y=.55, 1 cm in so there is no sliver of light) */
-    m.scale.set(SL,S,S); m.rotation.y=-Math.PI/2; m.position.set(0,.54+.631*S,10-10.978*SL);
+    /* the model keeps its own wheels now: two bogies a side, wheel centres at raw z=+-2.4 (rail centres), radius 1, lowest point raw y=-.75. Uniform scale so the discs stay round; nose (raw x=10.98) kept at z=+10, wheel bottoms 1 cm into the rail head (y=.55) */
+    m.scale.set(S,S,S); m.rotation.y=-Math.PI/2; m.position.set(0,.54+.75*S,10-10.978*S);
     const mm=new Map(); m.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; let x=mm.get(o.material); if(!x){ x=o.material.clone(); bendMat(x); mm.set(o.material,x); } o.material=x; });
-    g.add(m); loco.visible=false; cab.visible=false;
+    g.add(m); loco.visible=false; cab.visible=false; g.userData.head=true;
   },undefined,e=>{ console.warn('[train] trainhead.glb FAILED to load (missing from the repo, or a stale jsDelivr 404?) - using the box engine',e); });
+  /* freight cars: traincar1-4.glb (same frame as the engine: 21.4 long raw, nose +X, wheels at raw z=+-2.4). Seven slots, each holding all four variants (geometry/materials shared); a fresh random mix is dealt every race (g.userData.shuffle) with no two neighbours alike. Raw car: x -11.32..10.07 */
+  { const S=TR_S, front=-6.6-.8, half=(10.07+11.32)/2*S, step=(10.07+11.32)*S+.8, slots=[], files=['traincar1.glb','traincar2.glb','traincar3.glb','traincar4.glb'], got=[]; let n=0;
+    for(let i=0;i<wagons.length;i++){ const sl=new THREE.Group(); sl.position.z=front-10.07*S-i*step; sl.visible=false; g.add(sl); slots.push(sl); }
+    g.userData.shuffle=()=>{ if(!got.length) return; let prev=-1; for(const sl of slots){ const ch=sl.children; let k; do{ k=Math.floor(Math.random()*ch.length); }while(ch.length>1&&k===prev); prev=k; ch.forEach((c,q)=>{ c.visible=q===k; }); } };
+    files.forEach((f,fi)=>{ new THREE.GLTFLoader().load(f,gltf=>{
+      const mm=new Map(); gltf.scene.traverse(o=>{ if(!o.isMesh) return; o.frustumCulled=false; let x=mm.get(o.material); if(!x){ x=o.material.clone(); bendMat(x); mm.set(o.material,x); } o.material=x; });
+      for(const sl of slots){ const c=gltf.scene.clone(true); c.scale.set(S,S,S); c.rotation.y=-Math.PI/2; c.position.set(0,.54+.75*S-sl.position.y*0,0); c.visible=false; sl.add(c); }
+      got.push(fi); if(got.length===1){ wagons.forEach(w=>{ w.visible=false; }); wgrp.visible=false; slots.forEach(sl=>{ sl.visible=true; }); } g.userData.shuffle();
+    },undefined,e=>{ console.warn('[train] '+f+' FAILED to load',e); }); }); }
   const tr=new THREE.Group(), rm=evMat(0x6d6f72,.4,.8), bed=evMat(0x4a4540,.9,0), tie=evMat(0x3b2f26,.9,0);
-  const ballast=new THREE.Mesh(new THREE.BoxGeometry(4.6,.35,900,1,1,225),bed); ballast.position.set(0,.18,20); tr.add(ballast);
-  for(const sx of [-.72,.72]){ const r=new THREE.Mesh(new THREE.BoxGeometry(.12,.2,900,1,1,225),rm); r.position.set(sx,.45,20); tr.add(r); }
+  const ballast=new THREE.Mesh(new THREE.BoxGeometry(5.6,.35,900,1,1,225),bed); ballast.position.set(0,.18,20); tr.add(ballast);
+  for(const sx of [-2.4*TR_S,2.4*TR_S]){ const r=new THREE.Mesh(new THREE.BoxGeometry(.2,.2,900,1,1,225),rm); r.position.set(sx,.45,20); tr.add(r); }
   for(let z=-430;z<=455;z+=3){ const t=new THREE.Mesh(new THREE.BoxGeometry(2.3,.14,.35),tie); t.position.set(0,.4,z); tr.add(t); }
   tr.traverse(o=>{ o.frustumCulled=false; }); tr.visible=false; scene.add(tr); g.userData.track=tr; return g;
 }
@@ -5434,7 +5610,7 @@ function evStart(kind){
     EV.cur={k:'convoy',ph:'form',t:0,bonus:0,cars:[],ids}; evQuiet=true; popup('CONVOY AHEAD · ROAD CLEARING','good'); return true; }
   if(kind==='frecce'&&!FRECCE.tpl){ popup(FRECCE.loading?'FRECCE PLANES LOADING · TRY AGAIN IN A MOMENT':'FRECCE PLANE MODEL FAILED TO LOAD · CHECK frecce GLB FILE','bad'); console.warn('[frecce] event blocked: no GLB template available'); return false; }
   if(kind==='plane'||kind==='train'||kind==='duster'||kind==='frecce'){ const K=RK[kind], air=!!K.air;
-    if(!EV[kind]) EV[kind]=kind==='plane'?evMakePlane():kind==='train'?evMakeTrain():kind==='duster'?evMakeDuster():evMakeFrecce();
+    if(!EV[kind]) EV[kind]=kind==='plane'?evMakePlane():kind==='train'?evMakeTrain():kind==='duster'?evMakeDuster():evMakeFrecce(); if(kind==='train'&&EV.train.userData.shuffle) EV.train.userData.shuffle();
     const o=EV[kind], top=((CAR_STATS[CS.sel]&&CAR_STATS[CS.sel].topSpeedMph)||150)/MPH;
     const reach=Math.min(top,evThrMs()*1.15);
     // Per-opponent tuning (table RK): the plane holds a little more pace than the train; the crop duster is the gentle one, the Frecce Tricolori the hard one (never above 88% of the car's top speed; simulated: every car wins by holding about 88% of its top speed or more, the crop duster needs only ~80%)
@@ -5527,7 +5703,7 @@ function evTick(dt){
       EV.cool-=dt;
       if(MP.stage==='play'&&MP.evR&&EV.cool<=0&&(performance.now()-MP.evT0)/1000>=MP.evAt){ const k=MP.evKind; mpEvNext(); evStart(k); }
       EV.wasT=!!tunnelActive; return; }
-    const _ek=jagEv?2:1; EV.cool-=dt*_ek; const inT=!!tunnelActive;   // XKR: cooldowns run twice as fast and every roll is twice as likely
+    const _ek=(jagEv?2:1)*(modHas('busy')?2:1); EV.cool-=dt*_ek; const inT=!!tunnelActive;   // XKR: cooldowns run twice as fast and every roll is twice as likely
     if(inT&&!EV.wasT&&EV.cool<=0&&Math.random()<_ek/EVC.tunnelOdds){ evTrigger(); }   // moderate chance on eligible tunnel entry (about 1 in 5)
     else if(EV.cool<=0&&runT>40/_ek&&(EV._amb=(EV._amb||0)+dt)>=1){ EV._amb=0; if(Math.random()<_ek/EVC.ambientSecs){ evTrigger(); } }   // independent open-road roll: average 2 minutes between rolls
     EV.wasT=inT; return;
@@ -5982,9 +6158,9 @@ function evRace(c,dt,H){
     o.rotation.set(0,0,0);   // see the cinematic: the bend shader already conforms the train to the road, a tilt lifted the nose / sank the tail against the flat track
     o.userData.track.position.set(-24,0,0);
   }
-  if(P>=c.R&&CH.active){ popup('YOU WON THE RACE','good'); const lead=Math.round(P-c.Q); evEnd(true); chFinish(true,'Beat the '+K.n.toLowerCase()+' by '+lead+' m'); return; }
+  if(P>=c.R&&CH.active){ modsOnRaceWin(c.k); popup('YOU WON THE RACE','good'); const lead=Math.round(P-c.Q); evEnd(true); chFinish(true,'Beat the '+K.n.toLowerCase()+' by '+lead+' m'); return; }
   if(c.Q>=c.R&&CH.active){ popup(('THE '+K.n)+' BEAT YOU TO THE FINISH','bad'); const lead=Math.round(c.Q-P); evEnd(true); chFinish(false,'The '+K.n.toLowerCase()+' beat you to the finish by '+lead+' m.'); return; }
-  if(P>=c.R){ const b=Math.max(10000,Math.round(score*.25)); score+=b; timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+10); popup('YOU WON THE RACE  +'+b.toLocaleString()+'  ·  +10s','good'); evEnd(); return; }
+  if(P>=c.R){ modsOnRaceWin(c.k); const b=Math.max(10000,Math.round(score*.25)); score+=b; timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+10); popup('YOU WON THE RACE  +'+b.toLocaleString()+'  ·  +10s','good'); evEnd(); return; }
   if(c.Q>=c.R){ popup(('THE '+K.n)+' BEAT YOU TO THE FINISH','bad'); evEnd(); return; }
   const lead=P-c.Q, mi=Math.min(c.mi||EVC.raceMi,P/1609.34);
   if(H)H.push('<b style="color:#ffd76a">RACE · '+K.n+'</b>',mi.toFixed(2)+' / '+(c.mi||EVC.raceMi)+' mi · '+(lead>=0?'<span style="color:#8fe3a2">you lead by '+Math.round(lead)+' m</span>':'<span style="color:#ff9b8f">'+K.w+' leads by '+Math.round(-lead)+' m</span>'));
@@ -6042,7 +6218,7 @@ function frame(){
     scene.fog.far=THREE.MathUtils.lerp(fogF0,75,tunnelFade);
   } else {
     scene.fog.color.copy(SK.fog).convertSRGBToLinear();
-    scene.fog.near=fogN0; scene.fog.far=fogF0;
+    scene.fog.near=fogN0*modFog(); scene.fog.far=fogF0*modFog();
   }
   updateTrees(dist,gz); updateDesertProps(dist); updateHouses(dist); updateSuburbs(dist); updateScrap(dist); updateCity(dist);
 
@@ -6095,13 +6271,13 @@ function frame(){
           speed=Math.max(0,Math.min(speed,t.v)*.85); const sd=dx>=0?1:-1; px+=sd*.4; yaw=sd*.15; vl=sd*2.5;
           t.crashT=1.3; t.vx=-sd*5; t.spin=-sd*4; }
       } else if(!isBetaCar()&&t.pz>0&&t.z<=0&&adx<3.1&&speed-t.v>4){
-        const b=Math.round(500*mult*((runPU.x4?4:runPU.double?2:1))*speedK()); score+=b; if(CS.sel==='m3'){ timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+.75); popup('CLOSE PASS +'+b.toLocaleString()+'  ·  +0.75s','good'); } else popup('CLOSE PASS +'+b.toLocaleString(),'good'); if(CH.active) CH.st.cp++;
+        const b=Math.round(500*totK()); score+=b; if(CS.sel==='m3'){ timeLeft=Math.min(TIME_CAP+startBonus(),timeLeft+.75); popup('CLOSE PASS +'+b.toLocaleString()+'  ·  +0.75s','good'); } else popup('CLOSE PASS +'+b.toLocaleString(),'good'); if(CH.active) CH.st.cp++;
       }
     }
     if(run&&!r.done&&r.pz>0&&r.z<=0){
       r.done=true;
       if(trafficAlpha(r.z).a<.5){ /* empty exit zone: no points for threading cars that aren't there */ }
-      else if(r.wall){ if(!r.hit&&!isBetaCar()){ const b=Math.round(1500*mult*((runPU.x4?4:runPU.double?2:1))*speedK()); score+=b; if(CH.active) CH.st.th++; const ts=gainTime(3); popup('WALL CLEARED +'+b.toLocaleString()+(ts>0?'  ·  +'+ts.toFixed(1)+'s':''),'good'); } }
+      else if(r.wall){ if(!r.hit&&!isBetaCar()){ const b=Math.round(1500*totK()); score+=b; if(CH.active) CH.st.th++; const ts=gainTime(3); popup('WALL CLEARED +'+b.toLocaleString()+(ts>0?'  ·  +'+ts.toFixed(1)+'s':''),'good'); } }
       else if(!isBetaCar()&&!r.hit&&Math.abs(px-LANES[r.gap])<1.5) threadGap(r); else{ weave=0; tStreak=0; }
     }
   }
